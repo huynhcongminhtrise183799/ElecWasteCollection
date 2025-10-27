@@ -60,6 +60,7 @@ namespace ElecWasteCollection.Application.Services
                     ConfirmImages = r.ConfirmImages,
                     LicensePlate = r.LicensePlate,
 					Address = _postService.GetById(r.PostId).Address,
+                    PickUpItemImages = _postService.GetById(r.PostId).Images,
 					Status = r.Status
                 }).OrderBy(r => r.EstimatedTime)
 				.ToList();
@@ -81,7 +82,8 @@ namespace ElecWasteCollection.Application.Services
                     ConfirmImages = route.ConfirmImages,
                     LicensePlate = route.LicensePlate,
                     Address = _postService.GetById(route.PostId).Address,
-                    Status = route.Status
+					PickUpItemImages = _postService.GetById(route.PostId).Images,
+					Status = route.Status
 
                 };
 				return model;

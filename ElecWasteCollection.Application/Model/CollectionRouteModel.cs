@@ -21,9 +21,13 @@ namespace ElecWasteCollection.Application.Model
 
 		public List<string> ConfirmImages { get; set; }
 
+		public List<string> PickUpItemImages { get; set; }	
+
 		public string LicensePlate { get; set; }
 
 		public string Address { get; set; }
+
+
 
 		public string Status { get; set; }
 	}
