@@ -1,19 +1,15 @@
-﻿version: '3.8'
+﻿version: '3.9'
 
 services:
   api:
     build:
       context: .
-      dockerfile: ElecWasteCollection.API/Dockerfile
+      # Nếu Dockerfile nằm trong thư mục gốc, chỉ cần ghi: dockerfile: Dockerfile
+      # Nếu Dockerfile nằm trong thư mục API, đường dẫn này là đúng:
+      dockerfile: ElecWasteCollection.API/Dockerfile 
+    container_name: elecwastecollection-api-container
     ports:
-      - "8080:8080"
+      - "5000:8080" # Map cổng 5000 máy chủ (host) đến 8080 container
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    volumes:
-      - .:/app  # Đảm bảo bạn chia sẻ toàn bộ thư mục với container
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+      - DOTNET_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080

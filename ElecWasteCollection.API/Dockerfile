@@ -1,35 +1,37 @@
-﻿# Build stage
+﻿# Stage 1: Build - Sử dụng SDK để khôi phục và biên dịch
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Sao chép các csproj và phục hồi các phụ thuộc
-COPY ["ElecWasteCollection.sln", "./"]
-COPY ["ElecWasteCollection.API/ElecWasteCollection.API.csproj", "ElecWasteCollection.API/"]
-COPY ["ElecWasteCollection.Application/ElecWasteCollection.Application.csproj", "ElecWasteCollection.Application/"]
-COPY ["ElecWasteCollection.Domain/ElecWasteCollection.Domain.csproj", "ElecWasteCollection.Domain/"]
-COPY ["ElecWasteCollection.Infrastructure/ElecWasteCollection.Infrastructure.csproj", "ElecWasteCollection.Infrastructure/"]
+# Sao chép các tệp .csproj và file solution (.sln) nếu có
+# Việc này giúp restore toàn bộ dependencies cho tất cả các dự án
+COPY ElecWasteCollection.API/*.csproj ./ElecWasteCollection.API/
+COPY ElecWasteCollection.Application/*.csproj ./ElecWasteCollection.Application/
+COPY ElecWasteCollection.Domain/*.csproj ./ElecWasteCollection.Domain/
+COPY ElecWasteCollection.Infrastructure/*.csproj ./ElecWasteCollection.Infrastructure/
+# Giả định file solution (.sln) nằm ở thư mục gốc của context
+# COPY ElecWasteCollection.sln . 
 
-# Phục hồi các phụ thuộc cho tất cả các dự án
-RUN dotnet restore
+# Chạy restore (sử dụng solution hoặc dự án API)
+# Sử dụng dự án API để restore các dependencies bên ngoài
+RUN dotnet restore ElecWasteCollection.API/ElecWasteCollection.API.csproj
 
-# Sao chép toàn bộ mã nguồn vào trong container
+# Sao chép toàn bộ mã nguồn
 COPY . .
 
-# Build ứng dụng
-WORKDIR "/src/ElecWasteCollection.API"
-RUN dotnet build "ElecWasteCollection.API.csproj" -c Release -o /app/build
+# Chuyển context sang dự án API
+WORKDIR /src/ElecWasteCollection.API
 
-# Publish ứng dụng
-FROM build AS publish
-RUN dotnet publish "ElecWasteCollection.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# Chạy lệnh PUBLISH. Xuất bản tệp vào thư mục /app/publish
+# Đây là cách chuẩn để tách biệt tệp build và tệp runtime
+RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
-# Final stage - Sử dụng image nhẹ hơn để chạy ứng dụng
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# ---
+
+# Stage 2: Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-
-# Sao chép các tệp đã được publish từ stage trước vào container
-COPY --from=publish /app/publish .
-
+# 📢 SỬA LỖI: COPY TỪ /app/publish (của stage build) ĐẾN /app (của stage runtime)
+COPY --from=build /app/publish .
 EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "ElecWasteCollection.API.dll"]

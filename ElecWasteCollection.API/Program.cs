@@ -18,8 +18,18 @@ namespace ElecWasteCollection.API
 			builder.Services.AddSwaggerGen();
 			builder.Services.AddScoped<IPostService, PostService>();
 			builder.Services.AddScoped<IUserService, UserService>();
-
+			builder.Services.AddCors(options =>
+			{
+				options.AddPolicy("AllowAll", policy =>
+				{
+					policy.AllowAnyHeader()
+						  .AllowAnyMethod()
+						  .AllowCredentials()
+						  .SetIsOriginAllowed(_ => true);
+				});
+			});
 			var app = builder.Build();
+			app.UseCors("AllowAll");
 
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())
