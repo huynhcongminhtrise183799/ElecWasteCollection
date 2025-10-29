@@ -160,7 +160,7 @@ namespace ElecWasteCollection.Application.Data
 				Date = DateTime.Now.AddDays(-4),
 				Address = users[0].Address,
 				ScheduleJson = CreateSchedule(2, "14:00", "15:00"),
-				Images = new List<string>{"https://png.pngtree.com/background/20211217/original/pngtree-mobile-phone-photography-picture-image_1580997.jpg"},
+				Images = new List<string>{"https://cdn.nguyenkimmall.com/images/product/829/dien-thoai-iphone-14-pro-max-1tb-tim-1.jpg"},
 				Status = "Đã Duyệt"
 			},
 			new Post
