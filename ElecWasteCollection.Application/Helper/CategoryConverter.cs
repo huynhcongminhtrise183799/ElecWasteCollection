@@ -16,7 +16,8 @@ namespace ElecWasteCollection.Application.Helper
 		"television", 
         "monitor",
 		"smartphone",
-		"digital camera"
+		"digital camera",
+		"camera"
 	}},
     
     { "Điện tử Gia dụng", new List<string> {
