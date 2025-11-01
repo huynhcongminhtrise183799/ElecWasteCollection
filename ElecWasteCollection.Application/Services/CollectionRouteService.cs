@@ -48,51 +48,76 @@ namespace ElecWasteCollection.Application.Services
             return false;
         }
 
-        public List<CollectionRouteModel> GetAllRoutes(DateOnly PickUpDate)
-        {
-            return routes
-                .Where(r => r.CollectionDate == PickUpDate)
-                .Select(r => new CollectionRouteModel
-                {
-                    CollectionRouteId = r.CollectionRouteId,
-                    PostId = r.PostId,
-                    Collector = _collectorService.GetById(r.CollectorId),
-					Sender = _userService.GetById(_postService.GetById(r.PostId).Sender.UserId),
-					ItemName = _postService.GetById(r.PostId).Name,
-					CollectionDate = r.CollectionDate,
-                    EstimatedTime = r.EstimatedTime,
-                    Actual_Time = r.Actual_Time,
-                    ConfirmImages = r.ConfirmImages,
-                    LicensePlate = r.LicensePlate,
-					Address = _postService.GetById(r.PostId).Address,
-                    PickUpItemImages = _postService.GetById(r.PostId).Images,
-					Status = r.Status
-                }).OrderBy(r => r.EstimatedTime)
-				.ToList();
-        }
+		public List<CollectionRouteModel> GetAllRoutes(DateOnly PickUpDate)
+		{
+			return routes
+				.Where(r => r.CollectionDate == PickUpDate)
 
-        public CollectionRouteModel GetRouteById(Guid collectionRoute)
+				// 1. Chỉ Select để lấy dữ liệu (ghép Route với Post)
+				.Select(r => new {
+					Route = r,
+					Post = _postService.GetById(r.PostId) // Chỉ gọi GetById 1 LẦN
+				})
+
+				// 2. Lọc bỏ những route có post bị null (post không tìm thấy)
+				.Where(x => x.Post != null)
+
+				// 3. Bây giờ mới Select để tạo Model (post ở đây 100% không null)
+				.Select(x =>
+				{
+					var r = x.Route;
+					var post = x.Post; // Đã đảm bảo không null
+
+					var collector = _collectorService.GetById(r.CollectorId);
+					var sender = (post.Sender != null)
+								 ? _userService.GetById(post.Sender.UserId)
+								 : null;
+
+					var pickUpImages = post.ImageUrls;
+
+					return new CollectionRouteModel
+					{
+						CollectionRouteId = r.CollectionRouteId,
+						PostId = r.PostId,
+						Collector = collector,
+						Sender = sender,
+						ItemName = post.Name,
+						CollectionDate = r.CollectionDate,
+						EstimatedTime = r.EstimatedTime,
+						Actual_Time = r.Actual_Time,
+						ConfirmImages = r.ConfirmImages,
+						LicensePlate = r.LicensePlate,
+						Address = post.Address,
+						PickUpItemImages = pickUpImages,
+						Status = r.Status
+					};
+				})
+				.OrderBy(r => r.EstimatedTime)
+				.ToList();
+		}
+
+		public CollectionRouteModel GetRouteById(Guid collectionRoute)
         {
             var route = routes.FirstOrDefault(r => r.CollectionRouteId == collectionRoute);
             if (route != null)
             {
-                var model = new CollectionRouteModel
-                {
-                    CollectionRouteId = route.CollectionRouteId,
-                    PostId = route.PostId,
-                    Collector = _collectorService.GetById(route.CollectorId),
-                    Sender = _userService.GetById(_postService.GetById(route.PostId).Sender.UserId),
-                    ItemName = _postService.GetById(route.PostId).Name,
+				var model = new CollectionRouteModel
+				{
+					CollectionRouteId = route.CollectionRouteId,
+					PostId = route.PostId,
+					Collector = _collectorService.GetById(route.CollectorId),
+					Sender = _userService.GetById(_postService.GetById(route.PostId).Sender.UserId),
+					ItemName = _postService.GetById(route.PostId).Name,
 					CollectionDate = route.CollectionDate,
-                    EstimatedTime = route.EstimatedTime,
-                    Actual_Time = route.Actual_Time,
-                    ConfirmImages = route.ConfirmImages,
-                    LicensePlate = route.LicensePlate,
-                    Address = _postService.GetById(route.PostId).Address,
-					PickUpItemImages = _postService.GetById(route.PostId).Images,
+					EstimatedTime = route.EstimatedTime,
+					Actual_Time = route.Actual_Time,
+					ConfirmImages = route.ConfirmImages,
+					LicensePlate = route.LicensePlate,
+					Address = _postService.GetById(route.PostId).Address,
+					PickUpItemImages = _postService.GetById(route.PostId).ImageUrls,
 					Status = route.Status
 
-                };
+				};
 				return model;
 			}
 			return null;

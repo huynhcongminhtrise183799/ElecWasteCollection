@@ -27,21 +27,31 @@ namespace ElecWasteCollection.API.Controllers
 			var model = new CreatePostModel
 			{
 				Address = newItem.Address,
-				Category = newItem.Category,
 				Description = newItem.Description,
 				Images = newItem.Images,
 				Name = newItem.Name,
 				CollectionSchedule = newItem.CollectionSchedule,
-				SenderId = newItem.SenderId
+				SenderId = newItem.SenderId,
+				Product = new CreateProductModel
+				{
+					ParentCategoryId = newItem.Product.ParentCategoryId,
+					SubCategoryId = newItem.Product.SubCategoryId,
+					SizeTierId = newItem.Product.SizeTierId,
+					Attributes = newItem.Product.Attributes?.Select(attr => new ProductValueModel
+					{
+						AttributeId = attr.AttributeId,
+						Value = attr.Value
+					}).ToList()
+				}
 			};
 			var result =  await _postService.AddPost(model);
-			if (!result)
+			if (result == null)
 			{
 				return StatusCode(400, "An error occurred while creating the post.");
 			}
 
 
-			return Ok(new { message = "Post created successfully.", item = newItem });
+			return Ok(new { message = "Post created successfully.", item = result });
 		}
 		[HttpGet]
 		public IActionResult GetAllPosts()

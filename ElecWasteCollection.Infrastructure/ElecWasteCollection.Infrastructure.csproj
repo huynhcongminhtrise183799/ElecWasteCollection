@@ -5,5 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="APIVerve.API.ProfanityFilter" Version="1.1.9" />
+	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ElecWasteCollection.Application\ElecWasteCollection.Application.csproj" />
+  </ItemGroup>
 
 </Project>

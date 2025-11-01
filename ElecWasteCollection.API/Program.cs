@@ -21,6 +21,10 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<IUserService, UserService>();
 			builder.Services.AddScoped<ICollectorService, CollectorService>();
 			builder.Services.AddScoped<ICollectionRouteService, CollectionRouteService>();
+			builder.Services.AddScoped<ICategoryService, CategoryService>();
+			builder.Services.AddScoped<ISizeTierService, SizeTierService>();
+			builder.Services.AddScoped<ICategoryAttributeService, CategoryAttributeService>();
+
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
@@ -36,6 +40,12 @@ namespace ElecWasteCollection.API
 			_ = FakeDataSeeder.posts;
 			_ = FakeDataSeeder.collector;
 			_ = FakeDataSeeder.routes;
+			_ = FakeDataSeeder.categories;
+			_ = FakeDataSeeder.products;
+			_ = FakeDataSeeder.productValues;
+			_ = FakeDataSeeder.attributes;
+			_ = FakeDataSeeder.sizeTiers;
+			_ = FakeDataSeeder.categoryAttributes;
 			app.UseCors("AllowAll");
 
 			// Configure the HTTP request pipeline.

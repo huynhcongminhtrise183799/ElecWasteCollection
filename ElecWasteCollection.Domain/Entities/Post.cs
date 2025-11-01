@@ -11,15 +11,18 @@ namespace ElecWasteCollection.Domain.Entities
 		public Guid Id { get; set; }
 
 		public Guid SenderId { get; set; }
-		public string Name { get; set; }
-		public string Category { get; set; }
+
+		public Guid ProductId { get; set; }
+
 		public string Description { get; set; }
+		public string Name { get; set; }
 		public DateTime Date { get; set; }
 		public string Address { get; set; }
 		public string? ScheduleJson { get; set; }
-		public List<string> Images { get; set; }
-
+		//public List<PostImages> Images { get; set; }
+		//public List<string> Images { get; set; }
 		public string? RejectMessage { get; set; }
 		public string Status { get; set; }
+		public ICollection<PostImages> Images { get; set; }
 	}
 }
