@@ -1,5 +1,6 @@
 
 using ElecWasteCollection.Application.Data;
+using ElecWasteCollection.Application.Interfaces;
 using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.Services;
 using ElecWasteCollection.Infrastructure.Implementations;
@@ -26,7 +27,9 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<ISizeTierService, SizeTierService>();
 			builder.Services.AddScoped<ICategoryAttributeService, CategoryAttributeService>();
 			builder.Services.AddSingleton<IProfanityChecker, CustomProfanityChecker>();
-			builder.Services.AddCors(options =>
+            builder.Services.AddScoped<IGroupingService, GroupingService>();
+
+            builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
 				{
