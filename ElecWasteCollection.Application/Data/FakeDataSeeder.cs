@@ -759,6 +759,7 @@ namespace ElecWasteCollection.Application.Data
 				Status = "Chưa bắt đầu"
 			}
 		};
+		//
 		// === 11. SMALL COLLECTION POINTS ===
 public static List<SmallCollectionPoints> smallCollectionPoints = new()
 {
