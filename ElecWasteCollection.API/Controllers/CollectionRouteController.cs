@@ -52,9 +52,9 @@ namespace ElecWasteCollection.API.Controllers
 		}
 
 		[HttpPut("user-confirm/{collectionRouteId}")]
-		public IActionResult IsUserConfirm(Guid collectionRouteId, [FromBody] UserConfirmRequest request)
+		public async Task<IActionResult> IsUserConfirm(Guid collectionRouteId, [FromBody] UserConfirmRequest request)
 		{
-			var result = _collectionRouteService.IsUserConfirm(collectionRouteId, request.IsConfirm);
+			var result = await _collectionRouteService.IsUserConfirm(collectionRouteId, request.IsConfirm, request.IsSkip);
 			if (!result)
 			{
 				return StatusCode(400, "An error occurred while processing user confirmation.");

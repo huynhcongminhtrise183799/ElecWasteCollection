@@ -16,7 +16,7 @@ namespace ElecWasteCollection.Application.IServices
 
         bool CancelCollection(Guid collectionRouteId, string rejectMessage);
 
-        bool IsUserConfirm(Guid collectionRouteId, bool isConfirm);
+        Task<bool> IsUserConfirm(Guid collectionRouteId, bool isConfirm, bool isSkip);
 
 	}
 }

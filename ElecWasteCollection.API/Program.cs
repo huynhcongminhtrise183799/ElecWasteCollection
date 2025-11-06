@@ -1,4 +1,5 @@
 
+using ElecWasteCollection.API.Hubs;
 using ElecWasteCollection.Application.Data;
 using ElecWasteCollection.Application.Interfaces;
 using ElecWasteCollection.Application.IServices;
@@ -14,7 +15,7 @@ namespace ElecWasteCollection.API
 			var builder = WebApplication.CreateBuilder(args);
 
 			// Add services to the container.
-
+			builder.Services.AddSignalR();
 			builder.Services.AddControllers();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
@@ -30,6 +31,7 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<IGroupingService, GroupingService>();
 			builder.Services.AddScoped<IProductService, ProductService>();
 			builder.Services.AddScoped<ITrackingService, TrackingService>();
+			builder.Services.AddScoped<IShippingNotifierService, SignalRShippingNotifier>();
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
@@ -64,9 +66,9 @@ namespace ElecWasteCollection.API
 
 			app.UseAuthorization();
 
-
+			app.MapHub<ShippingHub>("/shippingHub");
 			app.MapControllers();
-
+			
 			app.Run();
 		}
 	}
