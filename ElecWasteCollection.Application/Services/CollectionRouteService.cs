@@ -2,6 +2,7 @@
 using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.Model;
 using ElecWasteCollection.Domain.Entities;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,13 +19,15 @@ namespace ElecWasteCollection.Application.Services
         private readonly IPostService _postService;
         private readonly IUserService _userService;
 		private readonly IProductService _productService;
+		private readonly IShippingNotifierService _notifierService;
 
-		public CollectionRouteService(ICollectorService collectorService, IPostService postService, IUserService userService, IProductService productService)
+		public CollectionRouteService(ICollectorService collectorService, IPostService postService, IUserService userService, IProductService productService, IShippingNotifierService shippingNotifierService)
         {
 			_collectorService = collectorService;
 			_postService = postService;
 			_userService = userService;
 			_productService = productService;
+			_notifierService = shippingNotifierService;
 		}
         public bool CancelCollection(Guid collectionRouteId, string rejectMessage)
         {
@@ -134,24 +137,33 @@ namespace ElecWasteCollection.Application.Services
 			return null;
 		}
 
-		public bool IsUserConfirm(Guid collectionRouteId, bool isConfirm)
+		public async Task<bool> IsUserConfirm(Guid collectionRouteId, bool isConfirm , bool isSkip)
 		{
+
 			var route = routes.FirstOrDefault(r => r.CollectionRouteId == collectionRouteId);
 			if (route != null)
 			{
+				if (isSkip)
+				{
+					route.Status = "User_Skip";
+					return true;
+				}
 				if (isConfirm)
 				{
-					route.Status = "Người dùng đã xác nhận";
-					return true;
+					route.Status = "User_Confirm";
 				}
 				else
 				{
-					route.Status = "Người dùng không xác nhận";
-					return true;
+					route.Status = "User_Reject";
 				}
-				
+				await _notifierService.NotifyShipperOfConfirmation(
+				route.CollectorId.ToString(), 
+				collectionRouteId,
+				route.Status);
+				return true;
 
 			}
+
 			return false;
 		}
 	}
