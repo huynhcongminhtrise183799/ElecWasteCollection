@@ -6,6 +6,8 @@ using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.Services;
 using ElecWasteCollection.Infrastructure.ExternalService;
 using ElecWasteCollection.Infrastructure.Implementations;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -50,7 +52,15 @@ namespace ElecWasteCollection.API
 						Array.Empty<string>()
 					}
 				});
-			}); builder.Services.AddScoped<IPostService, PostService>();
+			});
+			if (FirebaseApp.DefaultInstance == null)
+			{
+				FirebaseApp.Create(new AppOptions()
+				{
+					Credential = GoogleCredential.FromFile("elecWasteCollection.json")
+				});
+			}
+			builder.Services.AddScoped<IPostService, PostService>();
 			builder.Services.AddScoped<IUserService, UserService>();
 			builder.Services.AddScoped<ICollectorService, CollectorService>();
 			builder.Services.AddScoped<ICollectionRouteService, CollectionRouteService>();
