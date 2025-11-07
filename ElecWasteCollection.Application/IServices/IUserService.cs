@@ -14,5 +14,11 @@ namespace ElecWasteCollection.Application.IServices
 		void UpdateUser(int iat, int ing, Guid id);
 		List<User> GetAll();
 		User GetById(Guid id);
+		Task<string> LoginWithGoogleAsync(string token);
+
+		Task<string> Login(string email);
+
+		User Profile(string email);
+
 	}
 }

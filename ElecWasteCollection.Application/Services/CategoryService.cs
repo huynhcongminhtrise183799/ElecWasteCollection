@@ -28,6 +28,20 @@ namespace ElecWasteCollection.Application.Services
 			return parentCategories;
 		}
 
+		public List<CategoryModel> GetSubCategoryByName(string name, Guid parentId)
+		{
+			var categories = _categories.Where(c => c.Name.ToLower().Contains(name.ToLower()) && c.ParentCategoryId == parentId);
+			var subCategories = categories
+				.Select(c => new CategoryModel
+				{
+					Id = c.Id,
+					Name = c.Name,
+					ParentCategoryId = c.ParentCategoryId
+				})
+				.ToList();
+			return subCategories;
+		}
+
 		public List<CategoryModel> GetSubCategoryByParentId(Guid parentId)
 		{
 			var subCategories = _categories

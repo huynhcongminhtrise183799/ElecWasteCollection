@@ -55,7 +55,7 @@ namespace ElecWasteCollection.Application.Services
                     .Select(p =>
                     {
                         var user = FakeDataSeeder.users.FirstOrDefault(u => u.UserId == p.SenderId);
-                        var distance = GeoHelper.DistanceKm(point.Latitude, point.Longitude, user!.Iat, user!.Ing);
+                        var distance = GeoHelper.DistanceKm(point.Latitude, point.Longitude, user!.Iat.Value, user!.Ing.Value);
 
 						//List<TimeSlotDetail>? slots = null;
 						TimeSlotDetail? slots = null;
