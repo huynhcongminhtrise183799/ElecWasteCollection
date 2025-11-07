@@ -33,6 +33,12 @@ namespace ElecWasteCollection.API.Controllers
 			var attributes = _categoryAttributeService.GetCategoryAttributesByCategoryId(subCategoryId);
 			return Ok(attributes);
 		}
+		[HttpGet("/subCategory")]
+		public IActionResult GetSubCategoriesByName([FromQuery]Guid parentId,[FromQuery] string name)
+		{
+			var subCategories = _categorySerivce.GetSubCategoryByName(name, parentId);
+			return Ok(subCategories);
+		}
 
 	}
 }

@@ -21,8 +21,8 @@ namespace ElecWasteCollection.Application.Data
 			new User
 			{
 				UserId = Guid.Parse("7f5c8b33-1b52-4d11-91b0-932c3d243c71"),
-				Name = "Trần Văn An",
-				Email = "tran.van.an@example.com",
+				Name = "Trần Huỳnh Bảo Ngọc",
+				Email = "ngocthbse183850@fpt.edu.vn",
 				Phone = "0901234567",
 				Address = "Vinhomes Grand Park – Nguyễn Xiển, Phường Long Thạnh Mỹ, TP. Thủ Đức",
 				Avatar = "https://picsum.photos/id/1011/200/200",

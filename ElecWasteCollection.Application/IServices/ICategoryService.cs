@@ -12,5 +12,8 @@ namespace ElecWasteCollection.Application.IServices
         List<CategoryModel> GetParentCategory();
 
 		List<CategoryModel> GetSubCategoryByParentId(Guid parentId);
+
+		List<CategoryModel> GetSubCategoryByName(string name, Guid parentId);
+
 	}
 }
