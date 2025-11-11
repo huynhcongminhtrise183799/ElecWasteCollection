@@ -47,5 +47,15 @@ namespace ElecWasteCollection.API.Controllers
 			}
 			return Ok(user);
 		}
+		[HttpGet("{id}")]
+		public IActionResult GetUserById([FromRoute] Guid id)
+		{
+			var user = _userService.GetById(id);
+			if (user == null)
+			{
+				return NotFound(new { message = "User not found." });
+			}
+			return Ok(user);
+		}
 	}
 }

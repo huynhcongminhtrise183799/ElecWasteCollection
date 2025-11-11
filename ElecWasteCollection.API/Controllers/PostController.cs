@@ -29,13 +29,14 @@ namespace ElecWasteCollection.API.Controllers
 				Address = newItem.Address,
 				Description = newItem.Description,
 				Images = newItem.Images,
-				Name = newItem.Name,
+				//Name = newItem.Name,
 				CollectionSchedule = newItem.CollectionSchedule,
 				SenderId = newItem.SenderId,
 				Product = new CreateProductModel
 				{
 					ParentCategoryId = newItem.Product.ParentCategoryId,
 					SubCategoryId = newItem.Product.SubCategoryId,
+					BrandId = newItem.Product.BrandId,
 					SizeTierId = newItem.Product.SizeTierId,
 					Attributes = newItem.Product.Attributes?.Select(attr => new ProductValueModel
 					{

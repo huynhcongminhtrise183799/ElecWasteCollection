@@ -16,5 +16,7 @@ namespace ElecWasteCollection.Application.Model
 		public string Address { get; set; }
 		public string SenderName { get; set; } // Chỉ cần tên người đăng
 		public string ThumbnailUrl { get; set; }
+
+		public double EstimatePoint { get; set; }
 	}
 }

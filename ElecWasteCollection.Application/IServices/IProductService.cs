@@ -1,4 +1,5 @@
-﻿using ElecWasteCollection.Domain.Entities;
+﻿using ElecWasteCollection.Application.Model;
+using ElecWasteCollection.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,13 @@ namespace ElecWasteCollection.Application.IServices
 	public interface IProductService
 	{
 		Products? GetById(Guid productId);
+
+		Products? GetByQrCode(string qrcode);
+
+		bool AddPackageIdToProductByQrCode(string productQrCode, string packageId);
+
+		List<ProductDetailModel> GetProductsByPackageId(string packageId);
+
+		bool UpdateProductStatusByQrCode(string productQrCode, string status);
 	}
 }

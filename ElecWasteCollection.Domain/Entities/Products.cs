@@ -9,9 +9,12 @@ namespace ElecWasteCollection.Domain.Entities
 	public class Products
 	{
 		public Guid Id { get; set; }
-
 		public Guid CategoryId { get; set; }
 		public Guid? SizeTierId { get; set; }
+		public Guid BrandId { get; set; }
+
+		public string? PackageId { get; set; }
+
 		public SizeTier SizeTier { get; set; }
 
 		public string Description { get; set; }
@@ -21,5 +24,9 @@ namespace ElecWasteCollection.Domain.Entities
 		public string Status { get; set; }
 
 		public Category Category { get; set; }
+
+		public Category Brand { get; set; }
+
+		public Packages? Package { get; set; }
 	}
 }

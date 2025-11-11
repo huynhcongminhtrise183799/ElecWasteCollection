@@ -15,5 +15,7 @@ namespace ElecWasteCollection.Domain.Entities
 
 		public string? Phone { get; set; }
 		public string? Avatar { get; set; }
+
+		public int SmallColltionId { get; set; }
 	}
 }

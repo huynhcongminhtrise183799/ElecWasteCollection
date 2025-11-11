@@ -19,8 +19,8 @@ namespace ElecWasteCollection.Domain.Entities
 		public DateTime Date { get; set; }
 		public string Address { get; set; }
 		public string? ScheduleJson { get; set; }
-		//public List<PostImages> Images { get; set; }
-		//public List<string> Images { get; set; }
+
+		public double EstimatePoint { get; set; }
 
 		public List<string>? CheckMessage { get; set; }
 		public string? RejectMessage { get; set; }

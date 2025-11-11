@@ -22,5 +22,9 @@ namespace ElecWasteCollection.Domain.Entities
 		public double? Iat { get; set; }
 
 		public double? Ing { get; set; }
+
+		public string Role { get; set; }
+
+		public int SmallCollectionPointId { get; set; }
 	}
 }
