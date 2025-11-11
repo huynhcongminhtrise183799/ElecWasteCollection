@@ -1,7 +1,7 @@
 
 using ElecWasteCollection.API.Hubs;
 using ElecWasteCollection.Application.Data;
-using ElecWasteCollection.Application.Interfaces;
+//using ElecWasteCollection.Application.Interfaces;
 using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.Services;
 using ElecWasteCollection.Infrastructure.ExternalService;
@@ -68,12 +68,16 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<ISizeTierService, SizeTierService>();
 			builder.Services.AddScoped<ICategoryAttributeService, CategoryAttributeService>();
 			builder.Services.AddSingleton<IProfanityChecker, CustomProfanityChecker>();
-			builder.Services.AddScoped<IGroupingService, GroupingService>();
+			//builder.Services.AddScoped<IGroupingService, GroupingService>();
 			builder.Services.AddScoped<IProductService, ProductService>();
 			builder.Services.AddScoped<ITrackingService, TrackingService>();
 			builder.Services.AddScoped<IShippingNotifierService, SignalRShippingNotifier>();
 			builder.Services.AddScoped<ITokenService, TokenService>();
 			builder.Services.AddSingleton<IFirebaseService, FirebaseService>();
+			builder.Services.AddScoped<IPackageService, PackageService>();
+			builder.Services.AddScoped<IBrandService, BrandService>();
+			builder.Services.AddScoped<IPointTransactionService, PointTransactionService>();
+			builder.Services.AddScoped<IUserPointService, UserPointService>();
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
@@ -111,7 +115,7 @@ namespace ElecWasteCollection.API
 			var app = builder.Build();
 			_ = FakeDataSeeder.users;
 			_ = FakeDataSeeder.posts;
-			_ = FakeDataSeeder.collector;
+			_ = FakeDataSeeder.collectors;
 			_ = FakeDataSeeder.collectionRoutes;
 			_ = FakeDataSeeder.categories;
 			_ = FakeDataSeeder.products;

@@ -23,6 +23,7 @@ namespace ElecWasteCollection.Application.Services
 		private static List<PostImages> postImages = FakeDataSeeder.postImages;
 		private static List<SizeTier> sizeTiers = FakeDataSeeder.sizeTiers;
 		private static List<Attributes> attributes = FakeDataSeeder.attributes;
+		private static List<Brand> _brands = FakeDataSeeder.brands;
 
 		private readonly double Confidence_AcceptToSave = 30.0;
 
@@ -55,6 +56,7 @@ namespace ElecWasteCollection.Application.Services
 				{
 					Id = Guid.NewGuid(),
 					CategoryId = productRequest.SubCategoryId,
+					BrandId = productRequest.BrandId,
 					Description = createPostRequest.Description,
 					Status = "Chờ gom nhóm"
 				};
@@ -88,13 +90,14 @@ namespace ElecWasteCollection.Application.Services
 				{
 					Id = Guid.NewGuid(),
 					SenderId = createPostRequest.SenderId,
-					Name = createPostRequest.Name,
+					//Name = createPostRequest.Name,
 					Date = DateTime.Now,
 					Description = string.Empty,
 					Address = createPostRequest.Address,
 					ScheduleJson = JsonSerializer.Serialize(createPostRequest.CollectionSchedule),
 					Status = postStatus, // Sẽ cập nhật sau
 					ProductId = newProduct.Id,
+					EstimatePoint = 50,
 					CheckMessage = new List<string>()
 
 				};
@@ -130,18 +133,18 @@ namespace ElecWasteCollection.Application.Services
 						postStatus = "Đã Duyệt";
 					}
 				}
-				var containsProfanity = await _profanityChecker.ContainsProfanityAsync(createPostRequest.Name);
-				if (containsProfanity)
-				{
-					newPost.CheckMessage.Add("Tiêu đề bài đăng chứa từ ngữ không phù hợp.");
-					postStatus = "Chờ Duyệt";
-				}
-				var containsPhoneNumber = await _profanityChecker.ContainsPhoneNumberAsync(createPostRequest.Name);
-				if (containsPhoneNumber)
-				{
-					newPost.CheckMessage.Add("Tiêu đề bài đăng chứa số điện thoại.");
-					postStatus = "Chờ Duyệt";
-				}
+				//var containsProfanity = await _profanityChecker.ContainsProfanityAsync(createPostRequest.Name);
+				//if (containsProfanity)
+				//{
+				//	newPost.CheckMessage.Add("Tiêu đề bài đăng chứa từ ngữ không phù hợp.");
+				//	postStatus = "Chờ Duyệt";
+				//}
+				//var containsPhoneNumber = await _profanityChecker.ContainsPhoneNumberAsync(createPostRequest.Name);
+				//if (containsPhoneNumber)
+				//{
+				//	newPost.CheckMessage.Add("Tiêu đề bài đăng chứa số điện thoại.");
+				//	postStatus = "Chờ Duyệt";
+				//}
 				newPost.Status = postStatus;
 				posts.Add(newPost); 
 
@@ -170,6 +173,12 @@ namespace ElecWasteCollection.Application.Services
 				var response = await _httpClient.SendAsync(request);
 				if (!response.IsSuccessStatusCode)
 				{
+					var statusCode = response.StatusCode;
+					var errorContent = await response.Content.ReadAsStringAsync();
+
+					// Ghi log lỗi này ra Console hoặc Debugger
+					Console.WriteLine($"[IMAGGA API FAILED] Status: {statusCode}");
+					Console.WriteLine($"[IMAGGA API FAILED] Response: {errorContent}");
 					return new Helper.ImaggaCheckResult { IsMatch = false, DetectedTagsJson = null };
 				}
 
@@ -395,7 +404,8 @@ namespace ElecWasteCollection.Application.Services
 				Date = post.Date,
 				Address = post.Address,
 				SenderName = sender?.Name ?? "Không rõ",
-				ThumbnailUrl = thumbnailUrl
+				ThumbnailUrl = thumbnailUrl,
+				EstimatePoint = post.EstimatePoint
 			};
 		}
 
@@ -415,10 +425,12 @@ namespace ElecWasteCollection.Application.Services
 			{
 				var category = categories.FirstOrDefault(c => c.Id == product.CategoryId);
 				categoryName = category?.Name ?? "Không rõ";
-
+				var brand = _brands.FirstOrDefault(b => b.BrandId == product.BrandId);
 				// Xây dựng ProductDetailModel
 				productDetailModel.ProductId = product.Id;
 				productDetailModel.Description = product.Description;
+				productDetailModel.BrandId = product.BrandId;
+				productDetailModel.BrandName = brand?.Name ?? "Không rõ";
 
 				// Kiểm tra xem người dùng dùng SizeTier hay Attributes
 				if (product.SizeTierId.HasValue)
@@ -484,7 +496,7 @@ namespace ElecWasteCollection.Application.Services
 			return new PostDetailModel
 			{
 				Id = post.Id,
-				Name = post.Name,
+				//Name = post.Name,
 				ParentCategory = parentCategory.Name,
 				SubCategory = categoryName,
 				Status = post.Status,
@@ -496,7 +508,7 @@ namespace ElecWasteCollection.Application.Services
 				PostNote = post.Description,
 				Product = productDetailModel,
 				CheckMessage = post.CheckMessage,
-
+				EstimatePoint = post.EstimatePoint,
 
 				// === GÁN KẾT QUẢ MỚI ===
 				ImageUrls = imageUrls,

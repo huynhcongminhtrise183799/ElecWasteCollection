@@ -6,14 +6,12 @@ using System.Threading.Tasks;
 
 namespace ElecWasteCollection.Domain.Entities
 {
-	public class Category
+	public class UserPoints
 	{
 		public Guid Id { get; set; }
 
-		public string Name { get; set; }
+		public Guid UserId { get; set; }
 
-		public Guid? ParentCategoryId { get; set; }
-
-		public virtual ICollection<Brand> Brands { get; set; }
+		public double Points { get; set; }
 	}
 }

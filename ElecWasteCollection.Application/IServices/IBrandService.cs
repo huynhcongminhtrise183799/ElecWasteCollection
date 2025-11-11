@@ -1,4 +1,4 @@
-﻿using ElecWasteCollection.Domain.Entities;
+﻿using ElecWasteCollection.Application.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace ElecWasteCollection.Application.IServices
 {
-	public interface ICollectorService
-	{
-		Collector GetById(Guid id);
-
-		List<Collector> GetAll();
+    public interface IBrandService
+    {
+		List<BrandModel> GetBrandsByCategoryIdAsync(Guid categoryId);
 	}
 }

@@ -11,12 +11,16 @@ namespace ElecWasteCollection.Application.Services
 {
 	public class CollectorService : ICollectorService
 	{
-		private  Collector collectors = FakeDataSeeder.collector;
+		private  List<Collector> collectors = FakeDataSeeder.collectors;
 
+		public List<Collector> GetAll()
+		{
+			return collectors;
+		}
 
 		public Collector GetById(Guid id)
 		{
-			var collector = collectors;
+			var collector = collectors.FirstOrDefault(c => c.CollectorId == id);
 			return collector;
 		}
 	}

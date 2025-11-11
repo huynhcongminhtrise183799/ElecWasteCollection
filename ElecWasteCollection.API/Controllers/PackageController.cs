@@ -1,0 +1,52 @@
+﻿using ElecWasteCollection.API.DTOs.Request;
+using ElecWasteCollection.Application.IServices;
+using ElecWasteCollection.Application.Model;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ElecWasteCollection.API.Controllers
+{
+	[Route("api/packages")]
+	[ApiController]
+	public class PackageController : ControllerBase
+	{
+		private readonly IPackageService _packageService;
+		public PackageController(IPackageService packageService)
+		{
+			_packageService = packageService;
+		}
+		[HttpPost]
+		public  IActionResult CreatePackage([FromBody] CreatePackageRequest newPackage)
+		{
+			if (newPackage == null)
+			{
+				return BadRequest("Invalid data.");
+			}
+
+			var model = new CreatePackageModel
+			{
+				PackageId = newPackage.PackageId,
+				PackageName = newPackage.PackageName,
+				SmallCollectionPointsId = newPackage.SmallCollectionPointsId,
+				ProductsQrCode = newPackage.ProductsQrCode
+			};
+			var result =  _packageService.CreatePackageAsync(model);
+			if (result == null)
+			{
+				return StatusCode(400, "An error occurred while creating the package.");
+			}
+
+			return Ok(new { message = "Package created successfully.", packageId = result });
+		}
+		[HttpGet("{packageId}")]
+		public IActionResult GetPackageById(string packageId)
+		{
+			var package = _packageService.GetPackageById(packageId);
+			if (package == null)
+			{
+				return NotFound("Package not found.");
+			}
+			return Ok(package);
+		}
+	}
+}

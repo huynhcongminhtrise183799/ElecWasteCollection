@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace ElecWasteCollection.Domain.Entities
 {
-	public class Category
+	public class Brand
 	{
-		public Guid Id { get; set; }
+		public Guid BrandId { get; set; }
 
 		public string Name { get; set; }
 
-		public Guid? ParentCategoryId { get; set; }
+		public Guid CategoryId { get; set; }
 
-		public virtual ICollection<Brand> Brands { get; set; }
+		public Category Category { get; set; }
 	}
 }

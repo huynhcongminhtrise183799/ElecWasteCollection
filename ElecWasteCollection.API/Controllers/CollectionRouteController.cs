@@ -20,6 +20,19 @@ namespace ElecWasteCollection.API.Controllers
 			var routes = _collectionRouteService.GetAllRoutes(pickUpDate);
 			return Ok(routes);
 		}
+		[HttpGet("{pickUpDate}/collector/{id}")]
+		public IActionResult GetRoutesByCollectorId([FromRoute] DateOnly pickUpDate, [FromRoute] Guid id)
+		{
+			var routes = _collectionRouteService.GetRoutesByCollectorId(pickUpDate, id);
+			return Ok(routes);
+		}
+		[HttpGet("{pickUpDate}/collection-point/{id}")]
+		public IActionResult GetRoutesByCollectionPointId([FromRoute] DateOnly pickUpDate, [FromRoute] int id)
+		{
+			var routes = _collectionRouteService.GetAllRoutesByDateAndByCollectionPoints(pickUpDate, id);
+			return Ok(routes);
+		}
+
 		[HttpGet("detail/{collectionRouteId}")]
 		public IActionResult GetRouteById(Guid collectionRouteId)
 		{

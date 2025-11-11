@@ -2,145 +2,221 @@
 using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.Model;
 using ElecWasteCollection.Domain.Entities;
-using Microsoft.AspNetCore.SignalR;
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ElecWasteCollection.Application.Services
 {
-    public class CollectionRouteService : ICollectionRouteService
-    {
-        private static List<CollectionRoutes> routes = FakeDataSeeder.collectionRoutes;
-        private readonly ICollectorService _collectorService;
-        private readonly IPostService _postService;
-        private readonly IUserService _userService;
-		private readonly IProductService _productService;
-		private readonly IShippingNotifierService _notifierService;
+	public class CollectionRouteService : ICollectionRouteService
+	{
+		// === SỬA LỖI: Tiêm (Inject) TẤT CẢ các List<> cần thiết từ FakeDataSeeder ===
+		// Chúng ta sẽ dùng List<> thay vì các Service khác để join
 
-		public CollectionRouteService(ICollectorService collectorService, IPostService postService, IUserService userService, IProductService productService, IShippingNotifierService shippingNotifierService)
-        {
-			_collectorService = collectorService;
-			_postService = postService;
-			_userService = userService;
-			_productService = productService;
-			_notifierService = shippingNotifierService;
+		private readonly List<CollectionRoutes> _collectionRoutes = FakeDataSeeder.collectionRoutes;
+		private readonly List<Collector> _collectors = FakeDataSeeder.collectors;
+		private readonly List<Shifts> _shifts = FakeDataSeeder.shifts;
+		private readonly List<CollectionGroups> _collectionGroups = FakeDataSeeder.collectionGroups;
+		private readonly List<Post> _posts = FakeDataSeeder.posts;
+		private readonly List<User> _users = FakeDataSeeder.users;
+		private readonly List<Products> _products = FakeDataSeeder.products; // Sửa: Dùng List, không dùng IProductService
+		private readonly List<PostImages> _postImages = FakeDataSeeder.postImages;
+		private readonly List<Vehicles> _vehicles = FakeDataSeeder.vehicles;
+		private readonly IShippingNotifierService _notifierService; // Dịch vụ này vẫn giữ lại
+
+		public CollectionRouteService(IShippingNotifierService notifierService)
+		{
+			_notifierService = notifierService;
 		}
-        public bool CancelCollection(Guid collectionRouteId, string rejectMessage)
-        {
-            var route = routes.FirstOrDefault(r => r.CollectionRouteId == collectionRouteId);
-            if (route != null)
-            {
-                route.Status = "Hủy bỏ";
-                route.RejectMessage = rejectMessage;
-                return true;
-            }
-            return false;
-        }
 
-        public  bool ConfirmCollection(Guid collectionRouteId, List<string> confirmImages, string QRCode)
-        {
-            var route = routes.FirstOrDefault(r => r.CollectionRouteId == collectionRouteId);
+		public bool CancelCollection(Guid collectionRouteId, string rejectMessage)
+		{
+			// SỬA LỖI: Dùng _collectionRoutes
+			var route = _collectionRoutes.FirstOrDefault(r => r.CollectionRouteId == collectionRouteId);
+			if (route != null)
+			{
+				route.Status = "Hủy bỏ";
+				route.RejectMessage = rejectMessage;
+				return true;
+			}
+			return false;
+		}
+
+		public bool ConfirmCollection(Guid collectionRouteId, List<string> confirmImages, string QRCode)
+		{
+			// SỬA LỖI: Dùng _collectionRoutes
+			var route = _collectionRoutes.FirstOrDefault(r => r.CollectionRouteId == collectionRouteId);
 			if (route == null)
 			{
 				return false;
 			}
-			var post = _postService.GetById(route.PostId);
+
+			// SỬA LỖI: Dùng _posts (List) thay vì _postService
+			var post = _posts.FirstOrDefault(p => p.Id == route.PostId);
 			if (post == null) return false;
-			var product = _productService.GetById(post.Product.ProductId);
+
+			// SỬA LỖI: Dùng _products (List) và post.ProductId
+			var product = _products.FirstOrDefault(p => p.Id == post.ProductId);
 			if (product == null) return false;
-			
-            route.Status = "Hoàn thành";
-            route.ConfirmImages = confirmImages;
-            route.Actual_Time = TimeOnly.FromDateTime(DateTime.Now);
+
+			route.Status = "Hoàn thành";
+			route.ConfirmImages = confirmImages;
+			route.Actual_Time = TimeOnly.FromDateTime(DateTime.Now);
 			product.QRCode = QRCode;
 			product.Status = "Đã thu gom";
 			return true;
+		}
 
-        }
-
+		// === HÀM NÀY ĐÃ VIẾT LẠI HOÀN TOÀN ===
 		public List<CollectionRouteModel> GetAllRoutes(DateOnly PickUpDate)
 		{
-			return routes
-				.Where(r => r.CollectionDate == PickUpDate)
+			var routes = _collectionRoutes
+				.Where(r => r.CollectionDate == PickUpDate);
 
-				// 1. Chỉ Select để lấy dữ liệu (ghép Route với Post)
-				.Select(r => new {
-					Route = r,
-					Post = _postService.GetById(r.PostId) // Chỉ gọi GetById 1 LẦN
-				})
+			var results = routes.Select(r =>
+			{
+				// Dùng hàm helper mới để join dữ liệu
+				return BuildCollectionRouteModel(r);
+			})
+			.Where(model => model != null) // Lọc bỏ data lỗi
+			.OrderBy(r => r.EstimatedTime)
+			.ToList();
 
-				// 2. Lọc bỏ những route có post bị null (post không tìm thấy)
-				.Where(x => x.Post != null)
-
-				// 3. Bây giờ mới Select để tạo Model (post ở đây 100% không null)
-				.Select(x =>
-				{
-					var r = x.Route;
-					var post = x.Post; // Đã đảm bảo không null
-
-					var collector = _collectorService.GetById(r.CollectorId);
-					var sender = (post.Sender != null)
-								 ? _userService.GetById(post.Sender.UserId)
-								 : null;
-
-					var pickUpImages = post.ImageUrls;
-
-					return new CollectionRouteModel
-					{
-						CollectionRouteId = r.CollectionRouteId,
-						PostId = r.PostId,
-						Collector = collector,
-						Sender = sender,
-						ItemName = post.Name,
-						CollectionDate = r.CollectionDate,
-						EstimatedTime = r.EstimatedTime,
-						Actual_Time = r.Actual_Time.HasValue ? r.Actual_Time.Value : null,
-						ConfirmImages = r.ConfirmImages,
-						LicensePlate = r.LicensePlate,
-						Address = post.Address,
-						PickUpItemImages = pickUpImages,
-						Status = r.Status
-					};
-				})
-				.OrderBy(r => r.EstimatedTime)
-				.ToList();
+			return results;
 		}
 
-		public CollectionRouteModel GetRouteById(Guid collectionRoute)
-        {
-            var route = routes.FirstOrDefault(r => r.CollectionRouteId == collectionRoute);
-            if (route != null)
-            {
-				var model = new CollectionRouteModel
-				{
-					CollectionRouteId = route.CollectionRouteId,
-					PostId = route.PostId,
-					Collector = _collectorService.GetById(route.CollectorId),
-					Sender = _userService.GetById(_postService.GetById(route.PostId).Sender.UserId),
-					ItemName = _postService.GetById(route.PostId).Name,
-					CollectionDate = route.CollectionDate,
-					EstimatedTime = route.EstimatedTime,
-					Actual_Time = route.Actual_Time.HasValue ? route.Actual_Time.Value : null,
-					ConfirmImages = route.ConfirmImages,
-					LicensePlate = route.LicensePlate,
-					Address = _postService.GetById(route.PostId).Address,
-					PickUpItemImages = _postService.GetById(route.PostId).ImageUrls,
-					Status = route.Status
-
-				};
-				return model;
-			}
-			return null;
-		}
-
-		public async Task<bool> IsUserConfirm(Guid collectionRouteId, bool isConfirm , bool isSkip)
+		public List<CollectionRouteModel> GetAllRoutesByDateAndByCollectionPoints(DateOnly PickUpDate, int collectionPointId)
 		{
+			// 1. Tìm các xe thuộc điểm thu gom
+			var vehicleIds = _vehicles
+				.Where(v => v.Small_Collection_Point == collectionPointId)
+				.Select(v => v.Id)
+				.ToList();
 
-			var route = routes.FirstOrDefault(r => r.CollectionRouteId == collectionRouteId);
+			// 2. Tìm các ca làm việc VÀO NGÀY ĐÓ dùng các xe đó
+			var shiftIds = _shifts
+				.Where(s => vehicleIds.Contains(s.Vehicle_Id) && s.WorkDate == PickUpDate)
+				.Select(s => s.Id)
+				.ToList();
+
+			if (!shiftIds.Any())
+			{
+				// Điểm thu gom này không có ca làm việc nào vào ngày này
+				return new List<CollectionRouteModel>();
+			}
+
+			// 3. Tìm các nhóm thuộc các ca làm việc đó
+			var groupIds = _collectionGroups
+				.Where(g => shiftIds.Contains(g.Shift_Id))
+				.Select(g => g.Id)
+				.ToList();
+
+			// 4. Tìm các tuyến đường thuộc các nhóm đó
+			// (Thêm 1 lần lọc PickUpDate nữa cho chắc)
+			var routes = _collectionRoutes
+				.Where(r => groupIds.Contains(r.CollectionGroupId) && r.CollectionDate == PickUpDate);
+
+			// 5. Build model
+			var results = routes.Select(r =>
+			{
+				// Dùng hàm helper (phiên bản đầy đủ)
+				return BuildCollectionRouteModel(r);
+			})
+			.Where(model => model != null) // Lọc bỏ data lỗi
+			.OrderBy(model => model.EstimatedTime) // Sắp xếp
+			.ToList();
+
+			return results;
+		}
+
+		// === HÀM NÀY ĐÃ VIẾT LẠI HOÀN TOÀN ===
+		public CollectionRouteModel GetRouteById(Guid collectionRouteId)
+		{
+			// SỬA LỖI: Dùng _collectionRoutes
+			var route = _collectionRoutes.FirstOrDefault(r => r.CollectionRouteId == collectionRouteId);
+			if (route == null)
+			{
+				return null;
+			}
+
+			// Dùng hàm helper mới để join dữ liệu
+			return BuildCollectionRouteModel(route);
+		}
+
+		// === HÀM NÀY ĐÃ SỬA LẠI CÁC LỖI TYPO ===
+		public List<CollectionRouteModel> GetRoutesByCollectorId(DateOnly PickUpDate, Guid collectorId)
+		{
+			var collector = _collectors.FirstOrDefault(c => c.CollectorId == collectorId);
+			if (collector == null)
+			{
+				return new List<CollectionRouteModel>();
+			}
+
+			var shiftIds = _shifts
+				.Where(s => s.CollectorId == collectorId && s.WorkDate == PickUpDate)
+				.Select(s => s.Id)
+				.ToList();
+
+			if (!shiftIds.Any())
+			{
+				return new List<CollectionRouteModel>();
+			}
+
+			var groupIds = _collectionGroups
+				.Where(g => shiftIds.Contains(g.Shift_Id))
+				.Select(g => g.Id)
+				.ToList();
+
+			var routes = _collectionRoutes
+				.Where(r => groupIds.Contains(r.CollectionGroupId) && r.CollectionDate == PickUpDate);
+
+			var results = routes.Select(r =>
+			{
+				var post = _posts.FirstOrDefault(p => p.Id == r.PostId);
+				if (post == null) return null;
+
+				// SỬA LỖI: Dùng post.SenderId (thay vì post.S)
+				var sender = _users.FirstOrDefault(u => u.UserId == post.SenderId);
+				if (sender == null) return null;
+
+				var pickUpImages = _postImages
+					.Where(img => img.PostId == post.Id)
+					.Select(img => img.ImageUrl)
+					.ToList();
+
+				var group = _collectionGroups.FirstOrDefault(g => g.Id == r.CollectionGroupId);
+				var shift = _shifts.FirstOrDefault(s => s.Id == group.Shift_Id);
+				var vehicle = _vehicles.FirstOrDefault(v => v.Id == shift.Vehicle_Id);
+
+				return new CollectionRouteModel
+				{
+					CollectionRouteId = r.CollectionRouteId,
+					PostId = r.PostId,
+					ItemName = post.Name,
+					Collector = collector,
+					Sender = sender,
+					CollectionDate = r.CollectionDate,
+					EstimatedTime = r.EstimatedTime,
+					Actual_Time = r.Actual_Time,
+					ConfirmImages = r.ConfirmImages,
+					PickUpItemImages = pickUpImages,
+					LicensePlate = vehicle?.Plate_Number ?? "N/A",
+					Address = post.Address,
+					Status = r.Status
+				};
+			})
+			.Where(model => model != null)
+			.OrderBy(model => model.EstimatedTime)
+			.ToList();
+
+			return results;
+		}
+
+		// === HÀM NÀY ĐÃ SỬA LỖI LOGIC ===
+		public async Task<bool> IsUserConfirm(Guid collectionRouteId, bool isConfirm, bool isSkip)
+		{
+			// SỬA LỖI: Dùng _collectionRoutes
+			var route = _collectionRoutes.FirstOrDefault(r => r.CollectionRouteId == collectionRouteId);
 			if (route != null)
 			{
 				if (isSkip)
@@ -156,15 +232,79 @@ namespace ElecWasteCollection.Application.Services
 				{
 					route.Status = "User_Reject";
 				}
-				await _notifierService.NotifyShipperOfConfirmation(
-				route.CollectorId.ToString(), 
-				collectionRouteId,
-				route.Status);
-				return true;
 
+				// SỬA LỖI: Phải join để tìm CollectorId
+				var group = _collectionGroups.FirstOrDefault(g => g.Id == route.CollectionGroupId);
+				if (group == null) return false; // Lỗi data
+
+				var shift = _shifts.FirstOrDefault(s => s.Id == group.Shift_Id);
+				if (shift == null) return false; // Lỗi data
+
+				// Đã tìm thấy CollectorId
+				Guid collectorId = shift.CollectorId;
+
+				await _notifierService.NotifyShipperOfConfirmation(
+					collectorId.ToString(), // Sửa: Dùng collectorId vừa tìm được
+					collectionRouteId,
+					route.Status);
+
+				return true;
 			}
 
 			return false;
+		}
+
+		// === HÀM HELPER MỚI (để GetAllRoutes và GetRouteById sử dụng) ===
+		private CollectionRouteModel BuildCollectionRouteModel(CollectionRoutes route)
+		{
+			try
+			{
+				var post = _posts.FirstOrDefault(p => p.Id == route.PostId);
+				if (post == null) return null;
+
+				var sender = _users.FirstOrDefault(u => u.UserId == post.SenderId);
+				if (sender == null) return null;
+
+				var pickUpImages = _postImages
+					.Where(img => img.PostId == post.Id)
+					.Select(img => img.ImageUrl)
+					.ToList();
+
+				// Join để lấy Collector và Vehicle
+				var group = _collectionGroups.FirstOrDefault(g => g.Id == route.CollectionGroupId);
+				if (group == null) return null;
+
+				var shift = _shifts.FirstOrDefault(s => s.Id == group.Shift_Id);
+				if (shift == null) return null;
+
+				var collector = _collectors.FirstOrDefault(c => c.CollectorId == shift.CollectorId);
+				if (collector == null) return null;
+
+				var vehicle = _vehicles.FirstOrDefault(v => v.Id == shift.Vehicle_Id);
+				if (vehicle == null) return null;
+
+				return new CollectionRouteModel
+				{
+					CollectionRouteId = route.CollectionRouteId,
+					PostId = route.PostId,
+					ItemName = post.Name,
+					Collector = collector,
+					Sender = sender,
+					CollectionDate = route.CollectionDate,
+					EstimatedTime = route.EstimatedTime,
+					Actual_Time = route.Actual_Time,
+					ConfirmImages = route.ConfirmImages,
+					PickUpItemImages = pickUpImages,
+					LicensePlate = vehicle.Plate_Number,
+					Address = post.Address,
+					Status = route.Status
+				};
+			}
+			catch (Exception)
+			{
+				// Bắt lỗi nếu data fake bị hỏng (ví dụ: null reference)
+				return null;
+			}
 		}
 	}
 }

@@ -10,6 +10,8 @@ namespace ElecWasteCollection.Application.IServices
     public interface ICollectionRouteService
     {
         List<CollectionRouteModel> GetAllRoutes(DateOnly PickUpDate);
+		List<CollectionRouteModel> GetRoutesByCollectorId(DateOnly PickUpDate, Guid collectorId);
+		List<CollectionRouteModel> GetAllRoutesByDateAndByCollectionPoints(DateOnly PickUpDate, int collectionPointId);
 		CollectionRouteModel GetRouteById(Guid collectionRoute);
 
         bool ConfirmCollection(Guid collectionRouteId, List<string> confirmImages, string QRCode);

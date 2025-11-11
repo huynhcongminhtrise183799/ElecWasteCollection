@@ -11,7 +11,7 @@ namespace ElecWasteCollection.Application.Model
 	{
 		public Guid Id { get; set; }
 		public User Sender { get; set; } // Gửi đầy đủ thông tin người đăng
-		public string Name { get; set; } // Tiêu đề bài đăng
+		//public string Name { get; set; } // Tiêu đề bài đăng
 
 		public string ParentCategory { get; set; } // Tên Parent Category
 
@@ -33,6 +33,9 @@ namespace ElecWasteCollection.Application.Model
 
 		// 2. Danh sách tag đã được "GỘP LẠI"
 		public List<LabelModel> AggregatedAiLabels { get; set; }
+
+		public double EstimatePoint { get; set; }
+
 		// 4. Thông tin chi tiết của chính sản phẩm
 		public ProductDetailModel Product { get; set; }
 	}
@@ -40,7 +43,10 @@ namespace ElecWasteCollection.Application.Model
 	{
 		public Guid ProductId { get; set; }
 		public string Description { get; set; } // Mô tả SẢN PHẨM (ví dụ: "Tivi hỏng màn")
-		public string Condition { get; set; } // Tình trạng (từ Product.Condition)
+		//public string Condition { get; set; } // Tình trạng (từ Product.Condition)
+
+		public Guid BrandId { get; set; } // Id thương hiệu
+		public string BrandName { get; set; } // Tên thương hiệu (ví dụ: "Samsung")
 
 		// Thông tin kích thước (1 trong 2 sẽ có)
 		public string? SizeTierName { get; set; } // (ví dụ: "Tivi Lớn (Trên 55 inch)")
