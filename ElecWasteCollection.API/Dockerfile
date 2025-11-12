@@ -30,7 +30,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 # Cài đặt các dependencies native mà OpenCvSharp cần trên Linux (Debian/Ubuntu)
 RUN apt-get update && apt-get install -y \
     libgdiplus \
-    libgl1-mesa-glx
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libgtk2.0-0
 # ============================================
 
 WORKDIR /app
