@@ -39,7 +39,7 @@ namespace ElecWasteCollection.Application.Services
 				if (product != null)
 				{
 					_productService.AddPackageIdToProductByQrCode(product.QRCode, newPackage.PackageId);
-					_productService.UpdateProductStatusByQrCode(product.QRCode, "In Package");
+					_productService.UpdateProductStatusByQrCode(product.QRCode, "Đã đóng thùng");
 				}
 			}
 
