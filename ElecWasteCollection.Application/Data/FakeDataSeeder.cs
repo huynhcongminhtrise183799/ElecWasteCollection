@@ -363,7 +363,7 @@ namespace ElecWasteCollection.Application.Data
 			new Products{Id = Guid.Parse("b1111111-1111-1111-1111-000000000006"),CategoryId = cat_DienThoai,SizeTierId = null,BrandId = brand_Apple_DienThoai,PackageId = null,Description = "iPhone 7 bị chai pin.",Status = "Hủy bỏ"}, 
 
 // Đơn 6: Đã xong sáng nay
-new Products{Id = Guid.Parse("b1111111-1111-1111-1111-000000000007"),CategoryId = cat_Loa,SizeTierId = null,BrandId = brand_JBL_Loa,PackageId = null,Description = "Loa JBL mini không sạc được.",Status = "Đã thu gom"},
+new Products{Id = Guid.Parse("b1111111-1111-1111-1111-000000000007"),CategoryId = cat_Loa,SizeTierId = null,BrandId = brand_JBL_Loa,PackageId = null,Description = "Loa JBL mini không sạc được.",Status = "Đã thu gom", QRCode = "string1234"},
 
 // Đơn 7: Chưa làm (Đang chờ) -> SỬA STATUS
 new Products{Id = Guid.Parse("b1111111-1111-1111-1111-000000000008"),CategoryId = cat_BinhNuocNong,SizeTierId = null,BrandId = brand_Ariston_Binh,PackageId = null,Description = "Bình Ariston bị rò điện.",Status = "Chờ thu gom"}, // <--- SỬA
