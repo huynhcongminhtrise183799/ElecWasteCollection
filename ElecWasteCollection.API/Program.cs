@@ -124,6 +124,8 @@ namespace ElecWasteCollection.API
 			_ = FakeDataSeeder.attributes;
 			_ = FakeDataSeeder.sizeTiers;
 			_ = FakeDataSeeder.categoryAttributes;
+			_ = FakeDataSeeder.productImages;
+
 			app.UseCors("AllowAll");
 
 			// Configure the HTTP request pipeline.

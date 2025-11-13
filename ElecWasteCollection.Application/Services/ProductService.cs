@@ -24,6 +24,12 @@ namespace ElecWasteCollection.Application.Services
 		private readonly List<Vehicles> _vehicles = FakeDataSeeder.vehicles;
 		private readonly List<Category> _categories = FakeDataSeeder.categories;
 		private readonly List<PostImages> _postImages = FakeDataSeeder.postImages;
+		private readonly List<ProductImages> postImages = FakeDataSeeder.productImages;
+		private readonly IPointTransactionService _pointTransactionService;
+		public ProductService(IPointTransactionService pointTransactionService)
+		{
+			_pointTransactionService = pointTransactionService;
+		}
 		public bool AddPackageIdToProductByQrCode(string qrCode, string packageId)
 		{
 			var product = _products.FirstOrDefault(p => p.QRCode == qrCode);
@@ -34,6 +40,48 @@ namespace ElecWasteCollection.Application.Services
 
 			product.PackageId = packageId;
 			return true;
+		}
+
+		public ProductDetailModel AddProduct(CreateProductAtWarehouseModel createProductRequest)
+		{
+			var newProduct = new Products
+			{
+				Id = Guid.NewGuid(),
+				CategoryId = createProductRequest.SubCategoryId,
+				BrandId = createProductRequest.BrandId,
+				Description = createProductRequest.Description,
+				QRCode = createProductRequest.QrCode,
+				Status = "Nhập kho"
+			};
+			_products.Add(newProduct);
+			for (int i = 0; i < createProductRequest.Images.Count; i++)
+			{
+				var newPostImage = new ProductImages
+				{
+					ImageUrl = createProductRequest.Images[i],
+					ProductId = newProduct.Id,
+					ProductImagesId = Guid.NewGuid()
+				};
+				postImages.Add(newPostImage);
+			}
+			var pointTransaction = new CreatePointTransactionModel
+			{
+				UserId = createProductRequest.SenderId,
+				Point = createProductRequest.Point,
+				Desciption = "Điểm nhận được khi gửi sản phẩm tại kho",
+			};
+			_pointTransactionService.ReceivePointFromCollectionPoint(pointTransaction);
+			return new ProductDetailModel
+			{
+				ProductId = newProduct.Id,
+				Description = newProduct.Description,
+				CategoryId = newProduct.CategoryId,
+				BrandId = newProduct.BrandId,
+				BrandName = _brands.FirstOrDefault(b => b.BrandId == newProduct.BrandId)?.Name,
+				CategoryName = _categories.FirstOrDefault(c => c.Id == newProduct.CategoryId)?.Name,
+				QrCode = newProduct.QRCode,
+				Status = newProduct.Status
+			};
 		}
 
 		public Products? GetById(Guid productId)

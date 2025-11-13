@@ -648,7 +648,7 @@ namespace ElecWasteCollection.Application.Services
 			return Task.FromResult(pagedResult);
 		}
 
-		public PostDetailModel AddPostByAdminWarehouse(CreatePostAtWarehouseModel createPostRequest)
+		public PostDetailModel AddPostByAdminWarehouse(CreateProductAtWarehouseModel createPostRequest)
 		{
 
 			if (createPostRequest == null)
