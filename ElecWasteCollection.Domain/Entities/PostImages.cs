@@ -14,7 +14,7 @@ namespace ElecWasteCollection.Domain.Entities
 
 		public string ImageUrl { get; set; }
 
-		public string AiDetectedLabelsJson { get; set; }
+		public string? AiDetectedLabelsJson { get; set; }
 
 		public Post Post { get; set; }
 	}

@@ -29,7 +29,7 @@ namespace ElecWasteCollection.Application.Services
 				PackageName = model.PackageName,
 				SmallCollectionPointsId = model.SmallCollectionPointsId,
 				CreateAt = DateTime.UtcNow,
-				Status = "Sealed"
+				Status = "Đã đóng thùng"
 			};
 			packages.Add(newPackage);
 			foreach (var qrCode in model.ProductsQrCode)
@@ -38,8 +38,8 @@ namespace ElecWasteCollection.Application.Services
 
 				if (product != null)
 				{
-					_productService.AddPackageIdToProductByQrCode(product.QRCode, newPackage.PackageId);
-					_productService.UpdateProductStatusByQrCode(product.QRCode, "Đã đóng thùng");
+					_productService.AddPackageIdToProductByQrCode(product.QrCode, newPackage.PackageId);
+					_productService.UpdateProductStatusByQrCode(product.QrCode, "Đã đóng thùng");
 				}
 			}
 
@@ -65,6 +65,57 @@ namespace ElecWasteCollection.Application.Services
 			};
 
 			return packageDetail;
+		}
+
+		public PagedResult<PackageDetailModel> GetPackagesByQuery(PackageSearchQueryModel query)
+		{
+			var filteredData = packages.AsEnumerable();
+
+			
+			if (query.SmallCollectionPointsId > 0)
+			{
+				filteredData = filteredData.Where(p => p.SmallCollectionPointsId == query.SmallCollectionPointsId);
+			}
+
+			if (!string.IsNullOrEmpty(query.Status))
+			{
+				filteredData = filteredData.Where(p =>
+					!string.IsNullOrEmpty(p.Status) &&
+					p.Status.Equals(query.Status.Trim(), StringComparison.OrdinalIgnoreCase));
+			}
+
+			int totalCount = filteredData.Count();
+
+			var pagedPackages = filteredData
+				.Skip((query.Page - 1) * query.Limit)
+				.Take(query.Limit)
+				.ToList();
+
+			var resultItems = new List<PackageDetailModel>();
+
+			foreach (var pkg in pagedPackages)
+			{
+				var productDetails = _productService.GetProductsByPackageId(pkg.PackageId);
+
+				var model = new PackageDetailModel
+				{
+					PackageId = pkg.PackageId,
+					PackageName = pkg.PackageName, 
+					SmallCollectionPointsId = pkg.SmallCollectionPointsId,
+					Products = productDetails
+				};
+
+				resultItems.Add(model);
+			}
+
+			// 6. Trả về kết quả
+			return new PagedResult<PackageDetailModel>
+			{
+				Data = resultItems,
+				TotalItems = totalCount,
+				Page = query.Page,
+				Limit = query.Limit,
+			};
 		}
 	}
 }

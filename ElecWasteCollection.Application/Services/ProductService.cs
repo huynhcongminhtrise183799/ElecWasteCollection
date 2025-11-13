@@ -41,9 +41,41 @@ namespace ElecWasteCollection.Application.Services
 			return _products.FirstOrDefault(p => p.Id == productId);
 		}
 
-		public Products? GetByQrCode(string qrcode)
+		public ProductDetailModel? GetByQrCode(string qrcode)
 		{
-			return _products.FirstOrDefault(p => p.QRCode == qrcode);
+			var product =  _products.FirstOrDefault(p => p.QRCode == qrcode);
+			if (product == null)
+			{
+				return null;
+			}
+			var sizeTier = _sizeTiers.FirstOrDefault(st => st.SizeTierId == product.SizeTierId);
+			var brand = _brands.FirstOrDefault(b => b.BrandId == product.BrandId);
+			var category = _categories.FirstOrDefault(c => c.Id == product.CategoryId);
+			var attributesList = _productValues
+				.Where(pv => pv.ProductId == product.Id)
+				.Select(pv =>
+				{
+					var attribute = _attributes.FirstOrDefault(a => a.Id == pv.AttributeId);
+					return new ProductValueDetailModel
+					{
+						AttributeName = attribute?.Name ?? "N/A",
+						Value = pv.Value.ToString(),
+					};
+				})
+				.ToList();
+			return new ProductDetailModel
+			{
+				ProductId = product.Id,
+				Description = product.Description,
+				CategoryId = category.Id,
+				CategoryName = category.Name,
+				BrandName = brand?.Name,
+				BrandId = brand.BrandId,
+				QrCode = product.QRCode,
+				SizeTierName = sizeTier?.Name,
+				Attributes = attributesList,
+				Status = product.Status
+			};
 		}
 
 		public List<ProductDetailModel> GetProductsByPackageId(string packageId)
@@ -60,6 +92,8 @@ namespace ElecWasteCollection.Application.Services
 					.FirstOrDefault(st => st.SizeTierId == p.SizeTierId);
 				var brand = _brands
 					.FirstOrDefault(b => b.BrandId == p.BrandId);
+				var category = _categories
+					.FirstOrDefault(c => c.Id == p.CategoryId);
 				// 4. "Join" bằng tay với ProductValues và Attributes
 				var attributesList = _productValues
 					.Where(pv => pv.ProductId == p.Id) // Lấy các value của sản phẩm này
@@ -84,6 +118,9 @@ namespace ElecWasteCollection.Application.Services
 					Description = p.Description,
 					BrandName = brand?.Name,
 					BrandId = brand.BrandId,
+					CategoryId = category.Id,
+					CategoryName = category.Name,
+					QrCode = p.QRCode,
 					SizeTierName = sizeTier?.Name,
 					Attributes = attributesList
 				};
