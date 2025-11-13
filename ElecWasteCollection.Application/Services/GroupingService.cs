@@ -245,6 +245,7 @@ namespace ElecWasteCollection.Application.Services
                         });
 
                         //Update Status Product thành 'Chờ thu gom'
+
                         var prodToUpdate = FakeDataSeeder.products.FirstOrDefault(p => p.Id == next.Post.ProductId);
                         if (prodToUpdate != null)
                         {
