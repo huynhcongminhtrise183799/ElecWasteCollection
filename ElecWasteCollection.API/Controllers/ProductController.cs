@@ -35,7 +35,7 @@ namespace ElecWasteCollection.API.Controllers
 				Point = request.Point
 			};
 			var result = _productService.UpdateProductStatusByQrCodeAndPlusUserPoint(qrCode,"Nhập kho", model);
-
+			 
 			if (!result)
 			{
 				return BadRequest("Failed to update product status.");
