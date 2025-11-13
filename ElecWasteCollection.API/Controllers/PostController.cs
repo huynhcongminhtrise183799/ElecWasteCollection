@@ -115,7 +115,32 @@ namespace ElecWasteCollection.API.Controllers
 			return Ok(pagedResult);
 		}
 
+		[HttpPost("warehouse")]
+		public IActionResult CreatePostByAdminWarehouse([FromBody] CreatePostAtWarehouseRequest newItem)
+		{
+			if (newItem == null)
+			{
+				return BadRequest("Invalid data.");
+			}
 
+			var model = new CreatePostAtWarehouseModel
+			{
+				Description = newItem.Description,
+				Images = newItem.Images,
+				//Name = newItem.Name,
+				SenderId = newItem.SenderId,
+				QrCode = newItem.QrCode,
+				ParentCategoryId = newItem.ParentCategoryId,
+				SubCategoryId = newItem.SubCategoryId,
+				BrandId = newItem.BrandId
+			};
+			var result = _postService.AddPostByAdminWarehouse(model);
+			if (result == null)
+			{
+				return StatusCode(400, "An error occurred while creating the post.");
+			}
+			return Ok(new { message = "Post created successfully.", item = result });
+		}
 
-	}
+		}
 }

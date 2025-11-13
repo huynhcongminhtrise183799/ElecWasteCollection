@@ -317,7 +317,7 @@ namespace ElecWasteCollection.Application.Data
 				PackageName = "Thùng TV/Màn hình 01 (Vinhomes)",
 				CreateAt = _vnNow.AddHours(-8), // SỬA
                 SmallCollectionPointsId = 1,
-				Status = "in_transit"
+				Status = "Đang vận chuyển"
 			}
 		};
 
