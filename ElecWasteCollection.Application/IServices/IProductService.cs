@@ -14,6 +14,8 @@ namespace ElecWasteCollection.Application.IServices
 
 		ProductDetailModel? GetByQrCode(string qrcode);
 
+		ProductDetailModel AddProduct(CreateProductAtWarehouseModel createProductRequest);
+
 		bool AddPackageIdToProductByQrCode(string productQrCode, string packageId);
 
 		List<ProductDetailModel> GetProductsByPackageId(string packageId);

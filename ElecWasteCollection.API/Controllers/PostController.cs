@@ -116,14 +116,14 @@ namespace ElecWasteCollection.API.Controllers
 		}
 
 		[HttpPost("warehouse")]
-		public IActionResult CreatePostByAdminWarehouse([FromBody] CreatePostAtWarehouseRequest newItem)
+		public IActionResult CreatePostByAdminWarehouse([FromBody] CreateProductAtWarehouseRequest newItem)
 		{
 			if (newItem == null)
 			{
 				return BadRequest("Invalid data.");
 			}
 
-			var model = new CreatePostAtWarehouseModel
+			var model = new CreateProductAtWarehouseModel
 			{
 				Description = newItem.Description,
 				Images = newItem.Images,

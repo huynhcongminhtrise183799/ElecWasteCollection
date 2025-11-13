@@ -500,5 +500,6 @@ namespace ElecWasteCollection.Application.Data
 			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("72b4ad6a-0b5b-45a3-bb6b-6e1790c84b45"), Points = 0 },
 			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("c40deff9-163b-49e8-b967-238f22882b63"), Points = 50 }
 		};
+		public static List<ProductImages> productImages = new();
 	}
 }

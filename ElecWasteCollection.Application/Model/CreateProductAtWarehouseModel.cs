@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ElecWasteCollection.Application.Model
 {
-    public class CreatePostAtWarehouseModel
+    public class CreateProductAtWarehouseModel
     {
 		public Guid SenderId { get; set; }
 		//public string Name { get; set; }
@@ -20,5 +20,7 @@ namespace ElecWasteCollection.Application.Model
 		public Guid BrandId { get; set; }
 
 		public string QrCode { get; set; }
+
+		public double Point { get; set; }
 	}
 }

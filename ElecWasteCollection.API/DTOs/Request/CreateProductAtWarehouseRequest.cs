@@ -1,6 +1,6 @@
 ﻿namespace ElecWasteCollection.API.DTOs.Request
 {
-    public class CreatePostAtWarehouseRequest
+    public class CreateProductAtWarehouseRequest
     {
 		public Guid SenderId { get; set; }
 		//public string Name { get; set; }
@@ -14,5 +14,7 @@
 		public Guid BrandId { get; set; }
 
 		public string QrCode { get; set; }
+
+		public double Point { get; set; }
 	}
 }
