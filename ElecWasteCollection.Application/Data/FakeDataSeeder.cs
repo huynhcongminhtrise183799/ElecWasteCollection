@@ -697,50 +697,50 @@ namespace ElecWasteCollection.Application.Data
             collectionGroups.Add(group1);
             collectionGroups.Add(group2);
 
-			// ==================================================================
-			// G) ROUTES – THỜI GIAN TƯƠNG ỨNG
-			// ==================================================================
-			//    collectionRoutes.Add(new CollectionRoutes
-			//    {
-			//        CollectionRouteId = Guid.NewGuid(),
-			//        PostId = postA,
-			//        CollectionGroupId = group1.Id,
-			//        CollectionDate = day16,
-			//        EstimatedTime = new TimeOnly(17, 00),
-			//        Status = "Chưa bắt đầu"
-			//    });
 
-			//    collectionRoutes.Add(new CollectionRoutes
-			//    {
-			//        CollectionRouteId = Guid.NewGuid(),
-			//        PostId = postB,
-			//        CollectionGroupId = group1.Id,
-			//        CollectionDate = day16,
-			//        EstimatedTime = new TimeOnly(18, 00),
-			//        Status = "Chưa bắt đầu"
-			//    });
+            // ==================================================================
+            // G) ROUTES – THỜI GIAN TƯƠNG ỨNG
+            // ==================================================================
+            //collectionRoutes.Add(new CollectionRoutes
+            //{
+            //    CollectionRouteId = Guid.NewGuid(),
+            //    PostId = postA,
+            //    CollectionGroupId = group1.Id,
+            //    CollectionDate = day16,
+            //    EstimatedTime = new TimeOnly(17, 00),
+            //    Status = "Chưa bắt đầu"
+            //});
 
-			//    collectionRoutes.Add(new CollectionRoutes
-			//    {
-			//        CollectionRouteId = Guid.NewGuid(),
-			//        PostId = postC,
-			//        CollectionGroupId = group2.Id,
-			//        CollectionDate = day16,
-			//        EstimatedTime = new TimeOnly(18, 00),
-			//        Status = "Chưa bắt đầu"
-			//    });
+            //collectionRoutes.Add(new CollectionRoutes
+            //{
+            //    CollectionRouteId = Guid.NewGuid(),
+            //    PostId = postB,
+            //    CollectionGroupId = group1.Id,
+            //    CollectionDate = day16,
+            //    EstimatedTime = new TimeOnly(18, 00),
+            //    Status = "Chưa bắt đầu"
+            //});
 
-			//    collectionRoutes.Add(new CollectionRoutes
-			//    {
-			//        CollectionRouteId = Guid.NewGuid(),
-			//        PostId = postD,
-			//        CollectionGroupId = group2.Id,
-			//        CollectionDate = day16,
-			//        EstimatedTime = new TimeOnly(19, 00),
-			//        Status = "Chưa bắt đầu"
-			//    });
-		}
+            //collectionRoutes.Add(new CollectionRoutes
+            //{
+            //    CollectionRouteId = Guid.NewGuid(),
+            //    PostId = postC,
+            //    CollectionGroupId = group2.Id,
+            //    CollectionDate = day16,
+            //    EstimatedTime = new TimeOnly(18, 00),
+            //    Status = "Chưa bắt đầu"
+            //});
 
+            //collectionRoutes.Add(new CollectionRoutes
+            //{
+            //    CollectionRouteId = Guid.NewGuid(),
+            //    PostId = postD,
+            //    CollectionGroupId = group2.Id,
+            //    CollectionDate = day16,
+            //    EstimatedTime = new TimeOnly(19, 00),
+            //    Status = "Chưa bắt đầu"
+            //});
+        }
 
 		// ======================================================================
 		// HELPER TẠO SCHEDULE NGÀY 16
