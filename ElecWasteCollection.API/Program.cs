@@ -81,7 +81,10 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<IPointTransactionService, PointTransactionService>();
 			builder.Services.AddScoped<IUserPointService, UserPointService>();
 			builder.Services.AddScoped<IImageComparisonService, ImageComparisonService>();
-			builder.Services.AddCors(options =>
+			builder.Services.AddScoped<ITeamRatioService, TeamRatioService>();
+            builder.Services.AddScoped<ITeamAssignService, TeamAssignService>();
+            builder.Services.AddScoped<ISmallPointAssignService, SmallPointAssignService>();
+            builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
 				{
