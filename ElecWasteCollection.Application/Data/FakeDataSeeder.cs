@@ -127,12 +127,15 @@ namespace ElecWasteCollection.Application.Data
 			AddPostsForDay16();
 
             AddLoadBalancingTestData();
+
+            AddFixedAssignTestData();
+
         }
 
-		// =========================================================================
-		// 4. USERS
-		// =========================================================================
-		public static List<User> users = new()
+        // =========================================================================
+        // 4. USERS
+        // =========================================================================
+        public static List<User> users = new()
 		{
 			new User { UserId = Guid.Parse("7f5c8b33-1b52-4d11-91b0-932c3d243c71"), Name = "Trần Huỳnh Bảo Ngọc", Email = "ngocthbse183850@fpt.edu.vn", Phone = "0901234567", Address = "Vinhomes Grand Park – Nguyễn Xiển, Phường Long Thạnh Mỹ, TP. Thủ Đức", Avatar = "https://picsum.photos/id/1011/200/200", Iat = 10.842003, Ing = 106.829580, Role = "User" },
 			new User { UserId = Guid.Parse("b73a62a7-8b90-43cf-9ad7-2abf96f34a52"), Name = "Lê Thị Mai", Email = "le.thi.mai@example.com", Phone = "0987654321", Address = "Vincom Mega Mall Grand Park – Đường Nguyễn Xiển, Phường Long Thạnh Mỹ, TP. Thủ Đức", Avatar = "https://picsum.photos/id/1025/200/200", Iat = 10.843450, Ing = 106.829900, Role = "User" },
@@ -771,11 +774,21 @@ namespace ElecWasteCollection.Application.Data
         public static List<StagingAssignDay> stagingAssignDays = new();
 
         // ======================================================================
-        // 11. DATA TEST TẢI TRỌNG & GOM NHÓM (NGÀY 21 - 24)
+        // HELPER SINH ID CỐ ĐỊNH (Để test dễ dàng)
+        // Format: 000000{day}-000{type}-0000-0000-{index:12số}
+        // Type: 1=Product, 2=Post, 3=Image
+        // ======================================================================
+        private static Guid MakeFixedId(int day, int type, int index)
+        {
+            string guidString = $"{day:D8}-{type:D4}-{type:D4}-{type:D4}-{index:D12}";
+            return Guid.Parse(guidString);
+        }
+
+        // ======================================================================
+        // 11. DATA TEST TẢI TRỌNG & GOM NHÓM (NGÀY 21 - 24) - PHIÊN BẢN CHUẨN
         // ======================================================================
         public static void AddLoadBalancingTestData()
         {
-            // Xác định ngày 21, 22, 23, 24 của tháng hiện tại
             var currentMonth = _vnNow.Month;
             var currentYear = _vnNow.Year;
 
@@ -784,214 +797,293 @@ namespace ElecWasteCollection.Application.Data
             var date23 = new DateTime(currentYear, currentMonth, 23);
             var date24 = new DateTime(currentYear, currentMonth, 24);
 
-            // ===================================================================
-            // 1. TẠO CA LÀM VIỆC (SHIFTS) CHO 4 NGÀY NÀY
-            // ===================================================================
+            // -------------------------------------------------------------------
+            // 1. TẠO CA LÀM VIỆC (SHIFTS)
+            // -------------------------------------------------------------------
             var testDates = new List<DateTime> { date21, date22, date23, date24 };
-
             foreach (var d in testDates)
             {
                 var dateOnly = DateOnly.FromDateTime(d);
-
                 // Ca 1: Xe tải nhỏ (Dũng) - 07:00 đến 15:00
-                shifts.Add(new Shifts
-                {
-                    Id = shifts.Count + 1,
-                    CollectorId = collector_Dung_Id,
-                    Vehicle_Id = 1, // Xe nhỏ (1000kg)
-                    WorkDate = dateOnly,
-                    Shift_Start_Time = d.Date.AddHours(7),
-                    Shift_End_Time = d.Date.AddHours(15)
-                });
-
-                // Ca 2: Xe tải lớn (Tuấn) - 08:00 đến 17:00 (Ca dài hơn cho xe lớn)
-                shifts.Add(new Shifts
-                {
-                    Id = shifts.Count + 2,
-                    CollectorId = collector_Tuan_Id,
-                    Vehicle_Id = 2, // Xe lớn (2000kg)
-                    WorkDate = dateOnly,
-                    Shift_Start_Time = d.Date.AddHours(8),
-                    Shift_End_Time = d.Date.AddHours(17)
-                });
+                shifts.Add(new Shifts { Id = shifts.Count + 1, CollectorId = collector_Dung_Id, Vehicle_Id = 1, WorkDate = dateOnly, Shift_Start_Time = d.Date.AddHours(7), Shift_End_Time = d.Date.AddHours(15) });
+                // Ca 2: Xe tải lớn (Tuấn) - 08:00 đến 17:00
+                shifts.Add(new Shifts { Id = shifts.Count + 2, CollectorId = collector_Tuan_Id, Vehicle_Id = 2, WorkDate = dateOnly, Shift_Start_Time = d.Date.AddHours(8), Shift_End_Time = d.Date.AddHours(17) });
             }
 
-            // ===================================================================
-            // 2. TẠO USER GIẢ LẬP (Sống tại các Block gần nhau để test đường đi)
-            // ===================================================================
+            // -------------------------------------------------------------------
+            // 2. TẠO USER TEST
+            // -------------------------------------------------------------------
             var bulkUsers = new List<User>();
             for (int i = 1; i <= 10; i++)
             {
-                bulkUsers.Add(new User
-                {
-                    UserId = Guid.NewGuid(),
-                    Name = $"Test User {i} (Block C{i})",
-                    Email = $"test{i}@loadtest.com",
-                    Phone = "0909000111",
-                    Address = $"Block C{i} - Vinhomes Grand Park",
-                    Role = "User",
-                    Iat = 10.840000 + (i * 0.0002), // Tọa độ lệch nhau xíu
-                    Ing = 106.830000 + (i * 0.0002)
-                });
+                bulkUsers.Add(new User { UserId = Guid.NewGuid(), Name = $"Test User {i}", Email = $"t{i}@test.com", Phone = "0909", Address = $"Block C{i}", Role = "User", Iat = 10.8400 + (i * 0.0002), Ing = 106.8300 + (i * 0.0002) });
             }
             users.AddRange(bulkUsers);
 
-            // ===================================================================
-            // SCENARIO 1: NGÀY 21 - TEST TẢI TRỌNG LỚN (20 Tủ lạnh x 80kg = 1600kg)
-            // Khung giờ: 08:00 - 17:00 (Rộng)
-            // Mục tiêu: Xe nhỏ (1000kg) không chở hết -> Phải dùng Xe lớn (2000kg).
-            // ===================================================================
+            // -------------------------------------------------------------------
+            // SCENARIO 1: NGÀY 21 - TEST QUÁ TẢI TRỌNG (20 Tủ lạnh x 80kg = 1600kg)
+            // ID: 00000021-...
+            // -------------------------------------------------------------------
             var idsDay21 = new List<Guid>();
-
-            for (int i = 0; i < 20; i++)
+            for (int i = 1; i <= 20; i++)
             {
-                var prodId = Guid.NewGuid();
-                var postId = Guid.NewGuid();
+                var prodId = MakeFixedId(21, 1, i);
+                var postId = MakeFixedId(21, 2, i);
                 var sender = bulkUsers[i % 10];
 
-                products.Add(new Products
-                {
-                    Id = prodId,
-                    CategoryId = cat_TuLanh,
-                    BrandId = brand_Pana_TuLanh,
-                    SizeTierId = st_TuLanh_Lon, // 80kg
-                    Status = "Chờ gom nhóm",
-                    Description = $"[TEST D21] Tủ lạnh nặng {i + 1}"
-                });
+                products.Add(new Products { Id = prodId, CategoryId = cat_TuLanh, BrandId = brand_Pana_TuLanh, SizeTierId = st_TuLanh_Lon, Status = "Chờ gom nhóm", Description = $"Test Tủ lạnh {i}" });
 
                 posts.Add(new Post
                 {
                     Id = postId,
                     ProductId = prodId,
                     SenderId = sender.UserId,
-                    Name = $"Tủ Lạnh Lớn {i + 1} (Nặng)",
+                    Name = $"Tủ Lạnh Lớn {i}",
                     Date = date21,
                     Status = "Đã duyệt",
-                    // Khung giờ khớp với Ca 2 (08-17h)
                     ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date21), "08:00", "17:00"),
                     Address = sender.Address,
                     EstimatePoint = 200
                 });
-                postImages.Add(new PostImages { PostImageId = Guid.NewGuid(), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
+                postImages.Add(new PostImages { PostImageId = MakeFixedId(21, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
 
                 idsDay21.Add(postId);
             }
+            // Assign cho Xe Lớn (ID 2)
+            stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date21), PointId = 1, VehicleId = 2, PostIds = idsDay21 });
 
-            // [QUAN TRỌNG] Assign sẵn cho Xe Lớn (ID 2) để test Grouping thành công
-            stagingAssignDays.Add(new StagingAssignDay
-            {
-                Date = DateOnly.FromDateTime(date21),
-                PointId = 1,
-                VehicleId = 2, // Xe lớn
-                PostIds = idsDay21
-            });
 
-            // ===================================================================
+            // -------------------------------------------------------------------
             // SCENARIO 2: NGÀY 22 - TEST GOM ĐƯỜNG (15 Màn hình)
-            // Khung giờ hẹp: 09:00 - 11:00
-            // Mục tiêu: Test xem thuật toán có sắp xếp kịp trong 2 tiếng không.
-            // ===================================================================
+            // ID: 00000022-...
+            // -------------------------------------------------------------------
             var idsDay22 = new List<Guid>();
-
-            for (int i = 0; i < 15; i++)
+            for (int i = 1; i <= 15; i++)
             {
-                var prodId = Guid.NewGuid();
-                var postId = Guid.NewGuid();
-                var sender = bulkUsers[i % 5]; // Chỉ tập trung 5 user đầu
+                var prodId = MakeFixedId(22, 1, i);
+                var postId = MakeFixedId(22, 2, i);
+                var sender = bulkUsers[i % 5];
 
-                products.Add(new Products
-                {
-                    Id = prodId,
-                    CategoryId = cat_ManHinhMayTinh,
-                    BrandId = brand_Dell_PC,
-                    SizeTierId = sizeTiers.First(x => x.CategoryId == cat_ManHinhMayTinh).SizeTierId, // Nhẹ
-                    Status = "Chờ gom nhóm",
-                    Description = $"[TEST D22] Màn hình {i + 1}"
-                });
+                products.Add(new Products { Id = prodId, CategoryId = cat_ManHinhMayTinh, BrandId = brand_Dell_PC, SizeTierId = sizeTiers.First(x => x.CategoryId == cat_ManHinhMayTinh).SizeTierId, Status = "Chờ gom nhóm", Description = $"Màn hình {i}" });
 
                 posts.Add(new Post
                 {
                     Id = postId,
                     ProductId = prodId,
                     SenderId = sender.UserId,
-                    Name = $"Màn hình cũ {i + 1}",
+                    Name = $"Màn hình cũ {i}",
                     Date = date22,
                     Status = "Đã duyệt",
-                    // Khung giờ hẹp 2 tiếng
                     ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date22), "09:00", "11:00"),
                     Address = sender.Address,
                     EstimatePoint = 50
                 });
-                postImages.Add(new PostImages { PostImageId = Guid.NewGuid(), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
+                postImages.Add(new PostImages { PostImageId = MakeFixedId(22, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
 
                 idsDay22.Add(postId);
             }
-
             // Assign cho Xe Nhỏ (ID 1)
-            stagingAssignDays.Add(new StagingAssignDay
-            {
-                Date = DateOnly.FromDateTime(date22),
-                PointId = 1,
-                VehicleId = 1, // Xe nhỏ
-                PostIds = idsDay22
-            });
+            stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date22), PointId = 1, VehicleId = 1, PostIds = idsDay22 });
 
-            // ===================================================================
-            // SCENARIO 3: NGÀY 23 & 24 - TEST RẢI RÁC (Sáng/Chiều)
-            // ===================================================================
 
-            // Ngày 23: Ca Chiều (13h-16h) - 5 Máy giặt
+            // -------------------------------------------------------------------
+            // SCENARIO 3: NGÀY 23 - TEST CA CHIỀU (5 Máy giặt)
+            // ID: 00000023-...
+            // -------------------------------------------------------------------
             var idsDay23 = new List<Guid>();
-            for (int i = 0; i < 5; i++)
+            for (int i = 1; i <= 5; i++)
             {
-                var prodId = Guid.NewGuid();
-                var postId = Guid.NewGuid();
+                var prodId = MakeFixedId(23, 1, i);
+                var postId = MakeFixedId(23, 2, i);
 
-                products.Add(new Products { Id = prodId, CategoryId = cat_MayGiat, BrandId = brand_Toshiba_MayGiat, SizeTierId = st_MayGiat_TrungBinh, Status = "Chờ gom nhóm", Description = $"[TEST D23] Máy giặt {i + 1}" });
+                products.Add(new Products { Id = prodId, CategoryId = cat_MayGiat, BrandId = brand_Toshiba_MayGiat, SizeTierId = st_MayGiat_TrungBinh, Status = "Chờ gom nhóm", Description = $"Máy giặt {i}" });
                 posts.Add(new Post
                 {
                     Id = postId,
                     ProductId = prodId,
                     SenderId = bulkUsers[i].UserId,
-                    Name = $"Máy giặt {i + 1}",
+                    Name = $"Máy giặt {i}",
                     Date = date23,
                     Status = "Đã duyệt",
-                    ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date23), "13:00", "16:00"), // Chỉ rảnh chiều
+                    ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date23), "13:00", "16:00"),
                     Address = bulkUsers[i].Address,
                     EstimatePoint = 150
                 });
-                postImages.Add(new PostImages { PostImageId = Guid.NewGuid(), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
+                postImages.Add(new PostImages { PostImageId = MakeFixedId(23, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
                 idsDay23.Add(postId);
             }
-            // Assign ngày 23 cho xe nhỏ
             stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date23), PointId = 1, VehicleId = 1, PostIds = idsDay23 });
 
 
-            // Ngày 24: Ca Sáng (08h-12h) - 5 Laptop
+            // -------------------------------------------------------------------
+            // SCENARIO 4: NGÀY 24 - TEST CA SÁNG (5 Laptop)
+            // ID: 00000024-...
+            // -------------------------------------------------------------------
             var idsDay24 = new List<Guid>();
             for (int i = 5; i < 10; i++)
             {
-                var prodId = Guid.NewGuid();
-                var postId = Guid.NewGuid();
+                var prodId = MakeFixedId(24, 1, i);
+                var postId = MakeFixedId(24, 2, i);
 
-                products.Add(new Products { Id = prodId, CategoryId = cat_Laptop, BrandId = brand_Acer_Laptop, SizeTierId = st_Laptop_MongNhe, Status = "Chờ gom nhóm", Description = $"[TEST D24] Laptop {i + 1}" });
+                products.Add(new Products { Id = prodId, CategoryId = cat_Laptop, BrandId = brand_Acer_Laptop, SizeTierId = st_Laptop_MongNhe, Status = "Chờ gom nhóm", Description = $"Laptop {i}" });
                 posts.Add(new Post
                 {
                     Id = postId,
                     ProductId = prodId,
                     SenderId = bulkUsers[i].UserId,
-                    Name = $"Laptop {i + 1}",
+                    Name = $"Laptop {i}",
                     Date = date24,
                     Status = "Đã duyệt",
-                    ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date24), "08:00", "12:00"), // Chỉ rảnh sáng
+                    ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date24), "08:00", "12:00"),
                     Address = bulkUsers[i].Address,
                     EstimatePoint = 100
                 });
-                postImages.Add(new PostImages { PostImageId = Guid.NewGuid(), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
+                postImages.Add(new PostImages { PostImageId = MakeFixedId(24, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
                 idsDay24.Add(postId);
             }
-            // Assign ngày 24 cho xe nhỏ
             stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date24), PointId = 1, VehicleId = 1, PostIds = idsDay24 });
+        }
+
+
+        public static List<TeamRatioItem> TeamRatios = new();
+
+        // ======================================================================
+        // 13. FIXED TEST DATA – 10 POSTS WITH FIXED GUID
+        // ======================================================================
+
+        public static List<Guid> FixedTestPostIds = new();
+
+        public static void AddFixedAssignTestData()
+        {
+            // 1) Create 10 users test
+            var fixedUsers = new List<User>();
+            for (int i = 1; i <= 10; i++)
+            {
+                fixedUsers.Add(new User
+                {
+                    UserId = Guid.NewGuid(),
+                    Name = $"Fixed User {i}",
+                    Email = $"fixed{i}@test.com",
+                    Phone = "09090099",
+                    Address = $"Fixed Address {i}",
+                    Role = "User",
+                    Iat = 10.8400 + (i * 0.0001),
+                    Ing = 106.8300 + (i * 0.0001)
+                });
+            }
+            users.AddRange(fixedUsers);
+
+            // 2) Create 10 products with fixed GUID
+            var fixedProducts = new List<Guid>();
+            for (int i = 1; i <= 10; i++)
+            {
+                var prodId = MakeFixedId(99, 1, i);
+                fixedProducts.Add(prodId);
+
+                products.Add(new Products
+                {
+                    Id = prodId,
+                    CategoryId = cat_Laptop,
+                    BrandId = brand_Acer_Laptop,
+                    SizeTierId = st_Laptop_MongNhe,
+                    Status = "Chờ assign",
+                    Description = $"Fixed Product {i}"
+                });
+            }
+
+            // 3) Create 10 posts with fixed GUID
+            for (int i = 1; i <= 10; i++)
+            {
+                var postId = MakeFixedId(99, 2, i);
+                FixedTestPostIds.Add(postId);
+
+                posts.Add(new Post
+                {
+                    Id = postId,
+                    ProductId = fixedProducts[i - 1],
+                    SenderId = fixedUsers[i - 1].UserId,
+                    Name = $"Fixed Test Post {i}",
+                    Address = fixedUsers[i - 1].Address,
+                    Date = DateTime.UtcNow.AddHours(7),
+                    Status = "Đã duyệt",
+                    EstimatePoint = 50 + i,
+                    ScheduleJson = JsonSerializer.Serialize(new List<DailyTimeSlots>
+            {
+                new DailyTimeSlots
+                {
+                    DayName = "Test Day",
+                    PickUpDate = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7)),
+                    Slots = new TimeSlotDetail { StartTime = "08:00", EndTime = "17:00" }
+                }
+            })
+                });
+
+                var imgId = MakeFixedId(99, 3, i);
+
+                postImages.Add(new PostImages
+                {
+                    PostImageId = imgId,
+                    PostId = postId,
+                    ImageUrl = "https://picsum.photos/200",
+                    AiDetectedLabelsJson = "[]"
+                });
+            }
+
+            // ======================================================================
+            // 4) ADD SMALL COLLECTION POINTS FOR TESTING TEAM ASSIGN (VERY IMPORTANT)
+            // ======================================================================
+
+            smallCollectionPoints.Add(new SmallCollectionPoints
+            {
+                Id = 1001,
+                Name = "Fixed Small Point – Team 1 (A)",
+                Address = "Q1 - Test Point A",
+                Latitude = 10.8410,
+                Longitude = 106.8310,
+                Status = "active",
+                City_Team_Id = 1,
+                Created_At = DateTime.UtcNow.AddHours(7),
+                Updated_At = DateTime.UtcNow.AddHours(7)
+            });
+
+            smallCollectionPoints.Add(new SmallCollectionPoints
+            {
+                Id = 1002,
+                Name = "Fixed Small Point – Team 1 (B)",
+                Address = "Q1 - Test Point B",
+                Latitude = 10.8420,
+                Longitude = 106.8320,
+                Status = "active",
+                City_Team_Id = 1,
+                Created_At = DateTime.UtcNow.AddHours(7),
+                Updated_At = DateTime.UtcNow.AddHours(7)
+            });
+
+            smallCollectionPoints.Add(new SmallCollectionPoints
+            {
+                Id = 2001,
+                Name = "Fixed Small Point – Team 2 (A)",
+                Address = "Q2 - Test Point A",
+                Latitude = 10.8450,
+                Longitude = 106.8350,
+                Status = "active",
+                City_Team_Id = 2,
+                Created_At = DateTime.UtcNow.AddHours(7),
+                Updated_At = DateTime.UtcNow.AddHours(7)
+            });
+
+            smallCollectionPoints.Add(new SmallCollectionPoints
+            {
+                Id = 2002,
+                Name = "Fixed Small Point – Team 2 (B)",
+                Address = "Q2 - Test Point B",
+                Latitude = 10.8460,
+                Longitude = 106.8360,
+                Status = "active",
+                City_Team_Id = 2,
+                Created_At = DateTime.UtcNow.AddHours(7),
+                Updated_At = DateTime.UtcNow.AddHours(7)
+            });
         }
     }
 }

@@ -10,90 +10,57 @@ namespace ElecWasteCollection.Application.Services
 {
     public class GroupingService : IGroupingService
     {
+
         private const double SERVICE_TIME_MINUTES = 15; 
+        private const double AVG_TRAVEL_MINUTES = 15;   
         private const double SPEED_KM_H_LARGE = 30;     
-        private const double SPEED_KM_H_SMALL = 25;  
+        private const double SPEED_KM_H_SMALL = 25;   
 
-        private sealed class TimeSlotDetailDto
-        {
-            public string? StartTime { get; set; }
-            public string? EndTime { get; set; }
-        }
-
-        private sealed class DailyTimeSlotsDto
-        {
-            public string? DayName { get; set; }
-            public string? PickUpDate { get; set; }
-            public TimeSlotDetailDto? Slots { get; set; }
-        }
-
-        private class PostScheduleInfo
-        {
-            public DateOnly MinDate { get; set; }
-            public DateOnly MaxDate { get; set; }
-            public List<DateOnly> SpecificDates { get; set; } = new();
-        }
+        private sealed class TimeSlotDetailDto { public string? StartTime { get; set; } public string? EndTime { get; set; } }
+        private sealed class DailyTimeSlotsDto { public string? DayName { get; set; } public string? PickUpDate { get; set; } public TimeSlotDetailDto? Slots { get; set; } }
+        private class PostScheduleInfo { public DateOnly MinDate { get; set; } public DateOnly MaxDate { get; set; } public List<DateOnly> SpecificDates { get; set; } = new(); }
 
         private static bool TryParseScheduleInfo(string rawSchedule, out PostScheduleInfo info)
         {
             info = new PostScheduleInfo();
             if (string.IsNullOrWhiteSpace(rawSchedule)) return false;
-
             try
             {
                 var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var days = JsonSerializer.Deserialize<List<DailyTimeSlotsDto>>(rawSchedule, opts);
-
                 if (days == null || !days.Any()) return false;
 
                 var validDates = new List<DateOnly>();
                 foreach (var d in days)
                 {
-                    if (DateOnly.TryParse(d.PickUpDate, out var date) && d.Slots != null)
+                    if (DateOnly.TryParse(d.PickUpDate, out var date) && d.Slots != null &&
+                        TimeOnly.TryParse(d.Slots.StartTime, out var s) && TimeOnly.TryParse(d.Slots.EndTime, out var e) && s < e)
                     {
-                        if (TimeOnly.TryParse(d.Slots.StartTime, out var s) &&
-                            TimeOnly.TryParse(d.Slots.EndTime, out var e) && s < e)
-                        {
-                            validDates.Add(date);
-                        }
+                        validDates.Add(date);
                     }
                 }
-
                 if (!validDates.Any()) return false;
-
                 validDates.Sort();
                 info.SpecificDates = validDates;
                 info.MinDate = validDates.First();
                 info.MaxDate = validDates.Last();
                 return true;
             }
-            catch
-            {
-                return false;
-            }
+            catch { return false; }
         }
 
         private static bool TryGetTimeWindowForDate(string rawSchedule, DateOnly targetDate, out TimeOnly start, out TimeOnly end)
         {
-            start = TimeOnly.MinValue;
-            end = TimeOnly.MaxValue;
-
+            start = TimeOnly.MinValue; end = TimeOnly.MaxValue;
             if (string.IsNullOrWhiteSpace(rawSchedule)) return false;
-
             try
             {
                 var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var days = JsonSerializer.Deserialize<List<DailyTimeSlotsDto>>(rawSchedule, opts);
-
                 var match = days?.FirstOrDefault(d => DateOnly.TryParse(d.PickUpDate, out var date) && date == targetDate);
-
-                if (match?.Slots != null &&
-                    TimeOnly.TryParse(match.Slots.StartTime, out var s) &&
-                    TimeOnly.TryParse(match.Slots.EndTime, out var e))
+                if (match?.Slots != null && TimeOnly.TryParse(match.Slots.StartTime, out var s) && TimeOnly.TryParse(match.Slots.EndTime, out var e))
                 {
-                    start = s;
-                    end = e;
-                    return true;
+                    start = s; end = e; return true;
                 }
                 return false;
             }
@@ -105,13 +72,15 @@ namespace ElecWasteCollection.Application.Services
             var point = FakeDataSeeder.smallCollectionPoints.FirstOrDefault(p => p.Id == request.CollectionPointId)
                 ?? throw new Exception("Không tìm thấy trạm thu gom.");
 
+            double maxRadius = FakeDataSeeder.vehicles.Max(v => v.Radius_Km);
+
             var rawPosts = FakeDataSeeder.posts.Where(p =>
             {
                 var prod = FakeDataSeeder.products.FirstOrDefault(x => x.Id == p.ProductId);
                 return prod != null && prod.Status == "Chờ gom nhóm";
             }).ToList();
 
-            if (!rawPosts.Any()) throw new Exception("Không có bài đăng nào ở trạng thái 'Chờ gom nhóm'.");
+            if (!rawPosts.Any()) throw new Exception("Không có bài đăng nào cần xử lý.");
 
             var pool = new List<dynamic>();
             foreach (var p in rawPosts)
@@ -120,74 +89,87 @@ namespace ElecWasteCollection.Application.Services
                 {
                     var user = FakeDataSeeder.users.FirstOrDefault(u => u.UserId == p.SenderId);
                     var prod = FakeDataSeeder.products.FirstOrDefault(pr => pr.Id == p.ProductId);
-                    if (user == null || prod == null) continue;
-
                     var size = FakeDataSeeder.sizeTiers.FirstOrDefault(t => t.SizeTierId == prod.SizeTierId);
+
+                    double userLat = user?.Iat ?? point.Latitude;
+                    double userLng = user?.Ing ?? point.Longitude;
+                    double distance = GeoHelper.DistanceKm(point.Latitude, point.Longitude, userLat, userLng);
+
+                    if (distance > maxRadius) continue;
 
                     pool.Add(new
                     {
                         Post = p,
                         Schedule = scheduleInfo,
-                        Weight = size?.EstimatedWeight ?? 10, 
+                        Weight = size?.EstimatedWeight ?? 10,
                         Volume = size?.EstimatedVolume ?? 1,
-                        UserName = user.Name,
-                        Address = user.Address
+                        UserName = user?.Name,
+                        Address = user?.Address
                     });
                 }
             }
 
-            var distinctDates = pool
-                .SelectMany(x => (List<DateOnly>)x.Schedule.SpecificDates)
-                .Distinct()
-                .Where(d => d >= DateOnly.FromDateTime(DateTime.Now)) 
-                .OrderBy(d => d)
-                .ToList();
 
-            var response = new PreAssignResponse
-            {
-                CollectionPoint = point.Name,
-                LoadThresholdPercent = request.LoadThresholdPercent
-            };
+            var distinctDates = pool.SelectMany(x => (List<DateOnly>)x.Schedule.SpecificDates).Distinct()
+                .Where(d => d >= DateOnly.FromDateTime(DateTime.Now)).OrderBy(d => d).ToList();
 
-            // Lọc bài cần lấy theo từng ngày
-            // Duyệt qua từng ngày trong danh sách ngày rảnh
-            // Với mỗi ngày, lọc các bài đăng có ngày rảnh trùng với ngày đó
-            // Sau đó, chọn các bài đăng sao cho tổng trọng lượng không vượt quá ngưỡng .... % trọng tải xe
-            // và ưu tiên các bài đăng có hạn cuối sớm nhất, sau đó là ngày đặt sớm nhất
-            // chọn xe phù hợp với tổng trọng lượng đã chọn
-            // Gán hàng vào ngày đó và loại bỏ khỏi pool
+            var response = new PreAssignResponse { CollectionPoint = point.Name, LoadThresholdPercent = request.LoadThresholdPercent };
+
             foreach (var currentDate in distinctDates)
             {
-
                 var candidates = pool
                     .Where(x => ((List<DateOnly>)x.Schedule.SpecificDates).Contains(currentDate))
-                    .OrderBy(x => x.Schedule.MaxDate) 
-                    .ThenBy(x => x.Schedule.MinDate)
+                    .OrderBy(x => x.Schedule.MaxDate)
+                    .ThenBy(x => x.Schedule.MinDate) 
                     .ToList();
 
                 if (!candidates.Any()) continue;
 
-                double totalWeight = candidates.Sum(x => (double)x.Weight);
+                var shiftsToday = FakeDataSeeder.shifts.Where(s => s.WorkDate == currentDate).ToList();
 
-                var suggestedVehicle = FakeDataSeeder.vehicles
+                //Test mac dinh 8h lam viec neu khong co ca
+                double totalWorkMinutes = 0;
+                if (shiftsToday.Any())
+                {
+                    totalWorkMinutes = shiftsToday.Sum(s => (s.Shift_End_Time - s.Shift_Start_Time).TotalMinutes);
+                }
+                else
+                {
+                    totalWorkMinutes = 8 * 60; 
+                }
+
+                double estimatedMinutesPerPost = SERVICE_TIME_MINUTES + AVG_TRAVEL_MINUTES;
+
+                int maxPostsCapacity = (int)(totalWorkMinutes / estimatedMinutesPerPost);
+
+                var feasibleCandidates = candidates.Take(maxPostsCapacity).ToList();
+
+                double totalWeightNeed = feasibleCandidates.Sum(x => (double)x.Weight);
+
+                var availableVehicles = FakeDataSeeder.vehicles
                     .Where(v => v.Status == "active")
                     .OrderBy(v => v.Capacity_Kg)
-                    .FirstOrDefault(v => totalWeight <= v.Capacity_Kg * (request.LoadThresholdPercent / 100.0))
+                    .ToList();
+
+                var suggestedVehicle = availableVehicles
+                    .FirstOrDefault(v => totalWeightNeed <= v.Capacity_Kg * (request.LoadThresholdPercent / 100.0))
                     ?? FakeDataSeeder.vehicles.OrderBy(v => v.Capacity_Kg).Last();
 
-                double limitKg = suggestedVehicle.Capacity_Kg * (request.LoadThresholdPercent / 100.0);
+                double vehicleLimitKg = suggestedVehicle.Capacity_Kg * (request.LoadThresholdPercent / 100.0);
 
-                double currentLoad = 0;
+                double currentWeight = 0;
+                int currentCount = 0;
                 var selectedPosts = new List<PreAssignPost>();
                 var assignedItems = new List<dynamic>();
 
-                foreach (var item in candidates)
+                foreach (var item in feasibleCandidates)
                 {
-                    if (currentLoad + item.Weight <= limitKg)
+                    if (currentWeight + item.Weight <= vehicleLimitKg)
                     {
-                        currentLoad += item.Weight;
-                        assignedItems.Add(item);
+                        currentWeight += item.Weight;
+                        currentCount++;
 
+                        assignedItems.Add(item);
                         selectedPosts.Add(new PreAssignPost
                         {
                             PostId = item.Post.Id,
@@ -199,10 +181,7 @@ namespace ElecWasteCollection.Application.Services
                     }
                 }
 
-                foreach (var item in assignedItems)
-                {
-                    pool.Remove(item);
-                }
+                foreach (var item in assignedItems) pool.Remove(item);
 
                 if (selectedPosts.Any())
                 {
@@ -210,7 +189,7 @@ namespace ElecWasteCollection.Application.Services
                     {
                         WorkDate = currentDate,
                         OriginalPostCount = selectedPosts.Count,
-                        TotalWeight = currentLoad,
+                        TotalWeight = currentWeight,
                         TotalVolume = selectedPosts.Sum(x => (double)x.Volume),
                         SuggestedVehicle = new SuggestedVehicle
                         {
@@ -218,13 +197,12 @@ namespace ElecWasteCollection.Application.Services
                             Plate_Number = suggestedVehicle.Plate_Number,
                             Vehicle_Type = suggestedVehicle.Vehicle_Type,
                             Capacity_Kg = suggestedVehicle.Capacity_Kg,
-                            AllowedCapacityKg = limitKg
+                            AllowedCapacityKg = vehicleLimitKg
                         },
                         Posts = selectedPosts
                     });
                 }
-
-                if (!pool.Any()) break; 
+                if (!pool.Any()) break;
             }
 
             return await Task.FromResult(response);
@@ -232,28 +210,16 @@ namespace ElecWasteCollection.Application.Services
 
         public async Task<bool> AssignDayAsync(AssignDayRequest request)
         {
-            var vehicle = FakeDataSeeder.vehicles.FirstOrDefault(v => v.Id == request.VehicleId)
-                ?? throw new Exception("Xe không tồn tại.");
-
-            if (!FakeDataSeeder.smallCollectionPoints.Any(p => p.Id == request.CollectionPointId))
-                throw new Exception("Trạm thu gom không tồn tại.");
-
-            if (request.PostIds == null || !request.PostIds.Any())
-                throw new Exception("Danh sách bài đăng không được để trống.");
-
+            var vehicle = FakeDataSeeder.vehicles.FirstOrDefault(v => v.Id == request.VehicleId) ?? throw new Exception("Xe không tồn tại.");
+            if (!FakeDataSeeder.smallCollectionPoints.Any(p => p.Id == request.CollectionPointId)) throw new Exception("Trạm không tồn tại.");
+            if (request.PostIds == null || !request.PostIds.Any()) throw new Exception("Danh sách bài đăng trống.");
 
             bool isVehicleBusy = FakeDataSeeder.stagingAssignDays.Any(s =>
-                s.Date == request.WorkDate &&
-                s.VehicleId == request.VehicleId &&
-                s.PointId != request.CollectionPointId); 
+                s.Date == request.WorkDate && s.VehicleId == request.VehicleId && s.PointId != request.CollectionPointId);
 
-            if (isVehicleBusy)
-                throw new Exception($"Xe {vehicle.Plate_Number} đã được điều động cho trạm khác vào ngày {request.WorkDate}.");
+            if (isVehicleBusy) throw new Exception($"Xe {vehicle.Plate_Number} đã được điều động nơi khác.");
 
-            FakeDataSeeder.stagingAssignDays.RemoveAll(s =>
-                s.Date == request.WorkDate &&
-                s.PointId == request.CollectionPointId
-            );
+            FakeDataSeeder.stagingAssignDays.RemoveAll(s => s.Date == request.WorkDate && s.PointId == request.CollectionPointId);
 
             FakeDataSeeder.stagingAssignDays.Add(new StagingAssignDay
             {
@@ -268,53 +234,34 @@ namespace ElecWasteCollection.Application.Services
 
         public async Task<GroupingByPointResponse> GroupByCollectionPointAsync(GroupingByPointRequest request)
         {
-            var point = FakeDataSeeder.smallCollectionPoints.FirstOrDefault(p => p.Id == request.CollectionPointId)
-                ?? throw new Exception("Không tìm thấy trạm thu gom.");
+            var point = FakeDataSeeder.smallCollectionPoints.FirstOrDefault(p => p.Id == request.CollectionPointId) ?? throw new Exception("Không tìm thấy trạm.");
+            var staging = FakeDataSeeder.stagingAssignDays.Where(s => s.PointId == request.CollectionPointId).OrderBy(s => s.Date).ToList();
+            if (!staging.Any()) throw new Exception("Chưa có dữ liệu Assign. Hãy chạy AssignDay trước.");
 
-            var staging = FakeDataSeeder.stagingAssignDays
-                .Where(s => s.PointId == request.CollectionPointId)
-                .OrderBy(s => s.Date)
-                .ToList();
-
-            if (!staging.Any()) throw new Exception("Chưa có ngày nào được Assign cho trạm này.");
-
-            var response = new GroupingByPointResponse
-            {
-                CollectionPoint = point.Name,
-                SavedToDatabase = request.SaveResult
-            };
-
+            var response = new GroupingByPointResponse { CollectionPoint = point.Name, SavedToDatabase = request.SaveResult };
             int groupCounter = 1;
 
             foreach (var assignDay in staging)
             {
                 var workDate = assignDay.Date;
                 var posts = FakeDataSeeder.posts.Where(p => assignDay.PostIds.Contains(p.Id)).ToList();
-                if (!posts.Any()) continue; 
+                if (!posts.Any()) continue;
 
-                var shiftsToday = FakeDataSeeder.shifts
-                    .Where(s => s.WorkDate == workDate)
-                    .OrderBy(s => s.Shift_Start_Time)
-                    .ToList();
+                var shiftsToday = FakeDataSeeder.shifts.Where(s => s.WorkDate == workDate).OrderBy(s => s.Shift_Start_Time).ToList();
+                if (!shiftsToday.Any()) throw new Exception($"Ngày {workDate} chưa có Ca làm việc (Shifts).");
 
-                if (!shiftsToday.Any())
-                    throw new Exception($"Không tìm thấy ca làm việc (Shifts) cho ngày {workDate}. Vui lòng tạo ca trước.");
+                var vehicle = FakeDataSeeder.vehicles.FirstOrDefault(v => v.Id == assignDay.VehicleId) ?? throw new Exception($"Xe {assignDay.VehicleId} không tồn tại.");
 
-                var vehicle = FakeDataSeeder.vehicles.FirstOrDefault(v => v.Id == assignDay.VehicleId)
-                    ?? throw new Exception($"Xe {assignDay.VehicleId} không tồn tại.");
-
-                var nodes = new List<dynamic>();
+                var unassignedNodes = new List<dynamic>();
                 foreach (var p in posts)
                 {
                     var user = FakeDataSeeder.users.FirstOrDefault(u => u.UserId == p.SenderId);
                     var prod = FakeDataSeeder.products.FirstOrDefault(pr => pr.Id == p.ProductId);
-                    if (user == null || prod == null) continue;
-
                     var size = FakeDataSeeder.sizeTiers.FirstOrDefault(t => t.SizeTierId == prod.SizeTierId);
 
                     if (TryGetTimeWindowForDate(p.ScheduleJson!, workDate, out var start, out var end))
                     {
-                        nodes.Add(new
+                        unassignedNodes.Add(new
                         {
                             Post = p,
                             User = user,
@@ -329,8 +276,6 @@ namespace ElecWasteCollection.Application.Services
                     }
                 }
 
-                var unassignedNodes = new List<dynamic>(nodes);
-
                 foreach (var shift in shiftsToday)
                 {
                     if (!unassignedNodes.Any()) break;
@@ -339,19 +284,16 @@ namespace ElecWasteCollection.Application.Services
                     var shiftStart = TimeOnly.FromDateTime(shift.Shift_Start_Time);
                     var shiftEnd = TimeOnly.FromDateTime(shift.Shift_End_Time);
 
-                    double curKg = 0;
-                    double curM3 = 0;
-                    double curLat = point.Latitude;
-                    double curLng = point.Longitude;
-                    TimeOnly timeCursor = shiftStart;
+                    double curKg = 0; double curM3 = 0;
+                    double curLat = point.Latitude; double curLng = point.Longitude;
+                    TimeOnly timeCursor = shiftStart; 
 
                     var routeNodes = new List<RouteDetail>();
                     var routeDbList = new List<CollectionRoutes>();
+                    double speed = (vehicle.Vehicle_Type.Contains("lớn") ? SPEED_KM_H_LARGE : SPEED_KM_H_SMALL) / 60.0;
 
                     while (unassignedNodes.Any())
                     {
-                        double speed = (vehicle.Vehicle_Type.Contains("lớn") ? SPEED_KM_H_LARGE : SPEED_KM_H_SMALL) / 60.0; 
-
                         var bestCandidate = unassignedNodes
                             .Select(node =>
                             {
@@ -360,41 +302,27 @@ namespace ElecWasteCollection.Application.Services
                                 TimeOnly arrivalTime = timeCursor.AddMinutes(travelTime);
 
                                 double waitTime = 0;
-                                if (arrivalTime < node.Start)
-                                {
-                                    waitTime = (node.Start - arrivalTime).TotalMinutes;
-                                }
+                                if (arrivalTime < node.Start) waitTime = (node.Start - arrivalTime).TotalMinutes;
 
                                 TimeOnly actualStart = arrivalTime < node.Start ? node.Start : arrivalTime;
 
                                 bool isValid = true;
-                                if (curKg + node.Weight > vehicle.Capacity_Kg) isValid = false;
-                                if (curM3 + node.Volume > vehicle.Capacity_M3) isValid = false;
+                                if (curKg + node.Weight > vehicle.Capacity_Kg) isValid = false; 
+                                if (curM3 + node.Volume > vehicle.Capacity_M3) isValid = false; 
+                                if (actualStart > node.End) isValid = false; 
+                                if (actualStart.AddMinutes(SERVICE_TIME_MINUTES) > shiftEnd) isValid = false; 
 
-                                if (actualStart > node.End) isValid = false;
-
-                                if (actualStart.AddMinutes(SERVICE_TIME_MINUTES) > shiftEnd) isValid = false;
-
-                                return new
-                                {
-                                    Data = node,
-                                    Distance = dist,
-                                    WaitTime = waitTime,
-                                    ActualStart = actualStart,
-                                    IsValid = isValid,
-                                    ClosingTime = node.End
-                                };
+                                return new { Data = node, Distance = dist, WaitTime = waitTime, ActualStart = actualStart, IsValid = isValid, ClosingTime = node.End };
                             })
-                            .Where(x => x.IsValid)
+                            .Where(x => x.IsValid) 
                             .OrderBy(x => x.WaitTime)     
-                            .ThenBy(x => x.ClosingTime)  
-                            .ThenBy(x => x.Distance)      
+                            .ThenBy(x => x.ClosingTime)   
+                            .ThenBy(x => x.Distance)       
                             .FirstOrDefault();
 
                         if (bestCandidate == null) break; 
 
                         var chosen = bestCandidate.Data;
-
                         routeNodes.Add(new RouteDetail
                         {
                             PickupOrder = routeNodes.Count + 1,
@@ -418,11 +346,9 @@ namespace ElecWasteCollection.Application.Services
                             Status = "Chưa bắt đầu"
                         });
 
-                        curKg += chosen.Weight;
-                        curM3 += chosen.Volume;
-                        curLat = chosen.Lat;
-                        curLng = chosen.Lng;
-                        timeCursor = bestCandidate.ActualStart.AddMinutes(SERVICE_TIME_MINUTES);
+                        curKg += chosen.Weight; curM3 += chosen.Volume;
+                        curLat = chosen.Lat; curLng = chosen.Lng;
+                        timeCursor = bestCandidate.ActualStart.AddMinutes(SERVICE_TIME_MINUTES); 
 
                         unassignedNodes.Remove(chosen);
 
@@ -440,7 +366,6 @@ namespace ElecWasteCollection.Application.Services
                             Shift_Id = shift.Id,
                             Created_At = DateTime.Now
                         };
-
                         foreach (var rt in routeDbList) rt.CollectionGroupId = group.Id;
 
                         if (request.SaveResult)
@@ -462,15 +387,8 @@ namespace ElecWasteCollection.Application.Services
                             Routes = routeNodes
                         });
                     }
-                }
-
-                //Nếu k còn ca nào nữa mà vẫn còn bài chưa được gán, thì báo lỗi
-                if (unassignedNodes.Any())
-                {
-
-                }
-
-            } 
+                } 
+            }
 
             return await Task.FromResult(response);
         }
