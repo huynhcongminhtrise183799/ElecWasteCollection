@@ -22,6 +22,7 @@ namespace ElecWasteCollection.Application.Services
 		private readonly List<Vehicles> _vehicles = FakeDataSeeder.vehicles;
 		private readonly IShippingNotifierService _notifierService; // Dịch vụ này vẫn giữ lại
 		private readonly List<ProductStatusHistory> _productStatusHistories = FakeDataSeeder.productStatusHistories;
+		private readonly List<Brand> _brand = FakeDataSeeder.brands;
 
 		public CollectionRouteService(IShippingNotifierService notifierService)
 		{
@@ -292,6 +293,10 @@ namespace ElecWasteCollection.Application.Services
 					.Select(img => img.ImageUrl)
 					.ToList();
 
+				var product = _products.FirstOrDefault(p => p.Id == post.ProductId);
+				if (product == null) return null;
+				var brand = _brand.FirstOrDefault(b => b.BrandId == product.BrandId);
+
 				// Join để lấy Collector và Vehicle
 				var group = _collectionGroups.FirstOrDefault(g => g.Id == route.CollectionGroupId);
 				if (group == null) return null;
@@ -319,6 +324,7 @@ namespace ElecWasteCollection.Application.Services
 					PickUpItemImages = pickUpImages,
 					LicensePlate = vehicle.Plate_Number,
 					Address = post.Address,
+					BrandName = brand.Name,
 					Status = route.Status
 				};
 			}
