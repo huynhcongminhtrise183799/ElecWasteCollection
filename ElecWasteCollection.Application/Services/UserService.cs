@@ -100,5 +100,10 @@ namespace ElecWasteCollection.Application.Services
 			}
 			return user;
 		}
+
+		public User? GetByPhone(string phone)
+		{
+			return users.FirstOrDefault(u => u.Phone == phone);
+		}
 	}
 }
