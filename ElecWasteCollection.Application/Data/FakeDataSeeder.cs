@@ -130,7 +130,7 @@ namespace ElecWasteCollection.Application.Data
             //AddFixedAssignTestData();
             //AddFullGroupingDemoData();
 
-            SeedGroupingServiceTestData();
+            //SeedGroupingServiceTestData();
         }
 
         // =========================================================================
@@ -143,8 +143,10 @@ namespace ElecWasteCollection.Application.Data
 			new User { UserId = Guid.Parse("e9b4b9de-b3b0-49ad-b90c-74c24a26b57a"), Name = "Nguyễn Minh Khôi", Email = "nguyen.minh.khoi@example.com", Phone = "0908123456", Address = "Trường THCS Long Thạnh Mỹ – Đường Long Thạnh Mỹ, TP. Thủ Đức", Avatar = "https://picsum.photos/id/1033/200/200", Iat = 10.845900, Ing = 106.833400, Role = "User" },
 			new User { UserId = Guid.Parse("72b4ad6a-0b5b-45a3-bb6b-6e1790c84b45"), Name = "Phạm Thị Hằng", Email = "pham.thi.hang@example.com", Phone = "0911222333", Address = "UBND Phường Long Thạnh Mỹ – 86 Nguyễn Xiển, TP. Thủ Đức", Avatar = "https://picsum.photos/id/1045/200/200", Iat = 10.841000, Ing = 106.830000, Role = "User" },
 			new User { UserId = Guid.Parse("c40deff9-163b-49e8-b967-238f22882b63"), Name = "Đỗ Quốc Bảo", Email = "do.quoc.bao@example.com", Phone = "0977222333", Address = "Công viên Ánh Sáng Vinhomes – Khu đô thị Vinhomes Grand Park", Avatar = "https://picsum.photos/id/1059/200/200", Iat = 10.839000, Ing = 106.833800, Role = "User" },
-			new User { UserId = Guid.Parse("c20deff9-163b-49e8-b967-238f22882b65"), Name = "Admin thu gom nhỏ", Email = "adminthugomnho@gmail.com", Phone = "0977222333", Address = "Công viên Ánh Sáng Vinhomes – Khu đô thị Vinhomes Grand Park", Avatar = "https://picsum.photos/id/1059/200/200", Iat = 10.839000, Ing = 106.833800, Role = "Admin_SmallCollectionPoint", SmallCollectionPointId = 1 }
-		};
+            new User { UserId = Guid.Parse("c20deff9-163b-49e8-b967-238f22882b65"), Name = "Admin thu gom nhỏ", Email = "adminthugomnho@gmail.com", Phone = "0977222333", Address = "Công viên Ánh Sáng Vinhomes – Khu đô thị Vinhomes Grand Park", Avatar = "https://picsum.photos/id/1059/200/200", Iat = 10.839000, Ing = 106.833800, Role = "Admin_SmallCollectionPoint", SmallCollectionPointId = 1 },
+
+                //new User { UserId = Guid.Parse("c20deff9-163b-49e8-b967-238f22882b66"), Name = "Admin thu gom nhỏ 9001", Email = "adminthugomnho9001@gmail.com", Phone = "0977222333", Address = "Công viên Bóng tối Vinhomes – Khu đô thị Vinhomes Grand Park", Avatar = "https://picsum.photos/id/1059/200/200", Iat = 10.839000, Ing = 106.833800, Role = "Admin_SmallCollectionPoint", SmallCollectionPointId = 9001 }
+        };
 
 		private static string CreateSchedule(int daysFromNow, string start, string end)
 		{
@@ -537,7 +539,7 @@ namespace ElecWasteCollection.Application.Data
         public static void AddPostsForDay16()
         {
             // 🔥 Tính đúng ngày 16 theo tháng hiện tại 
-            var day16DateTime = _vnNow.AddDays(16 - _vnNow.Day);
+            var day16DateTime = _vnNow.AddDays(22 - _vnNow.Day);
             var day16 = DateOnly.FromDateTime(day16DateTime);
 
             // ==================================================================
@@ -1242,165 +1244,165 @@ namespace ElecWasteCollection.Application.Data
         // GROUPING TEST DATA – DÀNH RIÊNG CHO Service và Controller ở trên
         // Tất cả ID được cô lập để tránh xung đột hệ thống
         // ==========================================================================
-        public static void SeedGroupingServiceTestData()
-        {
-            // Xóa mọi dataset test cũ
-            smallCollectionPoints.RemoveAll(x => x.Id == 9001);
-            vehicles.RemoveAll(x => x.Id == 91 || x.Id == 92);
-            shifts.RemoveAll(x => x.Id >= 9000);
-            stagingAssignDays.RemoveAll(x => x.PointId == 9001);
+        //public static void SeedGroupingServiceTestData()
+        //{
+        //    // Xóa mọi dataset test cũ
+        //    smallCollectionPoints.RemoveAll(x => x.Id == 9001);
+        //    vehicles.RemoveAll(x => x.Id == 91 || x.Id == 92);
+        //    shifts.RemoveAll(x => x.Id >= 9000);
+        //    stagingAssignDays.RemoveAll(x => x.PointId == 9001);
 
-            posts.RemoveAll(p => p.Name.Contains("[GRP-TEST]"));
-            products.RemoveAll(p => p.Description.Contains("[GRP-TEST]"));
-            users.RemoveAll(u => u.Name.Contains("Grouping Test User"));
+        //    posts.RemoveAll(p => p.Name.Contains("[GRP-TEST]"));
+        //    products.RemoveAll(p => p.Description.Contains("[GRP-TEST]"));
+        //    users.RemoveAll(u => u.Name.Contains("Grouping Test User"));
 
-            // ==========================================================================
-            // 1) TẠO SIZE TIER TEST ĐƠN GIẢN
-            // ==========================================================================
-            var testSizeTierId = Guid.NewGuid();
-            sizeTiers.Add(new SizeTier
-            {
-                SizeTierId = testSizeTierId,
-                CategoryId = cat_Laptop,
-                Name = "Test Size",
-                EstimatedWeight = 20,
-                EstimatedVolume = 0.4
-            });
+        //    // ==========================================================================
+        //    // 1) TẠO SIZE TIER TEST ĐƠN GIẢN
+        //    // ==========================================================================
+        //    var testSizeTierId = Guid.NewGuid();
+        //    sizeTiers.Add(new SizeTier
+        //    {
+        //        SizeTierId = testSizeTierId,
+        //        CategoryId = cat_Laptop,
+        //        Name = "Test Size",
+        //        EstimatedWeight = 20,
+        //        EstimatedVolume = 0.4
+        //    });
 
-            // ==========================================================================
-            // 2) SMALL COLLECTION POINT CHO TEST
-            // ==========================================================================
-            smallCollectionPoints.Add(new SmallCollectionPoints
-            {
-                Id = 9001,
-                Name = "Grouping Test Point",
-                Address = "Test Street",
-                Latitude = 10.84111,
-                Longitude = 106.83111,
-                City_Team_Id = 99,
-                Status = "active",
-                Created_At = _vnNow,
-                Updated_At = _vnNow
-            });
+        //    // ==========================================================================
+        //    // 2) SMALL COLLECTION POINT CHO TEST
+        //    // ==========================================================================
+        //    smallCollectionPoints.Add(new SmallCollectionPoints
+        //    {
+        //        Id = 9001,
+        //        Name = "Grouping Test Point",
+        //        Address = "Test Street",
+        //        Latitude = 10.84111,
+        //        Longitude = 106.83111,
+        //        City_Team_Id = 99,
+        //        Status = "active",
+        //        Created_At = _vnNow,
+        //        Updated_At = _vnNow
+        //    });
 
-            // ==========================================================================
-            // 3) VEHICLES TEST
-            // ==========================================================================
-            vehicles.Add(new Vehicles
-            {
-                Id = 91,
-                Plate_Number = "TEST-91",
-                Vehicle_Type = "Xe tải nhỏ",
-                Capacity_Kg = 800,
-                Capacity_M3 = 5,
-                Radius_Km = 10,
-                Status = "active",
-                Small_Collection_Point = 9001
-            });
+        //    // ==========================================================================
+        //    // 3) VEHICLES TEST
+        //    // ==========================================================================
+        //    vehicles.Add(new Vehicles
+        //    {
+        //        Id = 91,
+        //        Plate_Number = "TEST-91",
+        //        Vehicle_Type = "Xe tải nhỏ",
+        //        Capacity_Kg = 800,
+        //        Capacity_M3 = 5,
+        //        Radius_Km = 10,
+        //        Status = "active",
+        //        Small_Collection_Point = 9001
+        //    });
 
-            vehicles.Add(new Vehicles
-            {
-                Id = 92,
-                Plate_Number = "TEST-92",
-                Vehicle_Type = "Xe tải lớn",
-                Capacity_Kg = 2000,
-                Capacity_M3 = 12,
-                Radius_Km = 15,
-                Status = "active",
-                Small_Collection_Point = 9001
-            });
+        //    vehicles.Add(new Vehicles
+        //    {
+        //        Id = 92,
+        //        Plate_Number = "TEST-92",
+        //        Vehicle_Type = "Xe tải lớn",
+        //        Capacity_Kg = 2000,
+        //        Capacity_M3 = 12,
+        //        Radius_Km = 15,
+        //        Status = "active",
+        //        Small_Collection_Point = 9001
+        //    });
 
-            // ==========================================================================
-            // 4) USERS TEST
-            // ==========================================================================
-            List<User> testUsers = new();
-            for (int i = 1; i <= 6; i++)
-            {
-                testUsers.Add(new User
-                {
-                    UserId = Guid.NewGuid(),
-                    Name = $"Grouping Test User {i}",
-                    Email = $"gtu{i}@test.com",
-                    Phone = "0900",
-                    Address = $"Test Address {i}",
-                    Iat = 10.841000 + (i * 0.0002),
-                    Ing = 106.831000 + (i * 0.0002),
-                    Role = "User"
-                });
-            }
-            users.AddRange(testUsers);
+        //    // ==========================================================================
+        //    // 4) USERS TEST
+        //    // ==========================================================================
+        //    List<User> testUsers = new();
+        //    for (int i = 1; i <= 6; i++)
+        //    {
+        //        testUsers.Add(new User
+        //        {
+        //            UserId = Guid.NewGuid(),
+        //            Name = $"Grouping Test User {i}",
+        //            Email = $"gtu{i}@test.com",
+        //            Phone = "0900",
+        //            Address = $"Test Address {i}",
+        //            Iat = 10.841000 + (i * 0.0002),
+        //            Ing = 106.831000 + (i * 0.0002),
+        //            Role = "User"
+        //        });
+        //    }
+        //    users.AddRange(testUsers);
 
-            // ==========================================================================
-            // 5) PRODUCTS + POSTS TEST (6 posts)
-            // ==========================================================================
-            List<Guid> postIds = new();
+        //    // ==========================================================================
+        //    // 5) PRODUCTS + POSTS TEST (6 posts)
+        //    // ==========================================================================
+        //    List<Guid> postIds = new();
 
-            for (int i = 1; i <= 6; i++)
-            {
-                var prodId = Guid.NewGuid();
-                var postId = Guid.NewGuid();
-                postIds.Add(postId);
+        //    for (int i = 1; i <= 6; i++)
+        //    {
+        //        var prodId = Guid.NewGuid();
+        //        var postId = Guid.NewGuid();
+        //        postIds.Add(postId);
 
-                products.Add(new Products
-                {
-                    Id = prodId,
-                    CategoryId = cat_Laptop,
-                    BrandId = brand_Acer_Laptop,
-                    SizeTierId = testSizeTierId,
-                    Status = "Chờ gom nhóm",
-                    Description = $"[GRP-TEST] Product {i}"
-                });
+        //        products.Add(new Products
+        //        {
+        //            Id = prodId,
+        //            CategoryId = cat_Laptop,
+        //            BrandId = brand_Acer_Laptop,
+        //            SizeTierId = testSizeTierId,
+        //            Status = "Chờ gom nhóm",
+        //            Description = $"[GRP-TEST] Product {i}"
+        //        });
 
-                posts.Add(new Post
-                {
-                    Id = postId,
-                    ProductId = prodId,
-                    SenderId = testUsers[i - 1].UserId,
-                    Name = $"[GRP-TEST] Post {i}",
-                    Address = testUsers[i - 1].Address,
-                    Date = _vnNow.Date,
-                    Status = "Đã duyệt",
-                    EstimatePoint = 60 + i,
-                    ScheduleJson = JsonSerializer.Serialize(new List<DailyTimeSlots>
-            {
-                new DailyTimeSlots
-                {
-                    DayName = "TestDay",
-                    PickUpDate = DateOnly.FromDateTime(_vnNow),
-                    Slots = new TimeSlotDetail
-                    {
-                        StartTime = "08:00",
-                        EndTime = "17:00"
-                    }
-                }
-            })
-                });
-            }
+        //        posts.Add(new Post
+        //        {
+        //            Id = postId,
+        //            ProductId = prodId,
+        //            SenderId = testUsers[i - 1].UserId,
+        //            Name = $"[GRP-TEST] Post {i}",
+        //            Address = testUsers[i - 1].Address,
+        //            Date = _vnNow.Date,
+        //            Status = "Đã duyệt",
+        //            EstimatePoint = 60 + i,
+        //            ScheduleJson = JsonSerializer.Serialize(new List<DailyTimeSlots>
+        //    {
+        //        new DailyTimeSlots
+        //        {
+        //            DayName = "TestDay",
+        //            PickUpDate = DateOnly.FromDateTime(_vnNow),
+        //            Slots = new TimeSlotDetail
+        //            {
+        //                StartTime = "08:00",
+        //                EndTime = "17:00"
+        //            }
+        //        }
+        //    })
+        //        });
+        //    }
 
-            // ==========================================================================
-            // 6) SHIFT TEST
-            // ==========================================================================
-            shifts.Add(new Shifts
-            {
-                Id = 9000,
-                CollectorId = collector_Dung_Id,
-                Vehicle_Id = 91,
-                WorkDate = DateOnly.FromDateTime(_vnNow),
-                Shift_Start_Time = _vnNow.Date.AddHours(8),
-                Shift_End_Time = _vnNow.Date.AddHours(17)
-            });
+        //    // ==========================================================================
+        //    // 6) SHIFT TEST
+        //    // ==========================================================================
+        //    shifts.Add(new Shifts
+        //    {
+        //        Id = 9000,
+        //        CollectorId = collector_Dung_Id,
+        //        Vehicle_Id = 91,
+        //        WorkDate = DateOnly.FromDateTime(_vnNow),
+        //        Shift_Start_Time = _vnNow.Date.AddHours(8),
+        //        Shift_End_Time = _vnNow.Date.AddHours(17)
+        //    });
 
-            // ==========================================================================
-            // 7) STAGING ASSIGN (để test auto-group)
-            // ==========================================================================
-            stagingAssignDays.Add(new StagingAssignDay
-            {
-                Date = DateOnly.FromDateTime(_vnNow),
-                PointId = 9001,
-                VehicleId = 91,
-                PostIds = postIds
-            });
-        }
+        //    // ==========================================================================
+        //    // 7) STAGING ASSIGN (để test auto-group)
+        //    // ==========================================================================
+        //    stagingAssignDays.Add(new StagingAssignDay
+        //    {
+        //        Date = DateOnly.FromDateTime(_vnNow),
+        //        PointId = 9001,
+        //        VehicleId = 91,
+        //        PostIds = postIds
+        //    });
+        //}
 
 
     }

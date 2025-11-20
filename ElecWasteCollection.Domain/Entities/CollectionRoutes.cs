@@ -24,7 +24,8 @@ namespace ElecWasteCollection.Domain.Entities
 		//public string LicensePlate { get; set; }
 
 		public string? RejectMessage { get; set; }
+        public double DistanceKm { get; set; }
 
-		public string Status { get; set; }
+        public string Status { get; set; }
 	}
 }
