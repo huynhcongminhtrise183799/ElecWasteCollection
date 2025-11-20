@@ -14,6 +14,10 @@ namespace ElecWasteCollection.Application.Services
 	{
 		private readonly List<PointTransactions> pointTransactions = FakeDataSeeder.points;
 		private readonly IUserPointService _userPointService;
+		private readonly List<Post> _post = FakeDataSeeder.posts;
+		private readonly List<PostImages> postImages = FakeDataSeeder.postImages;
+		private readonly List<ProductImages> productImages = FakeDataSeeder.productImages;	
+		private readonly List<Products> products = FakeDataSeeder.products;
 
 		public PointTransactionService(IUserPointService userPointService)
 		{
@@ -22,17 +26,49 @@ namespace ElecWasteCollection.Application.Services
 
 		public List<PointTransactionModel> GetAllPointHistoryByUserId(Guid id)
 		{
-			var result = pointTransactions.Where(x => x.UserId == id).Select(pt => new PointTransactionModel
-			{
-				PointTransactionId = pt.PointTransactionId,
-				PostId = pt.PostId,
-				ProductId = pt.ProductId,
-				UserId = pt.UserId,
-				Desciption = pt.Desciption,
-				TransactionType = pt.TransactionType,
-				Point = pt.Point,
-				CreatedAt = pt.CreatedAt
-			}).ToList();
+			var result = pointTransactions // Sử dụng biến _pointTransactions từ FakeData
+				.Where(x => x.UserId == id)
+				.Select(pt =>
+				{
+					// --- LOGIC LẤY ẢNH ---
+					List<string> images = new List<string>();
+
+					// 1. Ưu tiên lấy ảnh từ Post (ảnh hiện trường/thực tế)
+					if (pt.PostId.HasValue)
+					{
+						images = postImages
+							.Where(pi => pi.PostId == pt.PostId)
+							.Select(pi => pi.ImageUrl)
+							.ToList();
+					}
+
+					// 2. Nếu chưa có ảnh từ Post, thử lấy ảnh từ Product (ảnh danh mục)
+					if ((images == null || images.Count == 0) && pt.ProductId.HasValue)
+					{
+						images = productImages
+							.Where(pi => pi.ProductId == pt.ProductId)
+							.Select(pi => pi.ImageUrl)
+							.ToList();
+					}
+
+					// --- MAPPING MODEL ---
+					return new PointTransactionModel
+					{
+						PointTransactionId = pt.PointTransactionId,
+						PostId = pt.PostId,
+						ProductId = pt.ProductId,
+						UserId = pt.UserId,
+						Desciption = pt.Desciption,
+						TransactionType = pt.TransactionType,
+						Point = pt.Point,
+						CreatedAt = pt.CreatedAt,
+
+						// Gán danh sách ảnh tìm được
+						Images = images ?? new List<string>()
+					};
+				})
+				.OrderByDescending(pt => pt.CreatedAt) // Nên sắp xếp mới nhất lên đầu
+				.ToList();
 
 			return result;
 		}
