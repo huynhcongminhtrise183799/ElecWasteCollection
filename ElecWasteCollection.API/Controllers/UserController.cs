@@ -57,5 +57,16 @@ namespace ElecWasteCollection.API.Controllers
 			}
 			return Ok(user);
 		}
+
+		[HttpGet("phone/{phone}")]
+		public IActionResult GetUserByPhone([FromRoute] string phone)
+		{
+			var user = _userService.GetByPhone(phone);
+			if (user == null)
+			{
+				return NotFound(new { message = "User not found." });
+			}
+			return Ok(user);
+		}
 	}
 }

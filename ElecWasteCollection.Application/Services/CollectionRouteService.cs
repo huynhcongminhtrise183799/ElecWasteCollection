@@ -260,18 +260,16 @@ namespace ElecWasteCollection.Application.Services
 					route.Status = "User_Reject";
 				}
 
-				// SỬA LỖI: Phải join để tìm CollectorId
 				var group = _collectionGroups.FirstOrDefault(g => g.Id == route.CollectionGroupId);
-				if (group == null) return false; // Lỗi data
+				if (group == null) return false;
 
 				var shift = _shifts.FirstOrDefault(s => s.Id == group.Shift_Id);
-				if (shift == null) return false; // Lỗi data
+				if (shift == null) return false; 
 
-				// Đã tìm thấy CollectorId
 				Guid collectorId = shift.CollectorId;
 
 				await _notifierService.NotifyShipperOfConfirmation(
-					collectorId.ToString(), // Sửa: Dùng collectorId vừa tìm được
+					collectorId.ToString(),
 					collectionRouteId,
 					route.Status);
 

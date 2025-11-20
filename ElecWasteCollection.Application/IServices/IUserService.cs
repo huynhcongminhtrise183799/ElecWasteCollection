@@ -20,5 +20,7 @@ namespace ElecWasteCollection.Application.IServices
 
 		User Profile(string email);
 
+		User? GetByPhone(string phone);
+
 	}
 }
