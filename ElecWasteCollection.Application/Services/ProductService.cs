@@ -530,7 +530,8 @@ namespace ElecWasteCollection.Application.Services
 				// === Dữ liệu từ Route/Shift ===
 				Collector = collector,
 				PickUpDate = pickUpDate,
-				EstimatedTime = estimatedTime
+				EstimatedTime = estimatedTime,
+				CollectionRouterId = route?.CollectionRouteId
 			};
 		}
 	}
