@@ -14,6 +14,8 @@ namespace ElecWasteCollection.Application.Model
 
 		public Guid? ProductId { get; set; }
 
+		public List<string> Images { get; set; }
+
 		public Guid UserId { get; set; }
 		public string Desciption { get; set; }
 

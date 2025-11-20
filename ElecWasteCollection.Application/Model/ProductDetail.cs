@@ -27,6 +27,7 @@ namespace ElecWasteCollection.Application.Model
 		public User Sender { get; set; }
 
 		public Collector? Collector { get; set; }
+		public Guid? CollectionRouterId { get; set; }
 		public DateOnly? PickUpDate { get; set; }
 		public TimeOnly? EstimatedTime { get; set; }
 		public string Address { get; set; }

@@ -76,6 +76,7 @@ namespace ElecWasteCollection.Application.Services
 			{
 				UserId = createProductRequest.SenderId,
 				Point = createProductRequest.Point,
+				ProductId = newProduct.Id,
 				Desciption = "Điểm nhận được khi gửi sản phẩm tại kho",
 			};
 			_pointTransactionService.ReceivePointFromCollectionPoint(pointTransaction);
@@ -388,6 +389,7 @@ namespace ElecWasteCollection.Application.Services
 			{
 				PostId = post.Id,
 				UserId = post.SenderId,
+				ProductId = model.ProductId,
 				Point = model.Point,
 				Desciption = model.Description,
 			};
@@ -528,7 +530,8 @@ namespace ElecWasteCollection.Application.Services
 				// === Dữ liệu từ Route/Shift ===
 				Collector = collector,
 				PickUpDate = pickUpDate,
-				EstimatedTime = estimatedTime
+				EstimatedTime = estimatedTime,
+				CollectionRouterId = route?.CollectionRouteId
 			};
 		}
 	}
