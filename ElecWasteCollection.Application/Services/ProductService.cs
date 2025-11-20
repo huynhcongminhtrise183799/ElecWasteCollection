@@ -30,6 +30,7 @@ namespace ElecWasteCollection.Application.Services
 		private readonly List<ProductStatusHistory> _productStatusHistories = FakeDataSeeder.productStatusHistories;
 		private readonly IUserService _userService;
 		private readonly ICollectorService _collectorService;
+		private readonly List<PointTransactions> pointTransactions = FakeDataSeeder.points;
 		public ProductService(IPointTransactionService pointTransactionService, IUserService userService, ICollectorService collectorService)
 		{
 			_pointTransactionService = pointTransactionService;
@@ -343,6 +344,9 @@ namespace ElecWasteCollection.Application.Services
 				})
 				.ToList();
 
+
+
+
 			return new ProductComeWarehouseDetailModel
 			{
 				ProductId = product.Id,
@@ -355,7 +359,8 @@ namespace ElecWasteCollection.Application.Services
 				QrCode = product.QRCode,
 				Status = product.Status,
 				SizeTierName = sizeTier?.Name,
-				EstimatePoint = post.EstimatePoint,
+				EstimatePoint = post?.EstimatePoint,
+				RealPoint = pointTransactions.FirstOrDefault(pt => pt.ProductId == product.Id)?.Point,
 				Attributes = attributesList
 			};
 		}
