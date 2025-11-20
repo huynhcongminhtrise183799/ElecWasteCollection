@@ -122,15 +122,17 @@ namespace ElecWasteCollection.Application.Data
 		private static readonly Guid[] prodIds = Enumerable.Range(0, 15).Select(_ => Guid.NewGuid()).ToArray();
 		private static readonly Guid[] postIds = Enumerable.Range(0, 15).Select(_ => Guid.NewGuid()).ToArray();
 
-		static FakeDataSeeder()
-		{
-			InitPostImages();
-			InitHistories();
-			AddPostsForDay16();
+        static FakeDataSeeder()
+        {
+            InitPostImages();
+            InitHistories();
+            //AddPostsForDay16();
+            AddPostsForDay22();
 
-			//AddLoadBalancingTestData();
-			//AddFixedAssignTestData();
-			//AddFullGroupingDemoData();
+
+            //AddLoadBalancingTestData();
+            //AddFixedAssignTestData();
+            //AddFullGroupingDemoData();
 
 			//SeedGroupingServiceTestData();
 		}
@@ -379,10 +381,10 @@ namespace ElecWasteCollection.Application.Data
 
             // --- HÔM NAY (0 day) ---
             new Post { Id = postIds[5], ProductId = prodIds[5], SenderId = users[0].UserId, Name = "Màn hình máy tính", Date = _vnNow.AddDays(-1), Status = "Đã duyệt", ScheduleJson = CreateSchedule(0, "08:30", "09:30"), Address = users[0].Address, EstimatePoint = 80 },
-			new Post { Id = postIds[6], ProductId = prodIds[6], SenderId = users[0].UserId, Name = "Lò vi sóng hư", Date = _vnNow.AddDays(-2), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "10:00", "11:00"), Address = users[0].Address, EstimatePoint = 120 },
-			new Post { Id = postIds[7], ProductId = prodIds[7], SenderId = users[2].UserId, Name = "Bình nước nóng", Date = _vnNow.AddDays(-3), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "14:00", "15:00"), Address = users[2].Address, EstimatePoint = 100 },
-			new Post { Id = postIds[8], ProductId = prodIds[8], SenderId = users[3].UserId, Name = "Máy in văn phòng", Date = _vnNow.AddDays(-1), Status = "Đã duyệt", ScheduleJson = CreateSchedule(0, "09:00", "10:00"), Address = users[3].Address, EstimatePoint = 90 },
-			new Post { Id = postIds[9], ProductId = prodIds[9], SenderId = users[4].UserId, Name = "Điện thoại cũ", Date = _vnNow.AddDays(-2), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "16:00", "17:00"), Address = users[4].Address, EstimatePoint = 200 },
+            new Post { Id = postIds[6], ProductId = prodIds[6], SenderId = users[0].UserId, Name = "Lò vi sóng hư", Date = _vnNow.AddDays(-2), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "10:00", "11:00"), Address = users[0].Address, EstimatePoint = 120 },
+            new Post { Id = postIds[7], ProductId = prodIds[7], SenderId = users[2].UserId, Name = "Bình nước nóng", Date = _vnNow.AddDays(-3), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "14:00", "15:00"), Address = users[2].Address, EstimatePoint = 100 },
+            new Post { Id = postIds[8], ProductId = prodIds[8], SenderId = users[3].UserId, Name = "Máy in văn phòng", Date = _vnNow.AddDays(-1), Status = "Đã duyệt", ScheduleJson = CreateSchedule(0, "09:00", "10:00"), Address = users[3].Address, EstimatePoint = 90 },
+            new Post { Id = postIds[9], ProductId = prodIds[9], SenderId = users[4].UserId, Name = "Điện thoại cũ", Date = _vnNow.AddDays(-2), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "16:00", "17:00"), Address = users[4].Address, EstimatePoint = 200 },
 
             // --- NGÀY MAI (+1 day) ---
             new Post { Id = postIds[10], ProductId = prodIds[10], SenderId = users[0].UserId, Name = "Máy hút bụi", Date = _vnNow, Status = "Đã duyệt", ScheduleJson = CreateSchedule(1, "08:00", "09:00"), Address = users[0].Address, EstimatePoint = 110 },
@@ -503,20 +505,20 @@ namespace ElecWasteCollection.Application.Data
 		}
 
 
-		public static List<PointTransactions> points = new List<PointTransactions>()
-		{
-		  new PointTransactions{ PointTransactionId = Guid.NewGuid(), PostId = posts[0].Id, CreatedAt = _vnNow.AddDays(-3), Point = 100, Desciption = "Thu gom thành công", UserId = posts[0].SenderId, ProductId = products[0].Id, TransactionType = "Earned"  },
-		};
+        public static List<PointTransactions> points = new List<PointTransactions>()
+        {
+          new PointTransactions{ PointTransactionId = Guid.NewGuid(), PostId = posts[0].Id, CreatedAt = _vnNow.AddDays(-3), Point = 100, Desciption = "Thu gom thành công", UserId = posts[0].SenderId, ProductId = products[0].Id, TransactionType = "Earned"  },
+        };
 
-		public static List<UserPoints> userPoints = new()
-		{
-			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("7f5c8b33-1b52-4d11-91b0-932c3d243c71"), Points = 100 },
-			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("b73a62a7-8b90-43cf-9ad7-2abf96f34a52"), Points = 75.5 },
-			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("e9b4b9de-b3b0-49ad-b90c-74c24a26b57a"), Points = 220 },
-			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("72b4ad6a-0b5b-45a3-bb6b-6e1790c84b45"), Points = 0 },
-			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("c40deff9-163b-49e8-b967-238f22882b63"), Points = 50 }
-		};
-		public static List<ProductImages> productImages = new();
+        public static List<UserPoints> userPoints = new()
+        {
+            new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("7f5c8b33-1b52-4d11-91b0-932c3d243c71"), Points = 100 },
+            new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("b73a62a7-8b90-43cf-9ad7-2abf96f34a52"), Points = 75.5 },
+            new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("e9b4b9de-b3b0-49ad-b90c-74c24a26b57a"), Points = 220 },
+            new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("72b4ad6a-0b5b-45a3-bb6b-6e1790c84b45"), Points = 0 },
+            new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("c40deff9-163b-49e8-b967-238f22882b63"), Points = 50 }
+        };
+        public static List<ProductImages> productImages = new();
 
 		// =========================================================================
 		// 9. SMALL COLLECTION POINTS – THÊM TRẠM MỚI CHO VINGHOMES GRAND PARK
@@ -705,53 +707,53 @@ namespace ElecWasteCollection.Application.Data
 				Created_At = _vnNow
 			};
 
-			collectionGroups.Add(group1);
-			collectionGroups.Add(group2);
+            collectionGroups.Add(group1);
+            collectionGroups.Add(group2);
 
 
-			// ==================================================================
-			// G) ROUTES – THỜI GIAN TƯƠNG ỨNG
-			// ==================================================================
-			//collectionRoutes.Add(new CollectionRoutes
-			//{
-			//    CollectionRouteId = Guid.NewGuid(),
-			//    PostId = postA,
-			//    CollectionGroupId = group1.Id,
-			//    CollectionDate = day16,
-			//    EstimatedTime = new TimeOnly(17, 00),
-			//    Status = "Chưa bắt đầu"
-			//});
+            // ==================================================================
+            // G) ROUTES – THỜI GIAN TƯƠNG ỨNG
+            // ==================================================================
+            //collectionRoutes.Add(new CollectionRoutes
+            //{
+            //    CollectionRouteId = Guid.NewGuid(),
+            //    PostId = postA,
+            //    CollectionGroupId = group1.Id,
+            //    CollectionDate = day16,
+            //    EstimatedTime = new TimeOnly(17, 00),
+            //    Status = "Chưa bắt đầu"
+            //});
 
-			//collectionRoutes.Add(new CollectionRoutes
-			//{
-			//    CollectionRouteId = Guid.NewGuid(),
-			//    PostId = postB,
-			//    CollectionGroupId = group1.Id,
-			//    CollectionDate = day16,
-			//    EstimatedTime = new TimeOnly(18, 00),
-			//    Status = "Chưa bắt đầu"
-			//});
+            //collectionRoutes.Add(new CollectionRoutes
+            //{
+            //    CollectionRouteId = Guid.NewGuid(),
+            //    PostId = postB,
+            //    CollectionGroupId = group1.Id,
+            //    CollectionDate = day16,
+            //    EstimatedTime = new TimeOnly(18, 00),
+            //    Status = "Chưa bắt đầu"
+            //});
 
-			//collectionRoutes.Add(new CollectionRoutes
-			//{
-			//    CollectionRouteId = Guid.NewGuid(),
-			//    PostId = postC,
-			//    CollectionGroupId = group2.Id,
-			//    CollectionDate = day16,
-			//    EstimatedTime = new TimeOnly(18, 00),
-			//    Status = "Chưa bắt đầu"
-			//});
+            //collectionRoutes.Add(new CollectionRoutes
+            //{
+            //    CollectionRouteId = Guid.NewGuid(),
+            //    PostId = postC,
+            //    CollectionGroupId = group2.Id,
+            //    CollectionDate = day16,
+            //    EstimatedTime = new TimeOnly(18, 00),
+            //    Status = "Chưa bắt đầu"
+            //});
 
-			//collectionRoutes.Add(new CollectionRoutes
-			//{
-			//    CollectionRouteId = Guid.NewGuid(),
-			//    PostId = postD,
-			//    CollectionGroupId = group2.Id,
-			//    CollectionDate = day16,
-			//    EstimatedTime = new TimeOnly(19, 00),
-			//    Status = "Chưa bắt đầu"
-			//});
-		}
+            //collectionRoutes.Add(new CollectionRoutes
+            //{
+            //    CollectionRouteId = Guid.NewGuid(),
+            //    PostId = postD,
+            //    CollectionGroupId = group2.Id,
+            //    CollectionDate = day16,
+            //    EstimatedTime = new TimeOnly(19, 00),
+            //    Status = "Chưa bắt đầu"
+            //});
+        }
 
 		// ======================================================================
 		// HELPER TẠO SCHEDULE NGÀY 16
@@ -781,179 +783,179 @@ namespace ElecWasteCollection.Application.Data
 
 		public static List<StagingAssignDay> stagingAssignDays = new();
 
-		//      // ======================================================================
-		//      // HELPER SINH ID CỐ ĐỊNH (Để test dễ dàng)
-		//      // Format: 000000{day}-000{type}-0000-0000-{index:12số}
-		//      // Type: 1=Product, 2=Post, 3=Image
-		//      // ======================================================================
-		//      private static Guid MakeFixedId(int day, int type, int index)
-		//      {
-		//          string guidString = $"{day:D8}-{type:D4}-{type:D4}-{type:D4}-{index:D12}";
-		//          return Guid.Parse(guidString);
-		//      }
+        //      // ======================================================================
+        //      // HELPER SINH ID CỐ ĐỊNH (Để test dễ dàng)
+        //      // Format: 000000{day}-000{type}-0000-0000-{index:12số}
+        //      // Type: 1=Product, 2=Post, 3=Image
+        //      // ======================================================================
+        //      private static Guid MakeFixedId(int day, int type, int index)
+        //      {
+        //          string guidString = $"{day:D8}-{type:D4}-{type:D4}-{type:D4}-{index:D12}";
+        //          return Guid.Parse(guidString);
+        //      }
 
-		//      // ======================================================================
-		//      // 11. DATA TEST TẢI TRỌNG & GOM NHÓM (NGÀY 21 - 24) - PHIÊN BẢN CHUẨN
-		//      // ======================================================================
-		//      public static void AddLoadBalancingTestData()
-		//      {
-		//          var currentMonth = _vnNow.Month;
-		//          var currentYear = _vnNow.Year;
+        //      // ======================================================================
+        //      // 11. DATA TEST TẢI TRỌNG & GOM NHÓM (NGÀY 21 - 24) - PHIÊN BẢN CHUẨN
+        //      // ======================================================================
+        //      public static void AddLoadBalancingTestData()
+        //      {
+        //          var currentMonth = _vnNow.Month;
+        //          var currentYear = _vnNow.Year;
 
-		//          var date21 = new DateTime(currentYear, currentMonth, 21);
-		//          var date22 = new DateTime(currentYear, currentMonth, 22);
-		//          var date23 = new DateTime(currentYear, currentMonth, 23);
-		//          var date24 = new DateTime(currentYear, currentMonth, 24);
+        //          var date21 = new DateTime(currentYear, currentMonth, 21);
+        //          var date22 = new DateTime(currentYear, currentMonth, 22);
+        //          var date23 = new DateTime(currentYear, currentMonth, 23);
+        //          var date24 = new DateTime(currentYear, currentMonth, 24);
 
-		//          // -------------------------------------------------------------------
-		//          // 1. TẠO CA LÀM VIỆC (SHIFTS)
-		//          // -------------------------------------------------------------------
-		//          var testDates = new List<DateTime> { date21, date22, date23, date24 };
-		//          foreach (var d in testDates)
-		//          {
-		//              var dateOnly = DateOnly.FromDateTime(d);
-		//              // Ca 1: Xe tải nhỏ (Dũng) - 07:00 đến 15:00
-		//              shifts.Add(new Shifts { Id = shifts.Count + 1, CollectorId = collector_Dung_Id, Vehicle_Id = 1, WorkDate = dateOnly, Shift_Start_Time = d.Date.AddHours(7), Shift_End_Time = d.Date.AddHours(15) });
-		//              // Ca 2: Xe tải lớn (Tuấn) - 08:00 đến 17:00
-		//              shifts.Add(new Shifts { Id = shifts.Count + 2, CollectorId = collector_Tuan_Id, Vehicle_Id = 2, WorkDate = dateOnly, Shift_Start_Time = d.Date.AddHours(8), Shift_End_Time = d.Date.AddHours(17) });
-		//          }
+        //          // -------------------------------------------------------------------
+        //          // 1. TẠO CA LÀM VIỆC (SHIFTS)
+        //          // -------------------------------------------------------------------
+        //          var testDates = new List<DateTime> { date21, date22, date23, date24 };
+        //          foreach (var d in testDates)
+        //          {
+        //              var dateOnly = DateOnly.FromDateTime(d);
+        //              // Ca 1: Xe tải nhỏ (Dũng) - 07:00 đến 15:00
+        //              shifts.Add(new Shifts { Id = shifts.Count + 1, CollectorId = collector_Dung_Id, Vehicle_Id = 1, WorkDate = dateOnly, Shift_Start_Time = d.Date.AddHours(7), Shift_End_Time = d.Date.AddHours(15) });
+        //              // Ca 2: Xe tải lớn (Tuấn) - 08:00 đến 17:00
+        //              shifts.Add(new Shifts { Id = shifts.Count + 2, CollectorId = collector_Tuan_Id, Vehicle_Id = 2, WorkDate = dateOnly, Shift_Start_Time = d.Date.AddHours(8), Shift_End_Time = d.Date.AddHours(17) });
+        //          }
 
-		//          // -------------------------------------------------------------------
-		//          // 2. TẠO USER TEST
-		//          // -------------------------------------------------------------------
-		//          var bulkUsers = new List<User>();
-		//          for (int i = 1; i <= 10; i++)
-		//          {
-		//              bulkUsers.Add(new User { UserId = Guid.NewGuid(), Name = $"Test User {i}", Email = $"t{i}@test.com", Phone = "0909", Address = $"Block C{i}", Role = "User", Iat = 10.8400 + (i * 0.0002), Ing = 106.8300 + (i * 0.0002) });
-		//          }
-		//          users.AddRange(bulkUsers);
+        //          // -------------------------------------------------------------------
+        //          // 2. TẠO USER TEST
+        //          // -------------------------------------------------------------------
+        //          var bulkUsers = new List<User>();
+        //          for (int i = 1; i <= 10; i++)
+        //          {
+        //              bulkUsers.Add(new User { UserId = Guid.NewGuid(), Name = $"Test User {i}", Email = $"t{i}@test.com", Phone = "0909", Address = $"Block C{i}", Role = "User", Iat = 10.8400 + (i * 0.0002), Ing = 106.8300 + (i * 0.0002) });
+        //          }
+        //          users.AddRange(bulkUsers);
 
-		//          // -------------------------------------------------------------------
-		//          // SCENARIO 1: NGÀY 21 - TEST QUÁ TẢI TRỌNG (20 Tủ lạnh x 80kg = 1600kg)
-		//          // ID: 00000021-...
-		//          // -------------------------------------------------------------------
-		//          var idsDay21 = new List<Guid>();
-		//          for (int i = 1; i <= 20; i++)
-		//          {
-		//              var prodId = MakeFixedId(21, 1, i);
-		//              var postId = MakeFixedId(21, 2, i);
-		//              var sender = bulkUsers[i % 10];
+        //          // -------------------------------------------------------------------
+        //          // SCENARIO 1: NGÀY 21 - TEST QUÁ TẢI TRỌNG (20 Tủ lạnh x 80kg = 1600kg)
+        //          // ID: 00000021-...
+        //          // -------------------------------------------------------------------
+        //          var idsDay21 = new List<Guid>();
+        //          for (int i = 1; i <= 20; i++)
+        //          {
+        //              var prodId = MakeFixedId(21, 1, i);
+        //              var postId = MakeFixedId(21, 2, i);
+        //              var sender = bulkUsers[i % 10];
 
-		//              products.Add(new Products { Id = prodId, CategoryId = cat_TuLanh, BrandId = brand_Pana_TuLanh, SizeTierId = st_TuLanh_Lon, Status = "Chờ gom nhóm", Description = $"Test Tủ lạnh {i}" });
+        //              products.Add(new Products { Id = prodId, CategoryId = cat_TuLanh, BrandId = brand_Pana_TuLanh, SizeTierId = st_TuLanh_Lon, Status = "Chờ gom nhóm", Description = $"Test Tủ lạnh {i}" });
 
-		//              posts.Add(new Post
-		//              {
-		//                  Id = postId,
-		//                  ProductId = prodId,
-		//                  SenderId = sender.UserId,
-		//                  Name = $"Tủ Lạnh Lớn {i}",
-		//                  Date = date21,
-		//                  Status = "Đã duyệt",
-		//                  ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date21), "08:00", "17:00"),
-		//                  Address = sender.Address,
-		//                  EstimatePoint = 200
-		//              });
-		//              postImages.Add(new PostImages { PostImageId = MakeFixedId(21, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
+        //              posts.Add(new Post
+        //              {
+        //                  Id = postId,
+        //                  ProductId = prodId,
+        //                  SenderId = sender.UserId,
+        //                  Name = $"Tủ Lạnh Lớn {i}",
+        //                  Date = date21,
+        //                  Status = "Đã duyệt",
+        //                  ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date21), "08:00", "17:00"),
+        //                  Address = sender.Address,
+        //                  EstimatePoint = 200
+        //              });
+        //              postImages.Add(new PostImages { PostImageId = MakeFixedId(21, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
 
-		//              idsDay21.Add(postId);
-		//          }
-		//          // Assign cho Xe Lớn (ID 2)
-		//          stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date21), PointId = 1, VehicleId = 2, PostIds = idsDay21 });
-
-
-		//          // -------------------------------------------------------------------
-		//          // SCENARIO 2: NGÀY 22 - TEST GOM ĐƯỜNG (15 Màn hình)
-		//          // ID: 00000022-...
-		//          // -------------------------------------------------------------------
-		//          var idsDay22 = new List<Guid>();
-		//          for (int i = 1; i <= 15; i++)
-		//          {
-		//              var prodId = MakeFixedId(22, 1, i);
-		//              var postId = MakeFixedId(22, 2, i);
-		//              var sender = bulkUsers[i % 5];
-
-		//              products.Add(new Products { Id = prodId, CategoryId = cat_ManHinhMayTinh, BrandId = brand_Dell_PC, SizeTierId = sizeTiers.First(x => x.CategoryId == cat_ManHinhMayTinh).SizeTierId, Status = "Chờ gom nhóm", Description = $"Màn hình {i}" });
-
-		//              posts.Add(new Post
-		//              {
-		//                  Id = postId,
-		//                  ProductId = prodId,
-		//                  SenderId = sender.UserId,
-		//                  Name = $"Màn hình cũ {i}",
-		//                  Date = date22,
-		//                  Status = "Đã duyệt",
-		//                  ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date22), "09:00", "11:00"),
-		//                  Address = sender.Address,
-		//                  EstimatePoint = 50
-		//              });
-		//              postImages.Add(new PostImages { PostImageId = MakeFixedId(22, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
-
-		//              idsDay22.Add(postId);
-		//          }
-		//          // Assign cho Xe Nhỏ (ID 1)
-		//          stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date22), PointId = 1, VehicleId = 1, PostIds = idsDay22 });
+        //              idsDay21.Add(postId);
+        //          }
+        //          // Assign cho Xe Lớn (ID 2)
+        //          stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date21), PointId = 1, VehicleId = 2, PostIds = idsDay21 });
 
 
-		//          // -------------------------------------------------------------------
-		//          // SCENARIO 3: NGÀY 23 - TEST CA CHIỀU (5 Máy giặt)
-		//          // ID: 00000023-...
-		//          // -------------------------------------------------------------------
-		//          var idsDay23 = new List<Guid>();
-		//          for (int i = 1; i <= 5; i++)
-		//          {
-		//              var prodId = MakeFixedId(23, 1, i);
-		//              var postId = MakeFixedId(23, 2, i);
+        //          // -------------------------------------------------------------------
+        //          // SCENARIO 2: NGÀY 22 - TEST GOM ĐƯỜNG (15 Màn hình)
+        //          // ID: 00000022-...
+        //          // -------------------------------------------------------------------
+        //          var idsDay22 = new List<Guid>();
+        //          for (int i = 1; i <= 15; i++)
+        //          {
+        //              var prodId = MakeFixedId(22, 1, i);
+        //              var postId = MakeFixedId(22, 2, i);
+        //              var sender = bulkUsers[i % 5];
 
-		//              products.Add(new Products { Id = prodId, CategoryId = cat_MayGiat, BrandId = brand_Toshiba_MayGiat, SizeTierId = st_MayGiat_TrungBinh, Status = "Chờ gom nhóm", Description = $"Máy giặt {i}" });
-		//              posts.Add(new Post
-		//              {
-		//                  Id = postId,
-		//                  ProductId = prodId,
-		//                  SenderId = bulkUsers[i].UserId,
-		//                  Name = $"Máy giặt {i}",
-		//                  Date = date23,
-		//                  Status = "Đã duyệt",
-		//                  ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date23), "13:00", "16:00"),
-		//                  Address = bulkUsers[i].Address,
-		//                  EstimatePoint = 150
-		//              });
-		//              postImages.Add(new PostImages { PostImageId = MakeFixedId(23, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
-		//              idsDay23.Add(postId);
-		//          }
-		//          stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date23), PointId = 1, VehicleId = 1, PostIds = idsDay23 });
+        //              products.Add(new Products { Id = prodId, CategoryId = cat_ManHinhMayTinh, BrandId = brand_Dell_PC, SizeTierId = sizeTiers.First(x => x.CategoryId == cat_ManHinhMayTinh).SizeTierId, Status = "Chờ gom nhóm", Description = $"Màn hình {i}" });
 
+        //              posts.Add(new Post
+        //              {
+        //                  Id = postId,
+        //                  ProductId = prodId,
+        //                  SenderId = sender.UserId,
+        //                  Name = $"Màn hình cũ {i}",
+        //                  Date = date22,
+        //                  Status = "Đã duyệt",
+        //                  ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date22), "09:00", "11:00"),
+        //                  Address = sender.Address,
+        //                  EstimatePoint = 50
+        //              });
+        //              postImages.Add(new PostImages { PostImageId = MakeFixedId(22, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
 
-		//          // -------------------------------------------------------------------
-		//          // SCENARIO 4: NGÀY 24 - TEST CA SÁNG (5 Laptop)
-		//          // ID: 00000024-...
-		//          // -------------------------------------------------------------------
-		//          var idsDay24 = new List<Guid>();
-		//          for (int i = 5; i < 10; i++)
-		//          {
-		//              var prodId = MakeFixedId(24, 1, i);
-		//              var postId = MakeFixedId(24, 2, i);
-
-		//              products.Add(new Products { Id = prodId, CategoryId = cat_Laptop, BrandId = brand_Acer_Laptop, SizeTierId = st_Laptop_MongNhe, Status = "Chờ gom nhóm", Description = $"Laptop {i}" });
-		//              posts.Add(new Post
-		//              {
-		//                  Id = postId,
-		//                  ProductId = prodId,
-		//                  SenderId = bulkUsers[i].UserId,
-		//                  Name = $"Laptop {i}",
-		//                  Date = date24,
-		//                  Status = "Đã duyệt",
-		//                  ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date24), "08:00", "12:00"),
-		//                  Address = bulkUsers[i].Address,
-		//                  EstimatePoint = 100
-		//              });
-		//              postImages.Add(new PostImages { PostImageId = MakeFixedId(24, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
-		//              idsDay24.Add(postId);
-		//          }
-		//          stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date24), PointId = 1, VehicleId = 1, PostIds = idsDay24 });
-		//      }
+        //              idsDay22.Add(postId);
+        //          }
+        //          // Assign cho Xe Nhỏ (ID 1)
+        //          stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date22), PointId = 1, VehicleId = 1, PostIds = idsDay22 });
 
 
-		public static List<TeamRatioItem> TeamRatios = new();
+        //          // -------------------------------------------------------------------
+        //          // SCENARIO 3: NGÀY 23 - TEST CA CHIỀU (5 Máy giặt)
+        //          // ID: 00000023-...
+        //          // -------------------------------------------------------------------
+        //          var idsDay23 = new List<Guid>();
+        //          for (int i = 1; i <= 5; i++)
+        //          {
+        //              var prodId = MakeFixedId(23, 1, i);
+        //              var postId = MakeFixedId(23, 2, i);
+
+        //              products.Add(new Products { Id = prodId, CategoryId = cat_MayGiat, BrandId = brand_Toshiba_MayGiat, SizeTierId = st_MayGiat_TrungBinh, Status = "Chờ gom nhóm", Description = $"Máy giặt {i}" });
+        //              posts.Add(new Post
+        //              {
+        //                  Id = postId,
+        //                  ProductId = prodId,
+        //                  SenderId = bulkUsers[i].UserId,
+        //                  Name = $"Máy giặt {i}",
+        //                  Date = date23,
+        //                  Status = "Đã duyệt",
+        //                  ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date23), "13:00", "16:00"),
+        //                  Address = bulkUsers[i].Address,
+        //                  EstimatePoint = 150
+        //              });
+        //              postImages.Add(new PostImages { PostImageId = MakeFixedId(23, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
+        //              idsDay23.Add(postId);
+        //          }
+        //          stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date23), PointId = 1, VehicleId = 1, PostIds = idsDay23 });
+
+
+        //          // -------------------------------------------------------------------
+        //          // SCENARIO 4: NGÀY 24 - TEST CA SÁNG (5 Laptop)
+        //          // ID: 00000024-...
+        //          // -------------------------------------------------------------------
+        //          var idsDay24 = new List<Guid>();
+        //          for (int i = 5; i < 10; i++)
+        //          {
+        //              var prodId = MakeFixedId(24, 1, i);
+        //              var postId = MakeFixedId(24, 2, i);
+
+        //              products.Add(new Products { Id = prodId, CategoryId = cat_Laptop, BrandId = brand_Acer_Laptop, SizeTierId = st_Laptop_MongNhe, Status = "Chờ gom nhóm", Description = $"Laptop {i}" });
+        //              posts.Add(new Post
+        //              {
+        //                  Id = postId,
+        //                  ProductId = prodId,
+        //                  SenderId = bulkUsers[i].UserId,
+        //                  Name = $"Laptop {i}",
+        //                  Date = date24,
+        //                  Status = "Đã duyệt",
+        //                  ScheduleJson = CreateScheduleJson(DateOnly.FromDateTime(date24), "08:00", "12:00"),
+        //                  Address = bulkUsers[i].Address,
+        //                  EstimatePoint = 100
+        //              });
+        //              postImages.Add(new PostImages { PostImageId = MakeFixedId(24, 3, i), PostId = postId, ImageUrl = "https://picsum.photos/200", AiDetectedLabelsJson = "[]" });
+        //              idsDay24.Add(postId);
+        //          }
+        //          stagingAssignDays.Add(new StagingAssignDay { Date = DateOnly.FromDateTime(date24), PointId = 1, VehicleId = 1, PostIds = idsDay24 });
+        //      }
+
+
+        public static List<TeamRatioItem> TeamRatios = new();
 
 		//      // ======================================================================
 		//      // 13. FIXED TEST DATA – 10 POSTS WITH FIXED GUID
@@ -1397,18 +1399,237 @@ namespace ElecWasteCollection.Application.Data
 		//        Shift_End_Time = _vnNow.Date.AddHours(17)
 		//    });
 
-		//    // ==========================================================================
-		//    // 7) STAGING ASSIGN (để test auto-group)
-		//    // ==========================================================================
-		//    stagingAssignDays.Add(new StagingAssignDay
-		//    {
-		//        Date = DateOnly.FromDateTime(_vnNow),
-		//        PointId = 9001,
-		//        VehicleId = 91,
-		//        PostIds = postIds
-		//    });
-		//}
+        //    // ==========================================================================
+        //    // 7) STAGING ASSIGN (để test auto-group)
+        //    // ==========================================================================
+        //    stagingAssignDays.Add(new StagingAssignDay
+        //    {
+        //        Date = DateOnly.FromDateTime(_vnNow),
+        //        PointId = 9001,
+        //        VehicleId = 91,
+        //        PostIds = postIds
+        //    });
+        //}
+
+        public static void AddPostsForDay22()
+        {
+            // ============================================================
+            // 🔥 LẤY NGÀY 22 TRONG THÁNG HIỆN TẠI
+            // ============================================================
+            var day22DateTime = _vnNow.AddDays(22 - _vnNow.Day);
+            var day22 = DateOnly.FromDateTime(day22DateTime);
+
+            // ============================================================
+            // A) USERS MỚI
+            // ============================================================
+            var extraUsers = new List<User>
+{
+    new User {
+        UserId = Guid.NewGuid(), Name = "User Test 01", Email = "u01@test.com", Phone = "0901111111",
+        Address = "Park 1 – Vinhomes GP", Avatar = "https://picsum.photos/id/31/200/200",
+        Iat = 10.842500, Ing = 106.831500, Role = "User"
+    },
+    new User {
+        UserId = Guid.NewGuid(), Name = "User Test 02", Email = "u02@test.com", Phone = "0902222222",
+        Address = "Park 2 – Vinhomes GP", Avatar = "https://picsum.photos/id/32/200/200",
+        Iat = 10.843200, Ing = 106.832200, Role = "User"
+    },
+    new User {
+        UserId = Guid.NewGuid(), Name = "User Test 03", Email = "u03@test.com", Phone = "0903333333",
+        Address = "Park 3 – Vinhomes GP", Avatar = "https://picsum.photos/id/33/200/200",
+        Iat = 10.842900, Ing = 106.833000, Role = "User"
+    },
+    new User {
+        UserId = Guid.NewGuid(), Name = "User Test 04", Email = "u04@test.com", Phone = "0904444444",
+        Address = "Park 5 – Vinhomes GP", Avatar = "https://picsum.photos/id/34/200/200",
+        Iat = 10.843600, Ing = 106.833400, Role = "User"
+    }
+};
+
+            users.AddRange(extraUsers);
+
+            var u1 = extraUsers[0].UserId;
+            var u2 = extraUsers[1].UserId;
+            var u3 = extraUsers[2].UserId;
+            var u4 = extraUsers[3].UserId;
+
+            // ============================================================
+            // B) ATTRIBUTE MASTER (GUID)
+            // ============================================================
+            //attributes.Clear();
+            // Dùng đúng các AttributeId gốc trong hệ thống
+            var att_length = Guid.Parse("a1a1a1a1-0002-0002-0002-000000000001"); // Chiều dài (cm)
+            var att_width = Guid.Parse("a1a1a1a1-0002-0002-0002-000000000002"); // Chiều rộng (cm)
+            var att_height = Guid.Parse("a1a1a1a1-0002-0002-0002-000000000003"); // Chiều cao (cm)
+            var att_weight = Guid.Parse("a1a1a1a1-0009-0009-0009-000000000001"); // Trọng lượng (kg)
+            var att_volume = Guid.Parse("a1a1a1a1-0004-0004-0004-000000000001"); // Khối lượng giặt (kg) hoặc dung tích
 
 
-	}
+            // ============================================================
+            // C) PRODUCTS (KHÔNG CÒN SizeTier)
+            // ============================================================
+            var prodA = Guid.NewGuid();
+            var prodB = Guid.NewGuid();
+            var prodC = Guid.NewGuid();
+            var prodD = Guid.NewGuid();
+
+            products.AddRange(new List<Products>
+{
+    new Products { Id = prodA, CategoryId = cat_LoViSong, BrandId = brand_Sharp_LoViSong,
+        Status = "Chờ gom nhóm", Description = "Lò vi sóng hỏng" },
+
+    new Products { Id = prodB, CategoryId = cat_DienThoai, BrandId = brand_Apple_DienThoai,
+        Status = "Chờ gom nhóm", Description = "Điện thoại vỡ" },
+
+    new Products { Id = prodC, CategoryId = cat_QuatDien, BrandId = brand_Asia_Quat,
+        Status = "Chờ gom nhóm", Description = "Quạt không quay" },
+
+    new Products { Id = prodD, CategoryId = cat_MayHutBui, BrandId = brand_Dyson,
+        Status = "Chờ gom nhóm", Description = "Máy hút bụi yếu" }
+});
+
+            // ============================================================
+            // D) PRODUCT VALUES (GUID)
+            // ============================================================
+            // — LÒ VI SÓNG —
+            productValues.AddRange(new List<ProductValues>
+{
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodA, AttributeId = att_length, Value = 50 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodA, AttributeId = att_width,  Value = 30 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodA, AttributeId = att_height, Value = 25 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodA, AttributeId = att_weight, Value = 12 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodA, AttributeId = att_volume, Value = 0.0375 }
+});
+
+            // — ĐIỆN THOẠI —
+            productValues.AddRange(new List<ProductValues>
+{
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodB, AttributeId = att_length, Value = 15 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodB, AttributeId = att_width,  Value = 7 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodB, AttributeId = att_height, Value = 1 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodB, AttributeId = att_weight, Value = 0.3 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodB, AttributeId = att_volume, Value = 0.000105 }
+});
+
+            // — QUẠT ĐIỆN —
+            productValues.AddRange(new List<ProductValues>
+{
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodC, AttributeId = att_length, Value = 40 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodC, AttributeId = att_width,  Value = 40 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodC, AttributeId = att_height, Value = 120 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodC, AttributeId = att_weight, Value = 5 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodC, AttributeId = att_volume, Value = 0.192 }
+});
+
+            // — MÁY HÚT BỤI —
+            productValues.AddRange(new List<ProductValues>
+{
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodD, AttributeId = att_length, Value = 30 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodD, AttributeId = att_width,  Value = 25 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodD, AttributeId = att_height, Value = 25 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodD, AttributeId = att_weight, Value = 6 },
+    new ProductValues { ProductValuesId = Guid.NewGuid(), ProductId = prodD, AttributeId = att_volume, Value = 0.01875 }
+});
+
+            // ============================================================
+            // E) POSTS NGÀY 22
+            // ============================================================
+            var postA = Guid.NewGuid();
+            var postB = Guid.NewGuid();
+            var postC = Guid.NewGuid();
+            var postD = Guid.NewGuid();
+
+            posts.AddRange(new List<Post>
+{
+    new Post {
+        Id = postA, ProductId = prodA, SenderId = u1,
+        Name = "Lò vi sóng – thu gom ngày 22",
+        Date = day22DateTime, Status = "Đã duyệt",
+        ScheduleJson = CreateScheduleJson(day22, "17:00", "18:00"),
+        Address = extraUsers[0].Address, EstimatePoint = 100
+    },
+
+    new Post {
+        Id = postB, ProductId = prodB, SenderId = u2,
+        Name = "Điện thoại – thu gom ngày 22",
+        Date = day22DateTime, Status = "Đã duyệt",
+        ScheduleJson = CreateScheduleJson(day22, "18:00", "20:00"),
+        Address = extraUsers[1].Address, EstimatePoint = 120
+    },
+
+    new Post {
+        Id = postC, ProductId = prodC, SenderId = u3,
+        Name = "Quạt điện – thu gom ngày 22",
+        Date = day22DateTime, Status = "Đã duyệt",
+        ScheduleJson = CreateScheduleJson(day22, "18:00", "21:00"),
+        Address = extraUsers[2].Address, EstimatePoint = 90
+    },
+
+    new Post {
+        Id = postD, ProductId = prodD, SenderId = u4,
+        Name = "Máy hút bụi – thu gom ngày 22",
+        Date = day22DateTime, Status = "Đã duyệt",
+        ScheduleJson = CreateScheduleJson(day22, "19:00", "20:00"),
+        Address = extraUsers[3].Address, EstimatePoint = 140
+    }
+});
+
+            // ============================================================
+            // F) IMAGE
+            // ============================================================
+            postImages.Add(new PostImages { PostImageId = Guid.NewGuid(), PostId = postA, ImageUrl = "https://picsum.photos/id/41/200/200" });
+            postImages.Add(new PostImages { PostImageId = Guid.NewGuid(), PostId = postB, ImageUrl = "https://picsum.photos/id/42/200/200" });
+            postImages.Add(new PostImages { PostImageId = Guid.NewGuid(), PostId = postC, ImageUrl = "https://picsum.photos/id/43/200/200" });
+            postImages.Add(new PostImages { PostImageId = Guid.NewGuid(), PostId = postD, ImageUrl = "https://picsum.photos/id/44/200/200" });
+
+            // ============================================================
+            // G) SHIFT NGÀY 22
+            // ============================================================
+            var shiftId1 = shifts.Count + 1;
+            var shiftId2 = shifts.Count + 2;
+
+            shifts.Add(new Shifts
+            {
+                Id = shiftId1,
+                CollectorId = collector_Dung_Id,
+                Vehicle_Id = 1,
+                WorkDate = day22,
+                Shift_Start_Time = day22DateTime.Date.AddHours(16),
+                Shift_End_Time = day22DateTime.Date.AddHours(22)
+            });
+
+            shifts.Add(new Shifts
+            {
+                Id = shiftId2,
+                CollectorId = collector_Tuan_Id,
+                Vehicle_Id = 2,
+                WorkDate = day22,
+                Shift_Start_Time = day22DateTime.Date.AddHours(16),
+                Shift_End_Time = day22DateTime.Date.AddHours(22)
+            });
+
+            // ============================================================
+            // H) GROUP NGÀY 22
+            // ============================================================
+            collectionGroups.Add(new CollectionGroups
+            {
+                Id = collectionGroups.Count + 1,
+                Shift_Id = shiftId1,
+                Group_Code = $"DAY22-S1-DUNG",
+                Name = "Tuyến Ngày 22 – Dũng",
+                Created_At = _vnNow
+            });
+
+            collectionGroups.Add(new CollectionGroups
+            {
+                Id = collectionGroups.Count + 2,
+                Shift_Id = shiftId2,
+                Group_Code = $"DAY22-S2-TUAN",
+                Name = "Tuyến Ngày 22 – Tuấn",
+                Created_At = _vnNow
+            });
+        }
+
+
+    }
 }
