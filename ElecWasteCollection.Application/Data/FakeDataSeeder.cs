@@ -379,7 +379,7 @@ namespace ElecWasteCollection.Application.Data
 
             // --- HÔM NAY (0 day) ---
             new Post { Id = postIds[5], ProductId = prodIds[5], SenderId = users[0].UserId, Name = "Màn hình máy tính", Date = _vnNow.AddDays(-1), Status = "Đã duyệt", ScheduleJson = CreateSchedule(0, "08:30", "09:30"), Address = users[0].Address, EstimatePoint = 80 },
-			new Post { Id = postIds[6], ProductId = prodIds[6], SenderId = users[1].UserId, Name = "Lò vi sóng hư", Date = _vnNow.AddDays(-2), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "10:00", "11:00"), Address = users[1].Address, EstimatePoint = 120 },
+			new Post { Id = postIds[6], ProductId = prodIds[6], SenderId = users[0].UserId, Name = "Lò vi sóng hư", Date = _vnNow.AddDays(-2), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "10:00", "11:00"), Address = users[0].Address, EstimatePoint = 120 },
 			new Post { Id = postIds[7], ProductId = prodIds[7], SenderId = users[2].UserId, Name = "Bình nước nóng", Date = _vnNow.AddDays(-3), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "14:00", "15:00"), Address = users[2].Address, EstimatePoint = 100 },
 			new Post { Id = postIds[8], ProductId = prodIds[8], SenderId = users[3].UserId, Name = "Máy in văn phòng", Date = _vnNow.AddDays(-1), Status = "Đã duyệt", ScheduleJson = CreateSchedule(0, "09:00", "10:00"), Address = users[3].Address, EstimatePoint = 90 },
 			new Post { Id = postIds[9], ProductId = prodIds[9], SenderId = users[4].UserId, Name = "Điện thoại cũ", Date = _vnNow.AddDays(-2), Status = "Đã Duyệt", ScheduleJson = CreateSchedule(0, "16:00", "17:00"), Address = users[4].Address, EstimatePoint = 200 },
@@ -503,11 +503,14 @@ namespace ElecWasteCollection.Application.Data
 		}
 
 
-		public static List<PointTransactions> points = new List<PointTransactions>();
+        public static List<PointTransactions> points = new List<PointTransactions>()
+        {
+          new PointTransactions{ PointTransactionId = Guid.NewGuid(), PostId = posts[0].Id, CreatedAt = _vnNow.AddDays(-3), Point = 100, Desciption = "Thu gom thành công", UserId = posts[0].SenderId, ProductId = products[0].Id, TransactionType = "Earned"  },
+		};
 
 		public static List<UserPoints> userPoints = new()
 		{
-			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("7f5c8b33-1b52-4d11-91b0-932c3d243c71"), Points = 150 },
+			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("7f5c8b33-1b52-4d11-91b0-932c3d243c71"), Points = 100 },
 			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("b73a62a7-8b90-43cf-9ad7-2abf96f34a52"), Points = 75.5 },
 			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("e9b4b9de-b3b0-49ad-b90c-74c24a26b57a"), Points = 220 },
 			new UserPoints { Id = Guid.NewGuid(), UserId = Guid.Parse("72b4ad6a-0b5b-45a3-bb6b-6e1790c84b45"), Points = 0 },
