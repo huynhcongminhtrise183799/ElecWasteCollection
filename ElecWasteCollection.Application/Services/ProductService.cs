@@ -539,5 +539,17 @@ namespace ElecWasteCollection.Application.Services
 				CollectionRouterId = route?.CollectionRouteId
 			};
 		}
+
+		public bool UpdateProductStatusByProductId(Guid productId, string status)
+		{
+			var product = _products.FirstOrDefault(p => p.Id == productId);
+			if (product == null)
+			{
+				return false;
+			}
+
+			product.Status = status;
+			return true;
+		}
 	}
 }

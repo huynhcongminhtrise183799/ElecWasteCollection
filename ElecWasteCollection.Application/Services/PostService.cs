@@ -34,11 +34,13 @@ namespace ElecWasteCollection.Application.Services
 		private static readonly HttpClient _httpClient = new HttpClient();
 		private readonly IUserService _userService;
 		private readonly IProfanityChecker _profanityChecker;
+		private readonly IProductService _productService;
 
-		public PostService(IUserService userService, IProfanityChecker profanityChecker)
+		public PostService(IUserService userService, IProfanityChecker profanityChecker, IProductService productService)
 		{
 			_userService = userService;
 			_profanityChecker = profanityChecker;
+			_productService = productService;
 		}
 
 		public async Task<PostDetailModel> AddPost(CreatePostModel createPostRequest)
@@ -59,7 +61,7 @@ namespace ElecWasteCollection.Application.Services
 					CategoryId = productRequest.SubCategoryId,
 					BrandId = productRequest.BrandId,
 					Description = createPostRequest.Description,
-					Status = "Chờ gom nhóm"
+					Status = "Chờ Duyệt"
 				};
 
 				if (productRequest.SizeTierId.HasValue && productRequest.SizeTierId.Value != Guid.Empty)
@@ -84,7 +86,7 @@ namespace ElecWasteCollection.Application.Services
 					}
 				}
 
-				products.Add(newProduct);
+				
 
 				// --- BƯỚC 3: Tạo Post (Chưa có ảnh, chưa có status) ---
 				var newPost = new Post
@@ -132,15 +134,32 @@ namespace ElecWasteCollection.Application.Services
 					if (results.All(r => r.IsMatch)) 
 					{
 						postStatus = "Đã Duyệt";
+						newProduct.Status = "Chờ gom nhóm";
+						var history = new ProductStatusHistory
+						{
+							ProductId = newProduct.Id,
+							ChangedAt = DateTime.Now,
+							Status = "Chờ gom nhóm",
+							StatusDescription = "Yêu cầu được duyệt"
+						};
+						products.Add(newProduct);
+						_productStatusHistories.Add(history);
 					}
-					var history = new ProductStatusHistory
+					else
 					{
-						ProductId = newProduct.Id,
-						ChangedAt = DateTime.Now,
-						Status = postStatus,
-						StatusDescription = "Yêu cầu được duyệt"
-					};
-					_productStatusHistories.Add(history);
+						var history = new ProductStatusHistory
+						{
+							ProductId = newProduct.Id,
+							ChangedAt = DateTime.Now,
+							Status = "Chờ Duyệt",
+							StatusDescription = "Yêu cầu đã được gửi"
+						};
+						products.Add(newProduct);
+						_productStatusHistories.Add(history);
+					}
+					
+
+					
 				}
 				//var containsProfanity = await _profanityChecker.ContainsProfanityAsync(createPostRequest.Name);
 				//if (containsProfanity)
@@ -539,6 +558,13 @@ namespace ElecWasteCollection.Application.Services
 					StatusDescription = "Yêu cầu được duyệt"
 				};
 				_productStatusHistories.Add(history);
+				var product = products.FirstOrDefault(p => p.Id == post.ProductId);
+				if (product != null)
+				{
+					product.Status = "Chờ gom nhóm";
+					_productService.UpdateProductStatusByProductId(product.Id, product.Status);
+
+				}
 				return true;
 			}
 			return false;
