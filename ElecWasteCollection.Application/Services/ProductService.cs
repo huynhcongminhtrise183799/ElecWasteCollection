@@ -400,7 +400,7 @@ namespace ElecWasteCollection.Application.Services
 			}
 			else
 			{
-				description = "Điểm nhận được khi sản phẩm về đến kho";
+				description = "Sản phầm đã về đến kho";
 			}
 			var pointTransaction = new CreatePointTransactionModel
 			{
