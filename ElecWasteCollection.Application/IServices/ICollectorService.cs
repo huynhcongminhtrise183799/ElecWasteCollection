@@ -1,4 +1,5 @@
-﻿using ElecWasteCollection.Domain.Entities;
+﻿using ElecWasteCollection.Application.Model;
+using ElecWasteCollection.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,8 @@ namespace ElecWasteCollection.Application.IServices
 {
 	public interface ICollectorService
 	{
-		Collector GetById(Guid id);
+		CollectorResponse? GetById(Guid id);
 
-		List<Collector> GetAll();
+		List<CollectorResponse> GetAll();
 	}
 }

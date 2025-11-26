@@ -11,12 +11,12 @@ namespace ElecWasteCollection.Application.IServices
 	{
 		void AddUser(User user);
 		void AddRange(IEnumerable<User> newUsers);
-		void UpdateUser(int iat, int ing, Guid id);
+		//void UpdateUser(int iat, int ing, Guid id);
 		List<User> GetAll();
 		User GetById(Guid id);
 		Task<string> LoginWithGoogleAsync(string token);
 
-		Task<string> Login(string email);
+		Task<string> Login(string userName, string password);
 
 		User Profile(string email);
 

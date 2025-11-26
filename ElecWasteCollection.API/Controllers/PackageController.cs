@@ -95,5 +95,32 @@ namespace ElecWasteCollection.API.Controllers
 
 			return Ok(new { message = "Package updated successfully." });
 		}
+
+		[HttpGet("delivery")]
+		public IActionResult GetPackagesWhenDelivery()
+		{
+			var packages = _packageService.GetPackagesWhenDelivery();
+			return Ok(packages);
+		}
+		[HttpPut("{packageId}/delivery")]
+		public IActionResult UpdatePackageStatusToDelivering([FromRoute] string packageId)
+		{
+			var result = _packageService.UpdatePackageStatusDeliveryAndRecycler(packageId, "Đang vận chuyển");
+			if (!result)
+			{
+				return BadRequest("Failed to update package status.");
+			}
+			return Ok(new { message = "Package status updated to 'Đang vận chuyển' successfully." });
+		}
+		[HttpPut("{packageId}/recycler")]
+		public IActionResult UpdatePackageStatusToRecycled([FromRoute] string packageId)
+		{
+			var result = _packageService.UpdatePackageStatusDeliveryAndRecycler(packageId, "Tái chế");
+			if (!result)
+			{
+				return BadRequest("Failed to update package status.");
+			}
+			return Ok(new { message = "Package status updated successfully." });
+		}
 	}
 }

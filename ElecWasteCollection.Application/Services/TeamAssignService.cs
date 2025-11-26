@@ -8,7 +8,8 @@ namespace ElecWasteCollection.Application.Services
 {
     public class TeamAssignService : ITeamAssignService
     {
-        public async Task<AssignTeamResult> AssignPostsToTeamsAsync(AssignTeamRequest request)
+        private readonly List<UserAddress> _userAddress = FakeDataSeeder.userAddress;
+		public async Task<AssignTeamResult> AssignPostsToTeamsAsync(AssignTeamRequest request)
         {
             var result = new AssignTeamResult();
 
@@ -58,19 +59,19 @@ namespace ElecWasteCollection.Application.Services
                     if (team.Quota == 0) break;
 
                     var user = FakeDataSeeder.users.First(u => u.UserId == post.SenderId);
-
-                    double bestDist = double.MaxValue;
+                    var userAddress = _userAddress.FirstOrDefault(ua => ua.UserId == user.UserId);
+					double bestDist = double.MaxValue;
                     SmallCollectionPoints? bestPoint = null;
 
                     foreach (var point in myPoints)
                     {
-                        if (user.Iat == null || user.Ing == null) continue;
+                        if (userAddress.Iat == null || userAddress.Ing == null) continue;
 
                         double dist = GeoHelper.DistanceKm(
                             point.Latitude,
                             point.Longitude,
-                            user.Iat.Value,
-                            user.Ing.Value
+							userAddress.Iat.Value,
+							userAddress.Ing.Value
                         );
 
                         if (dist < bestDist)
