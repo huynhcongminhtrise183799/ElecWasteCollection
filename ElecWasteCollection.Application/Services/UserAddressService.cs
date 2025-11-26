@@ -84,10 +84,19 @@ namespace ElecWasteCollection.Application.Services
 			{
 				return false; // Address not found
 			}
+			var existingAddress = _addresses.Where(a => a.UserId == update.UserId);
+			if (update.isDefault)
+			{
+				foreach (var addr in existingAddress)
+				{
+					addr.isDefault = false;
+				}
+			}
 			address.Address = update.Address;
 			address.Iat = update.Iat;
 			address.Ing = update.Ing;
 			address.isDefault = update.isDefault;
+			
 			return true;
 		}
 	}
