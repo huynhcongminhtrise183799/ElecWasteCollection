@@ -1,4 +1,5 @@
 ﻿using ElecWasteCollection.Application.Model;
+using ElecWasteCollection.Application.Model.AssignPost;
 using ElecWasteCollection.Domain.Entities;
 using OpenCvSharp.Features2D;
 using System;
@@ -2122,6 +2123,9 @@ namespace ElecWasteCollection.Application.Data
                 Created_At = _vnNow
             });
         }
+
+        public static List<UnassignedTeamItem> UnassignedTeamPosts { get; set; } = new();
+        public static List<OutOfRangeSmallPointItem> OutOfRangeSmallPointPosts { get; set; } = new();
 
 
 

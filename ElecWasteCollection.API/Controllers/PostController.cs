@@ -1,4 +1,5 @@
 ﻿using ElecWasteCollection.API.DTOs.Request;
+using ElecWasteCollection.Application.Data;
 using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.Model;
 using ElecWasteCollection.Domain.Entities;
@@ -142,5 +143,48 @@ namespace ElecWasteCollection.API.Controllers
 			return Ok(new { message = "Post created successfully.", item = result });
 		}
 
-		}
+        //
+
+        [HttpGet("team/{teamId}")]
+        public IActionResult GetByTeam(int teamId)
+        {
+            var posts = FakeDataSeeder.posts
+                .Where(p => p.CollectionTeamId == teamId)
+                .ToList();
+
+            return Ok(new
+            {
+                TeamId = teamId,
+                Count = posts.Count,
+                Posts = posts
+            });
+        }
+
+        [HttpGet("smallpoint/{smallPointId}")]
+        public IActionResult GetBySmallPoint(int smallPointId)
+        {
+            var posts = FakeDataSeeder.posts
+                .Where(p => p.AssignedSmallPointId == smallPointId)
+                .ToList();
+
+            return Ok(new
+            {
+                SmallPointId = smallPointId,
+                Count = posts.Count,
+                Posts = posts
+            });
+        }
+
+        [HttpGet("out-of-range")]
+        public IActionResult GetOutOfRange()
+        {
+            return Ok(new
+            {
+                UnassignedTeam = FakeDataSeeder.UnassignedTeamPosts,
+                OutOfRangeSmallPoint = FakeDataSeeder.OutOfRangeSmallPointPosts
+            });
+        }
+
+
+    }
 }
