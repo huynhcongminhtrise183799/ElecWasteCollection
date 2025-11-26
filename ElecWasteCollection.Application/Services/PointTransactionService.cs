@@ -15,7 +15,7 @@ namespace ElecWasteCollection.Application.Services
 		private readonly List<PointTransactions> pointTransactions = FakeDataSeeder.points;
 		private readonly IUserPointService _userPointService;
 		private readonly List<Post> _post = FakeDataSeeder.posts;
-		private readonly List<PostImages> postImages = FakeDataSeeder.postImages;
+		//private readonly List<PostImages> postImages = FakeDataSeeder.postImages;
 		private readonly List<ProductImages> productImages = FakeDataSeeder.productImages;	
 		private readonly List<Products> products = FakeDataSeeder.products;
 
@@ -34,13 +34,13 @@ namespace ElecWasteCollection.Application.Services
 					List<string> images = new List<string>();
 
 					// 1. Ưu tiên lấy ảnh từ Post (ảnh hiện trường/thực tế)
-					if (pt.PostId.HasValue)
-					{
-						images = postImages
-							.Where(pi => pi.PostId == pt.PostId)
-							.Select(pi => pi.ImageUrl)
-							.ToList();
-					}
+					//if (pt.PostId.HasValue)
+					//{
+					//	images = postImages
+					//		.Where(pi => pi.PostId == pt.PostId)
+					//		.Select(pi => pi.ImageUrl)
+					//		.ToList();
+					//}
 
 					// 2. Nếu chưa có ảnh từ Post, thử lấy ảnh từ Product (ảnh danh mục)
 					if ((images == null || images.Count == 0) && pt.ProductId.HasValue)

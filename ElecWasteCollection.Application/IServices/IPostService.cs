@@ -11,7 +11,6 @@ namespace ElecWasteCollection.Application.IServices
 	public interface IPostService
 	{
 		Task<PostDetailModel> AddPost(CreatePostModel createPostRequest);
-		PostDetailModel AddPostByAdminWarehouse(CreateProductAtWarehouseModel createPostRequest);
 
 		List<PostSummaryModel> GetAll();
 		List<PostDetailModel> GetPostBySenderId(Guid senderId);

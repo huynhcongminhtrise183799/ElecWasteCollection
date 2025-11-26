@@ -84,9 +84,8 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<IUserPointService, UserPointService>();
 			builder.Services.AddScoped<IImageComparisonService, ImageComparisonService>();
 			builder.Services.AddScoped<ISettingsService, SettingsService>();
-            builder.Services.AddScoped<ISmallPointAssignService, SmallPointAssignService>();
-            builder.Services.AddScoped<ITeamAssignService, TeamAssignService>();
             builder.Services.AddScoped<ITeamRatioService, TeamRatioService>();
+			builder.Services.AddScoped<IUserAddressService, UserAddressService>();
             builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
@@ -124,7 +123,6 @@ namespace ElecWasteCollection.API
 			var app = builder.Build();
 			_ = FakeDataSeeder.users;
 			_ = FakeDataSeeder.posts;
-			_ = FakeDataSeeder.collectors;
 			_ = FakeDataSeeder.collectionRoutes;
 			_ = FakeDataSeeder.categories;
 			_ = FakeDataSeeder.products;

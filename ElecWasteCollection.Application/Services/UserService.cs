@@ -13,6 +13,7 @@ namespace ElecWasteCollection.Application.Services
 	public class UserService : IUserService
 	{
 		private List<User> users = FakeDataSeeder.users;
+		private readonly List<Account> _accounts = FakeDataSeeder.accounts;
 		private readonly IFirebaseService _firebaseService;
 		private readonly ITokenService _tokenService;
 
@@ -43,15 +44,15 @@ namespace ElecWasteCollection.Application.Services
 			return  users.FirstOrDefault(u => u.UserId == id);
 		}
 
-		public void UpdateUser(int iat, int ing, Guid id)
-		{
-			var user = users.FirstOrDefault(u => u.UserId == id);
-			if (user != null)
-			{
-				user.Iat = iat;
-				user.Ing = ing;
-			}
-		}
+		//public void UpdateUser(int iat, int ing, Guid id)
+		//{
+		//	var user = users.FirstOrDefault(u => u.UserId == id);
+		//	if (user != null)
+		//	{
+		//		user.Iat = iat;
+		//		user.Ing = ing;
+		//	}
+		//}
 
 		public async Task<string> LoginWithGoogleAsync(string token)
 		{
@@ -69,9 +70,7 @@ namespace ElecWasteCollection.Application.Services
 					Email = email,
 					Name = name,
 					Avatar = picture,
-					//Role = "User",
-					Iat =null,
-					Ing = null
+					Role = UserRole.User.ToString(),
 				};
 				users.Add(user);
 			}
@@ -80,13 +79,15 @@ namespace ElecWasteCollection.Application.Services
 			return accessToken;
 		}
 
-		public async Task<string> Login(string email)
+		public async Task<string> Login(string userName, string password)
 		{
-			var user = users.FirstOrDefault(u => u.Email == email);
-			if (user == null)
+			var account = _accounts.FirstOrDefault(u => u.Username == userName && u.PasswordHash == password);
+			if (account == null)
 			{
 				throw new Exception("User not found");
 			}
+			var user = users.FirstOrDefault(u => u.UserId == account.UserId);
+
 			var accessToken = await _tokenService.GenerateToken(user);
 			return accessToken;
 		}

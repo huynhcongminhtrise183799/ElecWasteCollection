@@ -22,13 +22,13 @@ namespace ElecWasteCollection.API.Controllers
 			var users = _userService.GetAll();
 			return Ok(users);
 		}
-		[HttpPut("{id}")]
-		public IActionResult UpdateUser([FromBody] UpdateUserRequest updateUserRequest, [FromRoute] Guid id)
-		{
+		//[HttpPut("{id}")]
+		//public IActionResult UpdateUser([FromBody] UpdateUserRequest updateUserRequest, [FromRoute] Guid id)
+		//{
 
-			_userService.UpdateUser(updateUserRequest.Iat, updateUserRequest.Ing, id);
-			return Ok(new { message = $"User {id} updated successfully." });
-		}
+		//	_userService.UpdateUser(updateUserRequest.Iat, updateUserRequest.Ing, id);
+		//	return Ok(new { message = $"User {id} updated successfully." });
+		//}
 		[HttpGet("profile")]
 		public IActionResult GetProfile()
 		{

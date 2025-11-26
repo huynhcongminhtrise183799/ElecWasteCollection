@@ -46,7 +46,7 @@ namespace ElecWasteCollection.API.Controllers
 					}).ToList()
 				}
 			};
-			var result =  await _postService.AddPost(model);
+			var result = await _postService.AddPost(model);
 			if (result == null)
 			{
 				return StatusCode(400, "An error occurred while creating the post.");
@@ -115,35 +115,6 @@ namespace ElecWasteCollection.API.Controllers
 			var pagedResult = await _postService.GetPagedPostsAsync(parameters);
 			return Ok(pagedResult);
 		}
-
-		[HttpPost("warehouse")]
-		public IActionResult CreatePostByAdminWarehouse([FromBody] CreateProductAtWarehouseRequest newItem)
-		{
-			if (newItem == null)
-			{
-				return BadRequest("Invalid data.");
-			}
-
-			var model = new CreateProductAtWarehouseModel
-			{
-				Description = newItem.Description,
-				Images = newItem.Images,
-				//Name = newItem.Name,
-				SenderId = newItem.SenderId,
-				QrCode = newItem.QrCode,
-				ParentCategoryId = newItem.ParentCategoryId,
-				SubCategoryId = newItem.SubCategoryId,
-				BrandId = newItem.BrandId
-			};
-			var result = _postService.AddPostByAdminWarehouse(model);
-			if (result == null)
-			{
-				return StatusCode(400, "An error occurred while creating the post.");
-			}
-			return Ok(new { message = "Post created successfully.", item = result });
-		}
-
-        //
 
         [HttpGet("team/{teamId}")]
         public IActionResult GetByTeam(int teamId)

@@ -20,11 +20,12 @@ namespace ElecWasteCollection.Application.Services
 		private static List<Products> products = FakeDataSeeder.products;
 		private static List<ProductValues> productValues = FakeDataSeeder.productValues;
 		private static List<Category> categories = FakeDataSeeder.categories;
-		private static List<PostImages> postImages = FakeDataSeeder.postImages;
+		//private static List<PostImages> postImages = FakeDataSeeder.postImages;
 		private static List<SizeTier> sizeTiers = FakeDataSeeder.sizeTiers;
 		private static List<Attributes> attributes = FakeDataSeeder.attributes;
 		private static List<Brand> _brands = FakeDataSeeder.brands;
 		private static List<ProductStatusHistory> _productStatusHistories = FakeDataSeeder.productStatusHistories;
+		private static List<ProductImages> _productImages = FakeDataSeeder.productImages;
 
 		private readonly double Confidence_AcceptToSave = 30.0;
 
@@ -121,14 +122,14 @@ namespace ElecWasteCollection.Application.Services
 					for (int i = 0; i < createPostRequest.Images.Count; i++)
 					{
 						var imageResult = results[i];
-						var newPostImage = new PostImages
+						var newPostImage = new ProductImages
 						{
-							PostImageId = Guid.NewGuid(),
-							PostId = newPost.Id, 
+							ProductImagesId = Guid.NewGuid(),
+							ProductId = newProduct.Id,
 							ImageUrl = createPostRequest.Images[i],
 							AiDetectedLabelsJson = imageResult.DetectedTagsJson
 						};
-						postImages.Add(newPostImage);
+						_productImages.Add(newPostImage);
 					}
 
 					if (results.All(r => r.IsMatch)) 
@@ -419,8 +420,8 @@ namespace ElecWasteCollection.Application.Services
 			}
 
 			// Lấy ảnh
-			var thumbnailUrl = postImages
-				.FirstOrDefault(pi => pi.PostId == post.Id)?
+			var thumbnailUrl = _productImages
+				.FirstOrDefault(pi => pi.ProductId == post.ProductId)?
 				.ImageUrl;
 
 			return new PostSummaryModel
@@ -498,10 +499,10 @@ namespace ElecWasteCollection.Application.Services
 					Console.WriteLine($"[JSON ERROR] Could not deserialize schedule for Post ID {post.Id}: {ex.Message}");
 				}
 			}
-			var allPostImages = postImages.Where(pi => pi.PostId == post.Id).ToList();
-			var imageUrls = allPostImages.Select(pi => pi.ImageUrl).ToList();
+			var allProductImages = _productImages.Where(pi => pi.ProductId == post.ProductId).ToList();
+			var imageUrls = allProductImages.Select(pi => pi.ImageUrl).ToList();
 			var allLabels = new List<LabelModel>();
-			foreach (var img in allPostImages)
+			foreach (var img in allProductImages)
 			{
 				var labelsFromThisImage = JsonSerializer.Deserialize<List<LabelModel>>(img.AiDetectedLabelsJson ?? "[]", options);
 				allLabels.AddRange(labelsFromThisImage);
@@ -691,75 +692,6 @@ namespace ElecWasteCollection.Application.Services
 			return Task.FromResult(pagedResult);
 		}
 
-		public PostDetailModel AddPostByAdminWarehouse(CreateProductAtWarehouseModel createPostRequest)
-		{
-
-			if (createPostRequest == null)
-			{
-				return null;
-			}
-			var newProduct = new Products
-			{
-				Id = Guid.NewGuid(),
-				CategoryId = createPostRequest.SubCategoryId,
-				BrandId = createPostRequest.BrandId,
-				Description = createPostRequest.Description,
-				QRCode = createPostRequest.QrCode,
-				Status = "Nhập kho"
-			};
-
-			//if (productRequest.SizeTierId.HasValue && productRequest.SizeTierId.Value != Guid.Empty)
-			//{
-			//	newProduct.SizeTierId = productRequest.SizeTierId.Value;
-			//}
-			//else if (productRequest.Attributes != null && productRequest.Attributes.Any())
-			//{
-			//	foreach (var attr in productRequest.Attributes)
-			//	{
-
-			//		double.TryParse(attr.Value, out double parsedValue);
-
-			//		var newProductValue = new ProductValues
-			//		{
-			//			ProductValuesId = Guid.NewGuid(),
-			//			ProductId = newProduct.Id,
-			//			AttributeId = attr.AttributeId,
-			//			Value = parsedValue // Sẽ lưu 0.0 nếu là chữ, an toàn
-			//		};
-			//		productValues.Add(newProductValue);
-			//	}
-			//}
-
-			products.Add(newProduct);
-			var newPost = new Post
-			{
-				Id = Guid.NewGuid(),
-				SenderId = createPostRequest.SenderId.Value,
-				//Name = createPostRequest.Name,
-				Date = DateTime.Now,
-				Description = string.Empty,
-				Address = null,
-				ScheduleJson = null,
-				Status = "Đã duyệt", // Sẽ cập nhật sau
-				ProductId = newProduct.Id,
-				EstimatePoint = 50,
-				CheckMessage = new List<string>()
-
-			};
-			for (int i = 0; i < createPostRequest.Images.Count; i++)
-			{
-				var newPostImage = new PostImages
-				{
-					PostImageId = Guid.NewGuid(),
-					PostId = newPost.Id,
-					ImageUrl = createPostRequest.Images[i],
-					AiDetectedLabelsJson = null
-				};
-				postImages.Add(newPostImage);
-			}
-			posts.Add(newPost);
-			var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-			return MapToPostDetailModel(newPost, options);
-		}
+		
 	}
 }

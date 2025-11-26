@@ -78,7 +78,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 if (post.CollectionTeamId != null)
                     continue;
 
-                var user = FakeDataSeeder.users.FirstOrDefault(u => u.UserId == post.SenderId);
+                var user = FakeDataSeeder.userAddress.FirstOrDefault(u => u.UserId == post.SenderId);
                 if (user == null || user.Iat == null || user.Ing == null)
                 {
                     var un = new UnassignedTeamItem

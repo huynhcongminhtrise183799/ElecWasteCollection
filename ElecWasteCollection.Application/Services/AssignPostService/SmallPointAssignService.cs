@@ -36,7 +36,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
             foreach (var post in posts)
             {
-                var user = FakeDataSeeder.users.FirstOrDefault(u => u.UserId == post.SenderId);
+                var user = FakeDataSeeder.userAddress.FirstOrDefault(u => u.UserId == post.SenderId);
 
                 if (user == null || user.Iat == null || user.Ing == null)
                 {

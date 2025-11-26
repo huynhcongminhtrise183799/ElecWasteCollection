@@ -28,7 +28,7 @@ namespace ElecWasteCollection.Application.Model
 		public string? RejectMessage { get; set; } // Lý do hủy sản phẩm (nếu có)
 		public User Sender { get; set; }
 
-		public Collector? Collector { get; set; }
+		public CollectorResponse? Collector { get; set; }
 		public Guid? CollectionRouterId { get; set; }
 		public DateOnly? PickUpDate { get; set; }
 		public TimeOnly? EstimatedTime { get; set; }

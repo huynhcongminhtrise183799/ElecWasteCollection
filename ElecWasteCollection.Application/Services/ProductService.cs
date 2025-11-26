@@ -24,7 +24,6 @@ namespace ElecWasteCollection.Application.Services
 		private readonly List<Shifts> _shifts = FakeDataSeeder.shifts;
 		private readonly List<Vehicles> _vehicles = FakeDataSeeder.vehicles;
 		private readonly List<Category> _categories = FakeDataSeeder.categories;
-		private readonly List<PostImages> _postImages = FakeDataSeeder.postImages;
 		private readonly List<ProductImages> productImages = FakeDataSeeder.productImages;
 		private readonly IPointTransactionService _pointTransactionService;
 		private readonly List<ProductStatusHistory> _productStatusHistories = FakeDataSeeder.productStatusHistories;
@@ -124,14 +123,13 @@ namespace ElecWasteCollection.Application.Services
 			var imageUrls = new List<string>();
 
 			double? point = null;
-			if (post != null)
-			{
-				imageUrls = _postImages
-					.Where(img => img.PostId == post.Id)
+			
+				imageUrls = productImages
+					.Where(img => img.ProductId == post.ProductId)
 					.Select(img => img.ImageUrl)
 					.ToList();
 				point = post.EstimatePoint;
-			}
+			
 
 			// 5. Lấy danh sách thuộc tính (Attributes) - Giống hệt logic hàm dưới
 			var attributesList = _productValues
@@ -318,19 +316,12 @@ namespace ElecWasteCollection.Application.Services
 
 			// Lấy ảnh (chỉ có nếu post tồn tại)
 			var imageUrls = new List<string>();
-			if (post != null)
-			{
-				imageUrls = _postImages
-					.Where(img => img.PostId == post.Id)
-					.Select(img => img.ImageUrl)
-					.ToList();
-			}
-			else {
+			
 				imageUrls = productImages
 					.Where(img => img.ProductId == product.Id)
 					.Select(img => img.ImageUrl)
 					.ToList();
-			}
+			
 
 
 			// Lấy thuộc tính
@@ -491,13 +482,13 @@ namespace ElecWasteCollection.Application.Services
 			}
 
 			// 7. Lấy ảnh
-			var imageUrls = _postImages.Where(pi => pi.PostId == post.Id).Select(pi => pi.ImageUrl).ToList();
+			var imageUrls = productImages.Where(pi => pi.ProductId == post.ProductId).Select(pi => pi.ImageUrl).ToList();
 
 			// =================================================================================
 			// 8. TÌM THÔNG TIN LỊCH TRÌNH VÀ COLLECTOR (LOGIC MỚI)
 			// =================================================================================
 
-			Collector? collector = null;
+			CollectorResponse? collector = null;
 			DateOnly? pickUpDate = null;
 			TimeOnly? estimatedTime = null;
 
