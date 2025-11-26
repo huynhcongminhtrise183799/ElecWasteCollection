@@ -12,7 +12,7 @@ namespace ElecWasteCollection.Application.IServices
 		bool AddUserAddress(CreateUpdateUserAddress create);
 		bool UpdateUserAddress(Guid userId, CreateUpdateUserAddress update);
 		bool DeleteUserAddress(Guid userId);
-		UserAddressResponse? GetByUserId(Guid userId);
+		List<UserAddressResponse>? GetByUserId(Guid userId);
 
 	}
 }
