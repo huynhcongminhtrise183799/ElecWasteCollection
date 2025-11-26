@@ -30,6 +30,14 @@ namespace ElecWasteCollection.Application.Services
 				Ing = create.Ing,
 				isDefault = create.isDefault
 			};
+			var existingAddress = _addresses.Where(a => a.UserId == create.UserId);
+			if (create.isDefault)
+			{
+				foreach (var addr in existingAddress)
+				{
+					addr.isDefault = false;
+				}
+			}
 			_addresses.Add(address);
 			return true;
 		}
@@ -45,22 +53,23 @@ namespace ElecWasteCollection.Application.Services
 			return true;
 		}
 
-		public UserAddressResponse? GetByUserId(Guid userId)
+		public List<UserAddressResponse>? GetByUserId(Guid userId)
 		{
-			var address = _addresses.FirstOrDefault(a => a.UserId == userId);
+			var address = _addresses.Where(a => a.UserId == userId);
 			if (address == null)
 			{
 				return null; // Address not found
 			}
-			return new UserAddressResponse
+			var response = address.Select(a => new UserAddressResponse
 			{
-				UserAddressId = address.UserAddressId,
-				UserId = address.UserId,
-				Address = address.Address,
-				Iat = address.Iat,
-				Ing = address.Ing,
-				isDefault = address.isDefault
-			};
+				UserAddressId = a.UserAddressId,
+				UserId = a.UserId,
+				Address = a.Address,
+				Iat = a.Iat,
+				Ing = a.Ing,
+				isDefault = a.isDefault
+			}).ToList();
+			return response;
 		}
 
 		public bool UpdateUserAddress(Guid userId, CreateUpdateUserAddress update)
