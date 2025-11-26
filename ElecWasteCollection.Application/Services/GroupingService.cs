@@ -17,6 +17,8 @@ namespace ElecWasteCollection.Application.Services
         private const double SPEED_KM_H_LARGE = 30;
         private const double SPEED_KM_H_SMALL = 25;
 
+        private readonly List<UserAddress> _userAddress = FakeDataSeeder.userAddress;
+
         private sealed class TimeSlotDetailDto
         {
             public string? StartTime { get; set; }
@@ -149,9 +151,9 @@ namespace ElecWasteCollection.Application.Services
                 {
                     var user = FakeDataSeeder.users.First(u => u.UserId == p.SenderId);
                     var attributes = GetProductAttributes(p.ProductId);
-
-                    double userLat = user?.Iat ?? point.Latitude;
-                    double userLng = user?.Ing ?? point.Longitude;
+                    var userAddress = _userAddress.FirstOrDefault(ua => ua.UserId == user.UserId);
+					double userLat = userAddress?.Iat ?? point.Latitude;
+                    double userLng = userAddress?.Ing ?? point.Longitude;
 
                     double dist = GeoHelper.DistanceKm(point.Latitude, point.Longitude, userLat, userLng);
 
@@ -168,7 +170,7 @@ namespace ElecWasteCollection.Application.Services
                         Weight = attributes.weight,
                         Volume = attributes.volume,
                         UserName = user?.Name,
-                        Address = user?.Address
+                        Address = userAddress?.Address
                     });
                 }
             }
@@ -383,8 +385,9 @@ namespace ElecWasteCollection.Application.Services
                     var user = FakeDataSeeder.users.First(u => u.UserId == p.SenderId);
 
                     var attributes = GetProductAttributes(p.ProductId);
+                    var userAddress = _userAddress.FirstOrDefault(ua => ua.UserId == user.UserId);
 
-                    if (TryGetTimeWindowForDate(p.ScheduleJson!, workDate, out var start, out var end))
+					if (TryGetTimeWindowForDate(p.ScheduleJson!, workDate, out var start, out var end))
                     {
                         unassigned.Add(new
                         {
@@ -401,8 +404,8 @@ namespace ElecWasteCollection.Application.Services
                             Weight = attributes.weight,
                             Volume = attributes.volume,
 
-                            Lat = user.Iat ?? point.Latitude,
-                            Lng = user.Ing ?? point.Longitude
+                            Lat = userAddress.Iat ?? point.Latitude,
+                            Lng = userAddress.Ing ?? point.Longitude
                         });
                     }
                 }
@@ -415,8 +418,8 @@ namespace ElecWasteCollection.Application.Services
                     if (!unassigned.Any())
                         break;
 
-                    var collector = FakeDataSeeder.collectors
-                        .FirstOrDefault(c => c.CollectorId == shift.CollectorId);
+                    var collector = FakeDataSeeder.users
+                        .FirstOrDefault(c => c.UserId == shift.CollectorId);
 
                     double speed = (vehicle.Vehicle_Type.Contains("lớn")
                         ? SPEED_KM_H_LARGE
@@ -585,7 +588,7 @@ namespace ElecWasteCollection.Application.Services
                 .First(p => p.Id == staging.PointId);
 
             var vehicle = FakeDataSeeder.vehicles.First(v => v.Id == staging.VehicleId);
-            var collector = FakeDataSeeder.collectors.FirstOrDefault(c => c.CollectorId == shift.CollectorId);
+            var collector = FakeDataSeeder.users.FirstOrDefault(c => c.UserId == shift.CollectorId);
 
             double totalWeight = 0, totalVolume = 0;
             int pickup = 1;
@@ -596,8 +599,8 @@ namespace ElecWasteCollection.Application.Services
             {
                 var post = FakeDataSeeder.posts.First(p => p.Id == r.PostId);
                 var user = FakeDataSeeder.users.First(u => u.UserId == post.SenderId);
-
-                var att = GetProductAttributes(post.ProductId);
+                var userAddress = _userAddress.FirstOrDefault(ua => ua.UserId == user.UserId);
+				var att = GetProductAttributes(post.ProductId);
 
                 totalWeight += att.weight;
                 totalVolume += att.volume;
@@ -607,7 +610,7 @@ namespace ElecWasteCollection.Application.Services
                     pickupOrder = pickup++,
                     postId = post.Id,
                     userName = user.Name,
-                    address = user.Address,
+                    address = userAddress.Address,
 
                     length = att.length,
                     width = att.width,
@@ -675,7 +678,7 @@ namespace ElecWasteCollection.Application.Services
                     s.Date == shift.WorkDate && s.PostIds.Contains(firstRoute.PostId));
 
                 var vehicle = FakeDataSeeder.vehicles.First(v => v.Id == staging.VehicleId);
-                var collector = FakeDataSeeder.collectors.FirstOrDefault(c => c.CollectorId == shift.CollectorId);
+                var collector = FakeDataSeeder.users.FirstOrDefault(c => c.UserId == shift.CollectorId);
 
                 var routes = FakeDataSeeder.collectionRoutes.Where(r => r.CollectionGroupId == gid).ToList();
 
@@ -732,8 +735,8 @@ namespace ElecWasteCollection.Application.Services
             {
                 var user = FakeDataSeeder.users.First(u => u.UserId == p.SenderId);
                 var prod = FakeDataSeeder.products.First(pr => pr.Id == p.ProductId);
-
-                var brand = FakeDataSeeder.brands.First(b => b.BrandId == prod.BrandId);
+                var userAddress = _userAddress.FirstOrDefault(ua => ua.UserId == user.UserId);
+				var brand = FakeDataSeeder.brands.First(b => b.BrandId == prod.BrandId);
                 var cat = FakeDataSeeder.categories.First(c => c.Id == prod.CategoryId);
 
                 var a = GetProductAttributes(p.ProductId);
@@ -742,7 +745,7 @@ namespace ElecWasteCollection.Application.Services
                 {
                     PostId = p.Id,
                     UserName = user.Name,
-                    Address = user.Address,
+                    Address = userAddress.Address,
 
                     ProductName = $"{brand.Name} {cat.Name}",
 

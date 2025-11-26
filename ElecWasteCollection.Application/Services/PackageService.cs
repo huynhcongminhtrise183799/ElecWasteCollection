@@ -18,7 +18,7 @@ namespace ElecWasteCollection.Application.Services
 		private readonly List<ProductStatusHistory> _productStatusHistories = FakeDataSeeder.productStatusHistories;
 
 
-		public PackageService( IProductService productService)
+		public PackageService(IProductService productService)
 		{
 			_productService = productService;
 		}
@@ -83,7 +83,7 @@ namespace ElecWasteCollection.Application.Services
 		{
 			var filteredData = packages.AsEnumerable();
 
-			
+
 			if (query.SmallCollectionPointsId > 0)
 			{
 				filteredData = filteredData.Where(p => p.SmallCollectionPointsId == query.SmallCollectionPointsId);
@@ -131,6 +131,33 @@ namespace ElecWasteCollection.Application.Services
 			};
 		}
 
+		public List<PackageDetailModel> GetPackagesWhenDelivery()
+		{
+			var deliveringPackages = packages
+				.Where(p => p.Status == "Đang vận chuyển")
+				.ToList();
+
+			var result = new List<PackageDetailModel>();
+
+			foreach (var pkg in deliveringPackages)
+			{
+				var productDetails = _productService.GetProductsByPackageId(pkg.PackageId);
+
+				var model = new PackageDetailModel
+				{
+					PackageId = pkg.PackageId,
+					PackageName = pkg.PackageName,
+					Status = pkg.Status,
+					SmallCollectionPointsId = pkg.SmallCollectionPointsId,
+					Products = productDetails
+				};
+
+				result.Add(model);
+			}
+
+			return result;
+		}
+
 		public bool UpdatePackageAsync(UpdatePackageModel model)
 		{
 			// 1. Tìm gói hàng cần update
@@ -169,7 +196,7 @@ namespace ElecWasteCollection.Application.Services
 						_productStatusHistories.Remove(oldHistory);
 					}
 
-					}
+				}
 			}
 
 			// === XỬ LÝ THÊM (ADD) HOẶC UPDATE ===
@@ -192,12 +219,38 @@ namespace ElecWasteCollection.Application.Services
 		public bool UpdatePackageStatus(string packageId, string status)
 		{
 			var package = packages.FirstOrDefault(p => p.PackageId == packageId);
+
 			if (package == null)
 			{
 				return false;
 			}
 
 			package.Status = status;
+			return true;
+		}
+
+		public bool UpdatePackageStatusDeliveryAndRecycler(string packageId, string status)
+		{
+			var package = packages.FirstOrDefault(p => p.PackageId == packageId);
+			var productList = _productService.GetProductsByPackageId(packageId);
+			if (package == null)
+			{
+				return false;
+			}
+			package.Status = status;
+			foreach (var product in productList)
+			{
+				_productService.UpdateProductStatusByQrCode(product.QrCode, status);
+				var newHistory = new ProductStatusHistory
+				{
+					ProductStatusHistoryId = Guid.NewGuid(),
+					ProductId = product.ProductId,
+					ChangedAt = DateTime.UtcNow.AddHours(7),
+					StatusDescription = status == "Đang vận chuyển" ? "Sản phẩm đang được vận chuyển" : "Sản phẩm đã được tái chế",
+					Status = status
+				};
+				_productStatusHistories.Add(newHistory);
+			}
 			return true;
 		}
 	}

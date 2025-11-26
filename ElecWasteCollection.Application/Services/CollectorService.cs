@@ -1,5 +1,6 @@
 ﻿using ElecWasteCollection.Application.Data;
 using ElecWasteCollection.Application.IServices;
+using ElecWasteCollection.Application.Model;
 using ElecWasteCollection.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,17 +12,43 @@ namespace ElecWasteCollection.Application.Services
 {
 	public class CollectorService : ICollectorService
 	{
-		private  List<Collector> collectors = FakeDataSeeder.collectors;
+		private  List<User> collectors = FakeDataSeeder.users;
 
-		public List<Collector> GetAll()
+		public List<CollectorResponse> GetAll()
 		{
-			return collectors;
+			var response = collectors.Select(c => new CollectorResponse
+			{
+				CollectorId = c.UserId,
+				Name = c.Name,
+				Email = c.Email,
+				Phone = c.Phone,
+				Avatar = c.Avatar,
+				SmallCollectionPointId = c.SmallCollectionPointId
+			}).ToList();
+
+			return response;
+
 		}
 
-		public Collector GetById(Guid id)
+		public CollectorResponse? GetById(Guid id)
 		{
-			var collector = collectors.FirstOrDefault(c => c.CollectorId == id);
-			return collector;
+			var collector = collectors.FirstOrDefault(c => c.UserId == id);
+			if (collector == null)
+			{
+				return null;
+			}
+
+			var response = new CollectorResponse
+			{
+				CollectorId = collector.UserId,
+				Name = collector.Name,
+				Email = collector.Email,
+				Phone = collector.Phone,
+				Avatar = collector.Avatar,
+				SmallCollectionPointId = collector.SmallCollectionPointId
+			};
+
+			return response;
 		}
 	}
 }

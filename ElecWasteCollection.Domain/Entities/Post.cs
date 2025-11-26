@@ -25,7 +25,7 @@ namespace ElecWasteCollection.Domain.Entities
 		public List<string>? CheckMessage { get; set; }
 		public string? RejectMessage { get; set; }
 		public string Status { get; set; }
-		public ICollection<PostImages> Images { get; set; }
+		//public ICollection<PostImages> Images { get; set; }
 
         public int? CollectionTeamId { get; set; }
         public int? AssignedSmallPointId { get; set; }

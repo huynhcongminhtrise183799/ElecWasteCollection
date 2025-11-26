@@ -16,7 +16,11 @@ namespace ElecWasteCollection.Application.IServices
 		PagedResult<PackageDetailModel> GetPackagesByQuery(PackageSearchQueryModel query);
 
 		bool UpdatePackageStatus(string packageId, string status);
+		bool UpdatePackageStatusDeliveryAndRecycler(string packageId, string status);
 
 		bool UpdatePackageAsync(UpdatePackageModel model);
+
+		List<PackageDetailModel> GetPackagesWhenDelivery();
+
 	}
 }

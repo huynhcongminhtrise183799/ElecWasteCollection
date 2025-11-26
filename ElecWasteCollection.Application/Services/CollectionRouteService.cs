@@ -12,18 +12,18 @@ namespace ElecWasteCollection.Application.Services
 	{
 
 		private readonly List<CollectionRoutes> _collectionRoutes = FakeDataSeeder.collectionRoutes;
-		private readonly List<Collector> _collectors = FakeDataSeeder.collectors;
 		private readonly List<Shifts> _shifts = FakeDataSeeder.shifts;
 		private readonly List<CollectionGroups> _collectionGroups = FakeDataSeeder.collectionGroups;
 		private readonly List<Post> _posts = FakeDataSeeder.posts;
 		private readonly List<User> _users = FakeDataSeeder.users;
 		private readonly List<Products> _products = FakeDataSeeder.products; // Sửa: Dùng List, không dùng IProductService
-		private readonly List<PostImages> _postImages = FakeDataSeeder.postImages;
+		//private readonly List<PostImages> _postImages = FakeDataSeeder.postImages;
 		private readonly List<Vehicles> _vehicles = FakeDataSeeder.vehicles;
 		private readonly IShippingNotifierService _notifierService; // Dịch vụ này vẫn giữ lại
 		private readonly List<ProductStatusHistory> _productStatusHistories = FakeDataSeeder.productStatusHistories;
 		private readonly List<Brand> _brand = FakeDataSeeder.brands;
 		private readonly List<Category> _category = FakeDataSeeder.categories;
+		private readonly List<ProductImages> _productImages = FakeDataSeeder.productImages;
 
 		public CollectionRouteService(IShippingNotifierService notifierService)
 		{
@@ -170,7 +170,7 @@ namespace ElecWasteCollection.Application.Services
 		// === HÀM NÀY ĐÃ SỬA LẠI CÁC LỖI TYPO ===
 		public List<CollectionRouteModel> GetRoutesByCollectorId(DateOnly PickUpDate, Guid collectorId)
 		{
-			var collector = _collectors.FirstOrDefault(c => c.CollectorId == collectorId);
+			var collector = _users.FirstOrDefault(c => c.UserId == collectorId);
 			if (collector == null)
 			{
 				return new List<CollectionRouteModel>();
@@ -203,8 +203,8 @@ namespace ElecWasteCollection.Application.Services
 				var sender = _users.FirstOrDefault(u => u.UserId == post.SenderId);
 				if (sender == null) return null;
 
-				var pickUpImages = _postImages
-					.Where(img => img.PostId == post.Id)
+				var pickUpImages = _productImages
+					.Where(img => img.ProductId == post.ProductId)
 					.Select(img => img.ImageUrl)
 					.ToList();
 
@@ -212,6 +212,21 @@ namespace ElecWasteCollection.Application.Services
 				var shift = _shifts.FirstOrDefault(s => s.Id == group.Shift_Id);
 				var vehicle = _vehicles.FirstOrDefault(v => v.Id == shift.Vehicle_Id);
 
+				var collectorResponse = new CollectorResponse
+				{
+					CollectorId = collector.UserId,
+					Name = collector.Name,
+					Email = collector.Email,
+					Phone = collector.Phone,
+					Avatar = collector.Avatar,
+					SmallCollectionPointId = collector.SmallCollectionPointId,
+				};
+				var senderResposne = new UserResponse
+				{
+					UserId = sender.UserId,
+					Name = sender.Name,
+					Email = sender.Email,
+				};
 				return new CollectionRouteModel
 				{
 					CollectionRouteId = r.CollectionRouteId,
@@ -220,8 +235,8 @@ namespace ElecWasteCollection.Application.Services
 					BrandName = _brand.FirstOrDefault(b => b.BrandId == _products.FirstOrDefault(p => p.Id == post.ProductId)?.BrandId)?.Name,
 					SubCategoryName = _category.FirstOrDefault(c => c.Id == _products.FirstOrDefault(p => p.Id == post.ProductId)?.CategoryId)?.Name,
 					ProductId = post.ProductId,
-					Collector = collector,
-					Sender = sender,
+					Collector = collectorResponse,
+					Sender = senderResposne,
 					CollectionDate = r.CollectionDate,
 					EstimatedTime = r.EstimatedTime,
 					Actual_Time = r.Actual_Time,
@@ -295,8 +310,8 @@ namespace ElecWasteCollection.Application.Services
 				var sender = _users.FirstOrDefault(u => u.UserId == post.SenderId);
 				if (sender == null) return null;
 
-				var pickUpImages = _postImages
-					.Where(img => img.PostId == post.Id)
+				var pickUpImages = _productImages
+					.Where(img => img.ProductId == post.ProductId)
 					.Select(img => img.ImageUrl)
 					.ToList();
 
@@ -313,19 +328,33 @@ namespace ElecWasteCollection.Application.Services
 				var shift = _shifts.FirstOrDefault(s => s.Id == group.Shift_Id);
 				if (shift == null) return null;
 
-				var collector = _collectors.FirstOrDefault(c => c.CollectorId == shift.CollectorId);
+				var collector = _users.FirstOrDefault(c => c.UserId == shift.CollectorId);
 				if (collector == null) return null;
 
 				var vehicle = _vehicles.FirstOrDefault(v => v.Id == shift.Vehicle_Id);
 				if (vehicle == null) return null;
-
+				var collectorResponse = new CollectorResponse
+				{
+					CollectorId = collector.UserId,
+					Name = collector.Name,
+					Email = collector.Email,
+					Phone = collector.Phone,
+					Avatar = collector.Avatar,
+					SmallCollectionPointId = collector.SmallCollectionPointId,
+				};
+				var senderResposne = new UserResponse
+				{
+					UserId = sender.UserId,
+					Name = sender.Name,
+					Email = sender.Email,
+				};
 				return new CollectionRouteModel
 				{
 					CollectionRouteId = route.CollectionRouteId,
 					PostId = route.PostId,
 					//ItemName = post.Name,
-					Collector = collector,
-					Sender = sender,
+					Collector = collectorResponse,
+					Sender = senderResposne,
 					ProductId = post.ProductId,
 					CollectionDate = route.CollectionDate,
 					EstimatedTime = route.EstimatedTime,

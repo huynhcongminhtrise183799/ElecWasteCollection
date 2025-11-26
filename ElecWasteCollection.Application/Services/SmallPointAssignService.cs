@@ -9,7 +9,8 @@ namespace ElecWasteCollection.Application.Services
 {
     public class SmallPointAssignService : ISmallPointAssignService
     {
-        public async Task<AssignSmallPointResult> AssignSmallPointsAsync(int teamId)
+        private readonly List<UserAddress> _userAddress = FakeDataSeeder.userAddress;
+		public async Task<AssignSmallPointResult> AssignSmallPointsAsync(int teamId)
         {
             var result = new AssignSmallPointResult { TeamId = teamId };
 
@@ -27,12 +28,12 @@ namespace ElecWasteCollection.Application.Services
 
                 double bestDist = double.MaxValue;
                 SmallCollectionPoints bestPoint = null;
-
-                foreach (var point in teamPoints)
+                var userAddress = _userAddress.FirstOrDefault(ua => ua.UserId == user.UserId);
+				foreach (var point in teamPoints)
                 {
                     double dist = GeoHelper.DistanceKm(
                         point.Latitude, point.Longitude,
-                        user.Iat.Value, user.Ing.Value
+						userAddress.Iat.Value, userAddress.Ing.Value
                     );
 
                     if (dist < bestDist)
