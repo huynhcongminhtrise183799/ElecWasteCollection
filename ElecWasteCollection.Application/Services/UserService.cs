@@ -1,5 +1,6 @@
 ﻿using ElecWasteCollection.Application.Data;
 using ElecWasteCollection.Application.IServices;
+using ElecWasteCollection.Application.Model;
 using ElecWasteCollection.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace ElecWasteCollection.Application.Services
 	{
 		private List<User> users = FakeDataSeeder.users;
 		private readonly List<Account> _accounts = FakeDataSeeder.accounts;
+		private readonly List<UserPoints> _point = FakeDataSeeder.userPoints;
 		private readonly IFirebaseService _firebaseService;
 		private readonly ITokenService _tokenService;
 
@@ -92,14 +94,25 @@ namespace ElecWasteCollection.Application.Services
 			return accessToken;
 		}
 
-		public User Profile(string email)
+		public UserProfileResponse Profile(string email)
 		{
 			var user = users.FirstOrDefault(u => u.Email == email);
+			var points = _point.Where(p => p.UserId == user.UserId).Sum(p => p.Points);
 			if (user == null)
 			{
 				throw new Exception("User not found");
 			}
-			return user;
+			var userProfile = new UserProfileResponse
+			{
+				UserId = user.UserId,
+				Name = user.Name,
+				Email = user.Email,
+				Phone = user.Phone,
+				Avatar = user.Avatar,
+				Role = user.Role,
+				Points = points
+			};
+			return userProfile;
 		}
 
 		public User? GetByPhone(string phone)

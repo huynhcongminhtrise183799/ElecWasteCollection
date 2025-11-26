@@ -1,4 +1,5 @@
-﻿using ElecWasteCollection.Domain.Entities;
+﻿using ElecWasteCollection.Application.Model;
+using ElecWasteCollection.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace ElecWasteCollection.Application.IServices
 
 		Task<string> Login(string userName, string password);
 
-		User Profile(string email);
+		UserProfileResponse Profile(string email);
 
 		User? GetByPhone(string phone);
 
