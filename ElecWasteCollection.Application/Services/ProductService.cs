@@ -521,6 +521,8 @@ namespace ElecWasteCollection.Application.Services
 				}
 			}
 
+			var realPoint = pointTransactions.FirstOrDefault(pt => pt.ProductId == product.Id)?.Point;
+
 			// 9. Return kết quả
 			return new ProductDetail
 			{
@@ -541,6 +543,7 @@ namespace ElecWasteCollection.Application.Services
 				RejectMessage = post.RejectMessage,
 				QRCode = product.QRCode,
 				IsChecked = product.isChecked,
+				RealPoints = realPoint,
 
 				// === Dữ liệu từ Route/Shift ===
 				Collector = collector,
