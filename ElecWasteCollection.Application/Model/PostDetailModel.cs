@@ -55,6 +55,8 @@ namespace ElecWasteCollection.Application.Model
 
 		// Thông tin kích thước (1 trong 2 sẽ có)
 		public string? SizeTierName { get; set; } // (ví dụ: "Tivi Lớn (Trên 55 inch)")
+
+		public bool IsChecked { get; set; }
 		public List<ProductValueDetailModel>? Attributes { get; set; } // (ví dụ: "Nặng: 55 kg")
 	}
 

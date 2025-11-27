@@ -36,6 +36,8 @@ namespace ElecWasteCollection.Application.Model
 
 		public string? QRCode { get; set; } // Mã QR của sản phẩm
 
+		public bool IsChecked { get; set; } // Đã được kiểm tra bởi nhân viên thu gom hay chưa
+
 		public List<DailyTimeSlots> Schedule { get; set; }
 
 

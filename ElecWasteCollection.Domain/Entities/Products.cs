@@ -25,6 +25,8 @@ namespace ElecWasteCollection.Domain.Entities
 
 		public string Status { get; set; }
 
+		public bool isChecked { get; set; } = false;
+
 		public int? SmallCollectionPointId { get; set; }
 		public Category Category { get; set; }
 
