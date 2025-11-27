@@ -535,6 +535,7 @@ namespace ElecWasteCollection.Application.Services
 				Schedule = schedule,
 				Attributes = productAttributes,
 				RejectMessage = post.RejectMessage,
+				QRCode = product.QRCode,
 
 				// === Dữ liệu từ Route/Shift ===
 				Collector = collector,
