@@ -30,6 +30,7 @@ namespace ElecWasteCollection.Application.Services
 		private readonly IUserService _userService;
 		private readonly ICollectorService _collectorService;
 		private readonly List<PointTransactions> pointTransactions = FakeDataSeeder.points;
+		private readonly List<Packages> _package = FakeDataSeeder.packages;
 		public ProductService(IPointTransactionService pointTransactionService, IUserService userService, ICollectorService collectorService)
 		{
 			_pointTransactionService = pointTransactionService;
@@ -59,6 +60,7 @@ namespace ElecWasteCollection.Application.Services
 				QRCode = createProductRequest.QrCode,
 				CreateAt = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7)),
 				SmallCollectionPointId = createProductRequest.SmallCollectionPointId,
+				isChecked = false,
 				Status = "Nhập kho"
 			};
 			_products.Add(newProduct);
@@ -92,6 +94,7 @@ namespace ElecWasteCollection.Application.Services
 				BrandName = _brands.FirstOrDefault(b => b.BrandId == newProduct.BrandId)?.Name,
 				CategoryName = _categories.FirstOrDefault(c => c.Id == newProduct.CategoryId)?.Name,
 				QrCode = newProduct.QRCode,
+				IsChecked = newProduct.isChecked,
 				Status = newProduct.Status
 			};
 		}
@@ -208,6 +211,7 @@ namespace ElecWasteCollection.Application.Services
 					QrCode = p.QRCode,
 					SizeTierName = sizeTier?.Name,
 					Attributes = attributesList,
+					IsChecked = p.isChecked,
 					Status = p.Status
 				};
 			})
@@ -536,6 +540,7 @@ namespace ElecWasteCollection.Application.Services
 				Attributes = productAttributes,
 				RejectMessage = post.RejectMessage,
 				QRCode = product.QRCode,
+				IsChecked = product.isChecked,
 
 				// === Dữ liệu từ Route/Shift ===
 				Collector = collector,
@@ -555,6 +560,22 @@ namespace ElecWasteCollection.Application.Services
 
 			product.Status = status;
 			return true;
+		}
+
+		public bool UpdateCheckedProductAtRecycler(string packageId, List<string> QrCode)
+		{
+			var package = _package.FirstOrDefault(p => p.PackageId == packageId);
+			if (package == null) return false;
+			foreach (var qrCode in QrCode)
+			{
+				var product = _products.FirstOrDefault(p => p.QRCode == qrCode && p.PackageId == packageId);
+				if (product != null)
+				{
+					product.isChecked = true;
+				}
+			}
+			return true;
+
 		}
 	}
 }

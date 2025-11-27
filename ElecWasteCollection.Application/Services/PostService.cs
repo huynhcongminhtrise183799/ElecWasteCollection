@@ -62,6 +62,7 @@ namespace ElecWasteCollection.Application.Services
 					CategoryId = productRequest.SubCategoryId,
 					BrandId = productRequest.BrandId,
 					Description = createPostRequest.Description,
+					isChecked = false,
 					Status = "Chờ Duyệt"
 				};
 

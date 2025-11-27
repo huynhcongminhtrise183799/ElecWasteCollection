@@ -111,5 +111,16 @@ namespace ElecWasteCollection.API.Controllers
 			}
 			return Ok(productDetail);
 		}
+
+		[HttpPut("checked")]
+		public IActionResult UpdateProductCheckedStatus([FromBody] CheckedProductRequest request)
+		{
+			var result = _productService.UpdateCheckedProductAtRecycler(request.PackageId, request.ProductQrCode);
+			if (!result)
+			{
+				return BadRequest("Failed to update product checked status.");
+			}
+			return Ok(new { message = "Product checked status updated successfully." });
+		}
 	}
 }

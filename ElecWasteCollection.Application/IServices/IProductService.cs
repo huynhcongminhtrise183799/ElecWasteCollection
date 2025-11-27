@@ -31,5 +31,7 @@ namespace ElecWasteCollection.Application.IServices
 
 		ProductDetail? GetProductDetailById(Guid productId);
 
+		bool UpdateCheckedProductAtRecycler(string packageId, List<string> QrCode);
+
 	}
 }

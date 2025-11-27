@@ -22,5 +22,6 @@ namespace ElecWasteCollection.Application.IServices
 
 		List<PackageDetailModel> GetPackagesWhenDelivery();
 
+
 	}
 }
