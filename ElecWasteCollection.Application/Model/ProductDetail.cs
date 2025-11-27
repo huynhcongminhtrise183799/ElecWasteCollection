@@ -34,6 +34,8 @@ namespace ElecWasteCollection.Application.Model
 		public TimeOnly? EstimatedTime { get; set; }
 		public string Address { get; set; }
 
+		public string? QRCode { get; set; } // Mã QR của sản phẩm
+
 		public List<DailyTimeSlots> Schedule { get; set; }
 
 
