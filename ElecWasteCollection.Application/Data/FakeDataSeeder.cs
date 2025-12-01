@@ -983,7 +983,7 @@ namespace ElecWasteCollection.Application.Data
 			public DateOnly Date { get; set; }
 			public int PointId { get; set; }
 			public int VehicleId { get; set; }
-			public List<Guid> PostIds { get; set; } = new();
+			public List<Guid> ProductIds { get; set; } = new();
 		}
 
 		public static List<StagingAssignDay> stagingAssignDays = new();
@@ -2257,7 +2257,7 @@ public static void AddPostsFor_15_12()
                     Address = newUserAddresses[i].Address,
                     ScheduleJson = scheduleJson,
                     Date = targetDateTime.AddHours(startHour),
-                    Name = $"Đơn hàng {i+1} - 15/12",
+                    //Name = $"Đơn hàng {i+1} - 15/12",
                     EstimatePoint = 100
                 });
 

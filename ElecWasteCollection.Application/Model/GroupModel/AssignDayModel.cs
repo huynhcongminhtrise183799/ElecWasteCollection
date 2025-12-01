@@ -11,7 +11,7 @@ namespace ElecWasteCollection.Application.Model.GroupModel
         public int CollectionPointId { get; set; }
         public DateOnly WorkDate { get; set; }
         public int VehicleId { get; set; }
-        public List<Guid> PostIds { get; set; } = new();
+        public List<Guid> ProductIds { get; set; } = new();
     }
 
     public class AssignDayResponse
