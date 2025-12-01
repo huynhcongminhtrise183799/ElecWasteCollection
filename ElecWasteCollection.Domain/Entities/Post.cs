@@ -26,7 +26,7 @@ namespace ElecWasteCollection.Domain.Entities
 		public string Status { get; set; }
 		//public ICollection<PostImages> Images { get; set; }
 
-        public int? CollectionTeamId { get; set; }
+        public int? CollectionCompanyId { get; set; }
         public int? AssignedSmallPointId { get; set; }
     }
 }

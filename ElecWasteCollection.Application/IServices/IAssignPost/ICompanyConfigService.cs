@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace ElecWasteCollection.Application.IServices.IAssignPost
 {
-    public interface ISmallPointAssignService
+
+    public interface ICompanyConfigService
     {
-        Task<AssignSmallPointResult> AssignSmallPointsAsync(int teamId);
+        CompanyConfigResponse UpdateCompanyConfig(CompanyConfigRequest request);
+        CompanyConfigResponse GetCompanyConfig();
     }
 }

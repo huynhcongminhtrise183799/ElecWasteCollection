@@ -106,56 +106,5 @@ namespace ElecWasteCollection.API.Controllers
 			}
 		}
 
-		[HttpGet("filter")]
-		[ProducesResponseType(StatusCodes.Status200OK)]
-		public async Task<IActionResult> GetPagedPosts(
-			[FromQuery] PostSearchQueryModel parameters)
-		{
-			// Gọi thẳng đến service, service sẽ lo toàn bộ logic
-			var pagedResult = await _postService.GetPagedPostsAsync(parameters);
-			return Ok(pagedResult);
-		}
-
-        [HttpGet("team/{teamId}")]
-        public IActionResult GetByTeam(int teamId)
-        {
-            var posts = FakeDataSeeder.posts
-                .Where(p => p.CollectionTeamId == teamId)
-                .ToList();
-
-            return Ok(new
-            {
-                TeamId = teamId,
-                Count = posts.Count,
-                Posts = posts
-            });
-        }
-
-        [HttpGet("smallpoint/{smallPointId}")]
-        public IActionResult GetBySmallPoint(int smallPointId)
-        {
-            var posts = FakeDataSeeder.posts
-                .Where(p => p.AssignedSmallPointId == smallPointId)
-                .ToList();
-
-            return Ok(new
-            {
-                SmallPointId = smallPointId,
-                Count = posts.Count,
-                Posts = posts
-            });
-        }
-
-        [HttpGet("out-of-range")]
-        public IActionResult GetOutOfRange()
-        {
-            return Ok(new
-            {
-                UnassignedTeam = FakeDataSeeder.UnassignedTeamPosts,
-                OutOfRangeSmallPoint = FakeDataSeeder.OutOfRangeSmallPointPosts
-            });
-        }
-
-
     }
 }

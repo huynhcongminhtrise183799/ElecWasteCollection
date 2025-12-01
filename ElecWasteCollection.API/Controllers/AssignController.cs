@@ -1,4 +1,5 @@
-﻿using ElecWasteCollection.Application.IServices.IAssignPost;
+﻿using ElecWasteCollection.API.DTOs.Request;
+using ElecWasteCollection.Application.IServices.IAssignPost;
 using ElecWasteCollection.Application.Model.AssignPost;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,66 +9,57 @@ namespace ElecWasteCollection.API.Controllers
     [Route("api/assign")]
     public class AssignController : ControllerBase
     {
-        private readonly ITeamAssignService _teamService;
-        private readonly ISmallPointAssignService _smallPointService;
-        private readonly ITeamRatioService _ratioService;
+        private readonly ICompanyConfigService _companyConfigService;
+        private readonly IProductAssignService _productAssignService;
 
         public AssignController(
-            ITeamAssignService teamService,
-            ISmallPointAssignService smallPointService,
-            ITeamRatioService ratioService)
+            ICompanyConfigService companyConfigService,
+            IProductAssignService productAssignService)
         {
-            _teamService = teamService;
-            _smallPointService = smallPointService;
-            _ratioService = ratioService;
+            _companyConfigService = companyConfigService;
+            _productAssignService = productAssignService;
         }
 
-        [HttpPost("team-ratio")]
-        public async Task<IActionResult> UpdateRatio([FromBody] TeamRatioConfigRequest req)
+        [HttpPost("company-config")]
+        public IActionResult UpdateCompanyConfig([FromBody] CompanyConfigRequest request)
         {
-            if (!ModelState.IsValid)
-                return ValidationProblem(ModelState);
-
-            try
-            {
-                var data = await _ratioService.UpdateRatios(req);
-                return Ok(data);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            var result = _companyConfigService.UpdateCompanyConfig(request);
+            return Ok(result);
         }
 
-        [HttpPost("team")]
-        public async Task<IActionResult> AssignTeam([FromBody] AssignTeamRequest req)
-        {
-            if (!ModelState.IsValid)
-                return ValidationProblem(ModelState);
 
-            try
-            {
-                var data = await _teamService.AssignPostsToTeamsAsync(req);
-                return Ok(data);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+        [HttpGet("company-config")]
+        public IActionResult GetCompanyConfig()
+        {
+            var result = _companyConfigService.GetCompanyConfig();
+            return Ok(result);
         }
 
-        [HttpPost("smallpoint/{teamId}")]
-        public async Task<IActionResult> AssignSmallPoint(int teamId)
+
+        [HttpPost("products")]
+        public async Task<IActionResult> AssignProducts([FromBody] AssignProductRequest request)
         {
-            try
-            {
-                var data = await _smallPointService.AssignSmallPointsAsync(teamId);
-                return Ok(data);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            if (request == null)
+                return BadRequest("Request cannot be null.");
+
+            if (request.ProductIds == null || !request.ProductIds.Any())
+                return BadRequest("ProductIds cannot be empty.");
+
+            if (!DateOnly.TryParse(request.WorkDate, out var workDate))
+                return BadRequest("WorkDate không hợp lệ. Hãy nhập yyyy-MM-dd.");
+
+            var result = await _productAssignService.AssignProductsAsync(request.ProductIds, workDate);
+            return Ok(result);
+        }
+
+        [HttpGet("products-by-date")]
+        public async Task<IActionResult> GetProductsByDate([FromQuery] string workDate)
+        {
+            if (!DateOnly.TryParse(workDate, out var date))
+                return BadRequest("workDate không hợp lệ. Định dạng yyyy-MM-dd");
+
+            var result = await _productAssignService.GetProductsByWorkDateAsync(date);
+            return Ok(result);
         }
     }
 }
