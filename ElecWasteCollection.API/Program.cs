@@ -71,7 +71,7 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<ICategoryService, CategoryService>();
 			builder.Services.AddScoped<ICategoryAttributeService, CategoryAttributeService>();
 			builder.Services.AddSingleton<IProfanityChecker, CustomProfanityChecker>();
-			//builder.Services.AddScoped<IGroupingService, GroupingService>();
+			builder.Services.AddScoped<IGroupingService, GroupingService>();
 			builder.Services.AddScoped<IProductService, ProductService>();
 			builder.Services.AddScoped<ITrackingService, TrackingService>();
 			builder.Services.AddScoped<IShippingNotifierService, SignalRShippingNotifier>();

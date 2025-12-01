@@ -983,7 +983,7 @@ namespace ElecWasteCollection.Application.Data
 			public DateOnly Date { get; set; }
 			public int PointId { get; set; }
 			public int VehicleId { get; set; }
-			public List<Guid> PostIds { get; set; } = new();
+			public List<Guid> ProductIds { get; set; } = new();
 		}
 
 		public static List<StagingAssignDay> stagingAssignDays = new();
