@@ -371,8 +371,8 @@ namespace ElecWasteCollection.Application.Services
 
                 // Lấy tất cả Posts chứa Product thuộc ngày này
                 var posts = FakeDataSeeder.posts
-                    .Where(p => assignDay.ProductIds.Contains(p.ProductId))
-                    .ToList();
+    .Where(p => assignDay.ProductIds.Contains(p.ProductId))
+    .ToList();
 
                 if (!posts.Any()) continue;
 
@@ -499,7 +499,7 @@ namespace ElecWasteCollection.Application.Services
                         routeNodes.Add(new RouteDetail
                         {
                             PickupOrder = routeNodes.Count + 1,
-                            PostId = chosen.Post.Id,
+                            ProductId = chosen.Post.ProductId,
                             UserName = chosen.User.Name,
                             Address = chosen.Address,
                             DistanceKm = best.Dist,
@@ -631,8 +631,8 @@ namespace ElecWasteCollection.Application.Services
 
             foreach (var r in routes)
             {
-                var post = FakeDataSeeder.posts.First(p => p.ProductId == r.ProductId);
-                var user = FakeDataSeeder.users.First(u => u.UserId == post.SenderId);
+                var post = FakeDataSeeder.posts.FirstOrDefault(p => p.ProductId == r.ProductId)
+                    ?? throw new Exception("Không tìm thấy Post cho Product"); var user = FakeDataSeeder.users.First(u => u.UserId == post.SenderId);
 
                 var userAddress = _userAddress.First(a => a.UserId == user.UserId);
 
