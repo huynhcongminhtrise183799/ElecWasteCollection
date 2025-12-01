@@ -1,4 +1,4 @@
-
+﻿
 using ElecWasteCollection.API.Hubs;
 using ElecWasteCollection.Application.Data;
 using ElecWasteCollection.Application.Interfaces;
@@ -83,9 +83,16 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<IPointTransactionService, PointTransactionService>();
 			builder.Services.AddScoped<IUserPointService, UserPointService>();
 			builder.Services.AddScoped<IImageComparisonService, ImageComparisonService>();
-			builder.Services.AddScoped<ISettingsService, SettingsService>();
-            builder.Services.AddScoped<ITeamRatioService, TeamRatioService>();
 			builder.Services.AddScoped<IUserAddressService, UserAddressService>();
+            builder.Services.AddScoped<ICompanyConfigService, CompanyConfigService>();
+            builder.Services.AddScoped<IProductAssignService, ProductAssignService>();
+            builder.Services.AddScoped<IProductQueryService, ProductQueryService>();
+
+            builder.Services.AddHttpClient<MapboxDirectionsClient>();
+            builder.Services.AddSingleton<IMapboxDistanceCacheService, MapboxDistanceCacheService>();
+
+
+
             builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
@@ -96,6 +103,7 @@ namespace ElecWasteCollection.API
 						  .SetIsOriginAllowed(_ => true);
 				});
 			});
+
 			var jwtSettings = builder.Configuration.GetSection("Jwt");
 			var secretKey = jwtSettings["SecretKey"];
 			builder.Services.AddAuthentication(options =>
@@ -131,6 +139,9 @@ namespace ElecWasteCollection.API
 			_ = FakeDataSeeder.sizeTiers;
 			_ = FakeDataSeeder.categoryAttributes;
 			_ = FakeDataSeeder.productImages;
+
+
+
 
 			app.UseCors("AllowAll");
 

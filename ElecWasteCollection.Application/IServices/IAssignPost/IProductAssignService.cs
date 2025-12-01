@@ -7,9 +7,13 @@ using System.Threading.Tasks;
 
 namespace ElecWasteCollection.Application.IServices.IAssignPost
 {
-    public interface ISettingsService
+    public interface IProductAssignService
     {
-        DistanceSettingsResponse GetDistanceSettings();
-        DistanceSettingsResponse UpdateDistanceSettings(DistanceSettingsRequest request);
+        Task<AssignProductResult> AssignProductsAsync(List<Guid> productIds,DateOnly workDate); 
+        Task<List<ProductByDateModel>> GetProductsByWorkDateAsync(DateOnly workDate);
+
+
+
+
     }
 }

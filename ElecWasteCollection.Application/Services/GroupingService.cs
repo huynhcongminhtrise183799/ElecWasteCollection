@@ -134,11 +134,14 @@ namespace ElecWasteCollection.Application.Services
 
             double maxRadius = FakeDataSeeder.vehicles.Max(v => v.Radius_Km);
 
-            var rawPosts = FakeDataSeeder.posts.Where(p =>
-            {
-                var prod = FakeDataSeeder.products.FirstOrDefault(x => x.Id == p.ProductId);
-                return prod != null && prod.Status == "Chờ gom nhóm";
-            }).ToList();
+            var rawPosts = FakeDataSeeder.posts
+       .Where(p => p.AssignedSmallPointId == request.CollectionPointId)
+       .Where(p =>
+       {
+           var prod = FakeDataSeeder.products.FirstOrDefault(x => x.Id == p.ProductId);
+           return prod != null && prod.Status == "Chờ gom nhóm";
+       })
+       .ToList();
 
             if (!rawPosts.Any())
                 throw new Exception("Không có bài đăng nào cần xử lý.");
@@ -339,8 +342,9 @@ namespace ElecWasteCollection.Application.Services
                 var workDate = assignDay.Date;
 
                 var posts = FakeDataSeeder.posts
-                    .Where(p => assignDay.PostIds.Contains(p.Id))
-                    .ToList();
+    .Where(p => assignDay.PostIds.Contains(p.Id))
+    .Where(p => p.AssignedSmallPointId == request.CollectionPointId)
+    .ToList();
 
                 if (!posts.Any()) continue;
 
