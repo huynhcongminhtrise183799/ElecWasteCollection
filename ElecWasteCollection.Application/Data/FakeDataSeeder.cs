@@ -2257,7 +2257,7 @@ public static void AddPostsFor_15_12()
                     Address = newUserAddresses[i].Address,
                     ScheduleJson = scheduleJson,
                     Date = targetDateTime.AddHours(startHour),
-                    Name = $"Đơn hàng {i+1} - 15/12",
+                    //Name = $"Đơn hàng {i+1} - 15/12",
                     EstimatePoint = 100
                 });
 
