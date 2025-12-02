@@ -18,10 +18,6 @@ namespace ElecWasteCollection.Application.Services
         private const double SPEED_KM_H_SMALL = 25;
 
         private readonly List<UserAddress> _userAddress = FakeDataSeeder.userAddress;
-
-        // ------------------------------------------------------------
-        // DTO nội bộ
-        // ------------------------------------------------------------
         private sealed class TimeSlotDetailDto
         {
             public string? StartTime { get; set; }
@@ -42,9 +38,6 @@ namespace ElecWasteCollection.Application.Services
             public List<DateOnly> SpecificDates { get; set; } = new();
         }
 
-        // ------------------------------------------------------------
-        // Lấy thuộc tính sản phẩm theo ProductId
-        // ------------------------------------------------------------
         private (double length, double width, double height, double weight, double volume, string dimensionText)
             GetProductAttributes(Guid productId)
         {
@@ -64,9 +57,7 @@ namespace ElecWasteCollection.Application.Services
             return (length, width, height, weight, volume, dim);
         }
 
-        // ------------------------------------------------------------
-        // Parse Schedule JSON
-        // ------------------------------------------------------------
+
         private static bool TryParseScheduleInfo(string raw, out PostScheduleInfo info)
         {
             info = new PostScheduleInfo();
@@ -136,9 +127,6 @@ namespace ElecWasteCollection.Application.Services
             catch { return false; }
         }
 
-        // ------------------------------------------------------------
-        // PRE ASSIGN (chỉ xử lý các Product thuộc trạm đó)
-        // ------------------------------------------------------------
         public async Task<PreAssignResponse> PreAssignAsync(PreAssignRequest request)
         {
             var point = FakeDataSeeder.smallCollectionPoints
@@ -256,6 +244,7 @@ namespace ElecWasteCollection.Application.Services
                         selected.Add(new PreAssignPost
                         {
                             PostId = item.Post.Id,
+                            ProductId = item.Post.ProductId,
                             UserName = item.UserName,
                             Address = item.Address,
                             Length = item.Length,
@@ -263,7 +252,7 @@ namespace ElecWasteCollection.Application.Services
                             Height = item.Height,
                             DimensionText = item.DimensionText,
                             Weight = item.Weight,
-                            Volume = item.Volume
+                            Volume = Math.Round(item.Volume / 1_000_000.0, 3)
                         });
 
                         removeList.Add(item);
@@ -299,9 +288,7 @@ namespace ElecWasteCollection.Application.Services
 
             return await Task.FromResult(res);
         }
-        // ======================================================
-        // ASSIGN DAY
-        // ======================================================
+
         public async Task<bool> AssignDayAsync(AssignDayRequest request)
         {
             var vehicle = FakeDataSeeder.vehicles
@@ -314,7 +301,6 @@ namespace ElecWasteCollection.Application.Services
             if (request.ProductIds == null || !request.ProductIds.Any())
                 throw new Exception("Danh sách Product trống.");
 
-            // Xe đã được assign nơi khác trong ngày
             bool busy = FakeDataSeeder.stagingAssignDays.Any(s =>
                 s.Date == request.WorkDate &&
                 s.VehicleId == request.VehicleId &&
@@ -323,27 +309,21 @@ namespace ElecWasteCollection.Application.Services
             if (busy)
                 throw new Exception($"Xe {vehicle.Plate_Number} đã được điều động nơi khác.");
 
-            // Xóa staging cũ
             FakeDataSeeder.stagingAssignDays.RemoveAll(s =>
                 s.Date == request.WorkDate &&
                 s.PointId == request.CollectionPointId);
 
-            // Lưu staging mới
             FakeDataSeeder.stagingAssignDays.Add(new StagingAssignDay
             {
                 Date = request.WorkDate,
                 PointId = request.CollectionPointId,
                 VehicleId = request.VehicleId,
-                ProductIds = request.ProductIds   
+                ProductIds = request.ProductIds  
             });
 
             return await Task.FromResult(true);
         }
-
-        // ======================================================
-        // GROUP BY POINT (DÙNG PRODUCTID)
-        // ======================================================
-        public async Task<GroupingByPointResponse> GroupByCollectionPointAsync(GroupingByPointRequest request)
+       public async Task<GroupingByPointResponse> GroupByCollectionPointAsync(GroupingByPointRequest request)
         {
             var point = FakeDataSeeder.smallCollectionPoints
                 .FirstOrDefault(p => p.Id == request.CollectionPointId)
@@ -369,10 +349,9 @@ namespace ElecWasteCollection.Application.Services
             {
                 var workDate = assignDay.Date;
 
-                // Lấy tất cả Posts chứa Product thuộc ngày này
                 var posts = FakeDataSeeder.posts
-    .Where(p => assignDay.ProductIds.Contains(p.ProductId))
-    .ToList();
+                    .Where(p => assignDay.ProductIds.Contains(p.ProductId))
+                    .ToList();
 
                 if (!posts.Any()) continue;
 
@@ -387,9 +366,6 @@ namespace ElecWasteCollection.Application.Services
                 var vehicle = FakeDataSeeder.vehicles
                     .First(v => v.Id == assignDay.VehicleId);
 
-                // ======================================================
-                // XÓA GROUP CŨ BẰNG PRODUCTID
-                // ======================================================
                 var oldRoutes = FakeDataSeeder.collectionRoutes
                     .Where(r => r.CollectionDate == workDate &&
                                 assignDay.ProductIds.Contains(r.ProductId))
@@ -406,16 +382,16 @@ namespace ElecWasteCollection.Application.Services
                 int? reuseGroupId = oldGroupIds.Any() ? oldGroupIds.Min() : null;
                 bool reusedFirst = false;
 
-                // ======================================================
-                // MAP DANH SÁCH CHƯA ASSIGN
-                // ======================================================
                 var unassigned = new List<dynamic>();
 
                 foreach (var p in posts)
                 {
                     var user = FakeDataSeeder.users.First(u => u.UserId == p.SenderId);
                     var att = GetProductAttributes(p.ProductId);
-                    var address = _userAddress.First(a => a.UserId == p.SenderId);
+                    var address = _userAddress.FirstOrDefault(a => a.UserId == p.SenderId);
+
+                    if (address == null)
+                        continue; 
 
                     if (TryGetTimeWindowForDate(p.ScheduleJson!, workDate, out var st, out var en))
                     {
@@ -430,7 +406,7 @@ namespace ElecWasteCollection.Application.Services
                             Height = att.height,
                             DimensionText = att.dimensionText,
                             Weight = att.weight,
-                            Volume = att.volume,
+                            Volume = att.volume / 1_000_000.0,
                             Lat = address.Iat ?? point.Latitude,
                             Lng = address.Ing ?? point.Longitude,
                             Address = address.Address
@@ -439,15 +415,11 @@ namespace ElecWasteCollection.Application.Services
                 }
 
                 if (!unassigned.Any()) continue;
-
-                // ======================================================
-                // TẠO GROUP ROUTES
-                // ======================================================
                 foreach (var shift in shifts)
                 {
                     if (!unassigned.Any()) break;
 
-                    var collector = FakeDataSeeder.users.First(u => u.UserId == shift.CollectorId);
+                    var collector = FakeDataSeeder.users.FirstOrDefault(u => u.UserId == shift.CollectorId);
 
                     double speed = (vehicle.Vehicle_Type.Contains("lớn")
                         ? SPEED_KM_H_LARGE
@@ -495,7 +467,6 @@ namespace ElecWasteCollection.Application.Services
 
                         var chosen = best.Node;
 
-                        // Save route output
                         routeNodes.Add(new RouteDetail
                         {
                             PickupOrder = routeNodes.Count + 1,
@@ -503,7 +474,7 @@ namespace ElecWasteCollection.Application.Services
                             UserName = chosen.User.Name,
                             Address = chosen.Address,
                             DistanceKm = best.Dist,
-                            Schedule = chosen.Post.ScheduleJson,
+                            Schedule = JsonSerializer.Deserialize<object>(chosen.Post.ScheduleJson!),
                             EstimatedArrival = best.Arrival.ToString("HH:mm"),
                             Length = chosen.Length,
                             Width = chosen.Width,
@@ -513,11 +484,10 @@ namespace ElecWasteCollection.Application.Services
                             VolumeM3 = chosen.Volume
                         });
 
-                        // Save DB with ProductId
                         saveRoutes.Add(new CollectionRoutes
                         {
                             CollectionRouteId = Guid.NewGuid(),
-                            ProductId = chosen.Post.ProductId,   // QUAN TRỌNG
+                            ProductId = chosen.Post.ProductId,
                             CollectionDate = workDate,
                             EstimatedTime = best.Arrival,
                             DistanceKm = best.Dist,
@@ -587,9 +557,6 @@ namespace ElecWasteCollection.Application.Services
 
             return await Task.FromResult(response);
         }
-        // ======================================================
-        // GET ROUTES BY GROUP (CHUẨN PRODUCTID)
-        // ======================================================
         public async Task<object> GetRoutesByGroupAsync(int groupId)
         {
             var group = FakeDataSeeder.collectionGroups
@@ -606,10 +573,8 @@ namespace ElecWasteCollection.Application.Services
             if (!routes.Any())
                 throw new Exception("Group không có route nào.");
 
-            // Lấy ngày
             var workDate = shift.WorkDate;
 
-            // Lấy 1 product đầu tiên để xác định staging
             var firstProductId = routes.First().ProductId;
 
             var staging = FakeDataSeeder.stagingAssignDays
@@ -655,7 +620,7 @@ namespace ElecWasteCollection.Application.Services
                     weightKg = att.weight,
                     volumeM3 = att.volume,
                     distanceKm = r.DistanceKm,
-                    schedule = post.ScheduleJson,
+                    schedule = JsonSerializer.Deserialize<object>(post.ScheduleJson!),
                     estimatedArrival = r.EstimatedTime.ToString("HH:mm")
                 });
             }
@@ -677,10 +642,6 @@ namespace ElecWasteCollection.Application.Services
 
             return await Task.FromResult(result);
         }
-
-        // ======================================================
-        // GET LIST GROUP BY POINT ID (CHUẨN PRODUCTID)
-        // ======================================================
         public async Task<List<object>> GetGroupsByPointIdAsync(int pointId)
         {
             var stagings = FakeDataSeeder.stagingAssignDays
@@ -715,7 +676,6 @@ namespace ElecWasteCollection.Application.Services
 
                 if (!routes.Any()) continue;
 
-                // Lấy product đầu tiên
                 var firstProductId = routes.First().ProductId;
 
                 var staging = FakeDataSeeder.stagingAssignDays
@@ -754,10 +714,6 @@ namespace ElecWasteCollection.Application.Services
 
             return await Task.FromResult(result);
         }
-
-        // ======================================================
-        // GET ALL ACTIVE VEHICLES
-        // ======================================================
         public async Task<List<Vehicles>> GetVehiclesAsync()
         {
             return await Task.FromResult(
@@ -767,10 +723,6 @@ namespace ElecWasteCollection.Application.Services
                     .ToList()
             );
         }
-
-        // ======================================================
-        // GET ALL PENDING POSTS (CHƯA GOM NHÓM)
-        // ======================================================
         public async Task<List<PendingPostModel>> GetPendingPostsAsync()
         {
             var posts = FakeDataSeeder.posts
@@ -796,7 +748,7 @@ namespace ElecWasteCollection.Application.Services
                 result.Add(new PendingPostModel
                 {
                     PostId = p.Id,
-                    //ProductId = p.ProductId,
+                    ProductId = p.ProductId,
                     UserName = user.Name,
                     Address = address.Address,
                     ProductName = $"{brand.Name} {cat.Name}",

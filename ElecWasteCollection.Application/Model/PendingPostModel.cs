@@ -9,6 +9,7 @@ namespace ElecWasteCollection.Application.Model
     public class PendingPostModel
     {
         public Guid PostId { get; set; }
+        public Guid ProductId { get; set; }
         public string UserName { get; set; } = "";
         public string Address { get; set; } = "";
         public string ProductName { get; set; } = "";
