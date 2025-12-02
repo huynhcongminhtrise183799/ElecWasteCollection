@@ -33,6 +33,8 @@ namespace ElecWasteCollection.Application.Model.GroupModel
     public class PreAssignPost
     {
         public Guid PostId { get; set; }
+        public Guid ProductId { get; set; }
+
         public string UserName { get; set; } = "";
         public string Address { get; set; } = "";
         public double Length { get; set; }

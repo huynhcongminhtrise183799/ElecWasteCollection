@@ -25,7 +25,7 @@ namespace ElecWasteCollection.Application.Model.AssignPost
         public string SmallPointName { get; set; } = string.Empty;
 
         public double RadiusMaxConfigKm { get; set; }
-        public double RadiusKm { get; set; }
+        public double MaxRoadDistanceKm { get; set; }
 
         public int Total { get; set; }
         public double TotalWeightKg { get; set; }

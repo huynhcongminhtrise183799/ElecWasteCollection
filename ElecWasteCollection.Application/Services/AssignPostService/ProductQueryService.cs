@@ -15,17 +15,12 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
         {
             _distance = distance;
         }
-
-        // ============================================================
-        // 1) GET PRODUCTS OF COMPANY BY WORKDATE
-        // ============================================================
         public async Task<GetCompanyProductsResponse> GetCompanyProductsAsync(int companyId, DateOnly workDate)
         {
             var config = FakeDataSeeder.CompanyConfigs
                 .FirstOrDefault(c => c.TeamId == companyId)
                 ?? throw new Exception("Company not found.");
 
-            // LẤY POST THEO COMPANY + WORKDATE (scheduleJson)
             var posts = FakeDataSeeder.posts
                 .Where(p => p.CollectionCompanyId == companyId)
                 .Where(p =>
@@ -36,7 +31,6 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 })
                 .ToList();
 
-            // MAP PRODUCT
             var products = posts
                 .Select(p => FakeDataSeeder.products.First(x => x.Id == p.ProductId))
                 .ToList();
@@ -51,7 +45,6 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
             double totalWeight = 0, totalVolume = 0;
 
-            // GROUP BY SMALL POINT (từ POST)
             var grouped = posts.GroupBy(p => p.AssignedSmallPointId);
 
             foreach (var grp in grouped)
@@ -65,10 +58,10 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 {
                     SmallPointId = spId,
                     SmallPointName = sp.Name,
-                    RadiusMaxConfigKm = spConfig.RadiusKm
-                };
+                    RadiusMaxConfigKm = spConfig.RadiusKm,
+                    MaxRoadDistanceKm = spConfig.MaxRoadDistanceKm
 
-                double maxRadius = 0;
+                };
 
                 foreach (var post in grp)
                 {
@@ -83,7 +76,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                     double rong = pv.FirstOrDefault(v => v.AttributeId == FakeDataSeeder.att_ChieuRong)?.Value ?? 0;
                     double cao = pv.FirstOrDefault(v => v.AttributeId == FakeDataSeeder.att_ChieuCao)?.Value ?? 0;
 
-                    double volume = dai * rong * cao;
+                    double volume = (dai * rong * cao) / 1_000_000.0; 
 
                     double radiusKm = GeoHelper.DistanceKm(
                         sp.Latitude,
@@ -97,8 +90,6 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                         address.Iat.Value,
                         address.Ing.Value);
 
-                    maxRadius = Math.Max(maxRadius, radiusKm);
-
                     spDto.Products.Add(new ProductDetailDto
                     {
                         PostId = post.Id,
@@ -107,33 +98,29 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                         UserName = user.Name,
                         Address = address.Address,
                         WeightKg = weight,
-                        VolumeM3 = volume,
+                        VolumeM3 = Math.Round(volume, 3),
                         RadiusKm = $"{Math.Round(radiusKm, 2):0.00} km",
                         RoadKm = $"{Math.Round(roadKm, 2):0.00} km"
                     });
 
                     spDto.TotalWeightKg += weight;
-                    spDto.TotalVolumeM3 += volume;
+                    spDto.TotalVolumeM3 = Math.Round(spDto.TotalVolumeM3 + volume, 3);
                 }
 
                 spDto.Total = spDto.Products.Count;
-                spDto.RadiusKm = maxRadius;
 
                 totalWeight += spDto.TotalWeightKg;
-                totalVolume += spDto.TotalVolumeM3;
+                totalVolume = Math.Round(totalVolume + spDto.TotalVolumeM3, 3);
 
+                response.TotalVolumeM3 = totalVolume;
                 response.Points.Add(spDto);
             }
 
             response.TotalWeightKg = totalWeight;
-            response.TotalVolumeM3 = totalVolume;
+            response.TotalVolumeM3 = Math.Round(totalVolume, 3);
 
             return response;
         }
-
-        // ============================================================
-        // 2) GET PRODUCTS BY SMALL POINT + WORKDATE
-        // ============================================================
         public async Task<SmallPointProductGroupDto> GetSmallPointProductsAsync(int smallPointId, DateOnly workDate)
         {
             var posts = FakeDataSeeder.posts
@@ -156,7 +143,9 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             {
                 SmallPointId = smallPointId,
                 SmallPointName = sp.Name,
-                RadiusMaxConfigKm = configItem?.RadiusKm ?? 0
+                RadiusMaxConfigKm = configItem?.RadiusKm ?? 0,
+                MaxRoadDistanceKm = configItem?.MaxRoadDistanceKm ?? 0
+
             };
 
             double maxRadius = 0;
@@ -174,7 +163,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 double rong = pv.FirstOrDefault(v => v.AttributeId == FakeDataSeeder.att_ChieuRong)?.Value ?? 0;
                 double cao = pv.FirstOrDefault(v => v.AttributeId == FakeDataSeeder.att_ChieuCao)?.Value ?? 0;
 
-                double volume = dai * rong * cao;
+                double volume = (dai * rong * cao) / 1_000_000.0;  
 
                 double radiusKm = GeoHelper.DistanceKm(
                     sp.Latitude,
@@ -198,24 +187,19 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                     UserName = user.Name,
                     Address = address.Address,
                     WeightKg = weight,
-                    VolumeM3 = volume,
+                    VolumeM3 = Math.Round(volume, 3),
                     RadiusKm = $"{Math.Round(radiusKm, 2):0.00} km",
                     RoadKm = $"{Math.Round(roadKm, 2):0.00} km"
                 });
 
                 spDto.TotalWeightKg += weight;
-                spDto.TotalVolumeM3 += volume;
+                spDto.TotalVolumeM3 = Math.Round(spDto.TotalVolumeM3 + volume, 3);
             }
 
             spDto.Total = spDto.Products.Count;
-            spDto.RadiusKm = maxRadius;
-
             return spDto;
         }
 
-        // ============================================================
-        // Helper: Parse các ngày trong ScheduleJson
-        // ============================================================
         private bool TryParseDates(string scheduleJson, out List<DateOnly> dates)
         {
             dates = new();
@@ -252,9 +236,6 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             public string? EndTime { get; set; }
         }
 
-        // ============================================================
-        // 3) Get Companies + Small Points (giữ nguyên)
-        // ============================================================
         public async Task<List<CompanyWithPointsResponse>> GetCompaniesWithSmallPointsAsync()
         {
             await Task.Yield();

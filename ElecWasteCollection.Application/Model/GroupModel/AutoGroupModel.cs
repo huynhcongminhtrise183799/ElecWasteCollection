@@ -41,7 +41,7 @@ namespace ElecWasteCollection.Application.Model.GroupModel
         public string UserName { get; set; } = "";
         public string Address { get; set; } = "";
         public double DistanceKm { get; set; }
-        public string Schedule { get; set; } = "";
+        public object Schedule { get; set; } = "";
         public string EstimatedArrival { get; set; } = "";
         public double Length { get; set; }
         public double Width { get; set; }
