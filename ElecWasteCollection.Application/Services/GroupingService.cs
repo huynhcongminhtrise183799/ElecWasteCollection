@@ -620,7 +620,7 @@ namespace ElecWasteCollection.Application.Services
                     weightKg = att.weight,
                     volumeM3 = att.volume,
                     distanceKm = r.DistanceKm,
-                    schedule = JsonSerializer.Deserialize<object>(post.ScheduleJson!),
+schedule = JsonSerializer.Deserialize<object>(post.ScheduleJson!),
                     estimatedArrival = r.EstimatedTime.ToString("HH:mm")
                 });
             }

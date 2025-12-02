@@ -244,6 +244,9 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 .Select(company => new CompanyWithPointsResponse
                 {
                     CompanyId = company.TeamId,
+                    CompanyName = FakeDataSeeder.collectionTeams
+                            .First(t => t.Id == company.TeamId)
+                            .Name,
                     SmallPoints = FakeDataSeeder.smallCollectionPoints
                         .Where(p => p.City_Team_Id == company.TeamId)
                         .Select(p => new SmallPointDto
