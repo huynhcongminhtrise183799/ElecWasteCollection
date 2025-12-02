@@ -257,5 +257,26 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 })
                 .ToList();
         }
+        public async Task<List<SmallPointDto>> GetSmallPointsByCompanyIdAsync(int companyId)
+        {
+            await Task.Yield(); 
+
+            var company = FakeDataSeeder.CompanyConfigs
+                .FirstOrDefault(c => c.TeamId == companyId)
+                ?? throw new Exception("Company not found.");
+
+            var smallPoints = FakeDataSeeder.smallCollectionPoints
+                .Where(p => p.City_Team_Id == companyId)
+                .Select(p => new SmallPointDto
+                {
+                    SmallPointId = p.Id,
+                    Name = p.Name,
+                    Lat = p.Latitude,
+                    Lng = p.Longitude
+                })
+                .ToList();
+
+            return smallPoints;
+        }
     }
 }

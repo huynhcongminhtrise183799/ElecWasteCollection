@@ -192,9 +192,9 @@ namespace ElecWasteCollection.Application.Data
 				UserAddressId = Guid.NewGuid(),
 				UserId = Guid.Parse("7f5c8b33-1b52-4d11-91b0-932c3d243c71"),
 				Address = "Vinhomes Grand Park – Nguyễn Xiển, Phường Long Thạnh Mỹ, TP. Thủ Đức",
-				Iat = 10.8650,
-				Ing = 106.7530,
-				isDefault = true
+Iat = 10.8405,
+Ing = 106.8283,
+                isDefault = true
             },
 			new UserAddress
 			{

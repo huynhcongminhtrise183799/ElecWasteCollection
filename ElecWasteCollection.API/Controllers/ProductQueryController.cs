@@ -42,4 +42,13 @@ public class ProductQueryController : ControllerBase
         var result = await _productQueryService.GetCompaniesWithSmallPointsAsync();
         return Ok(result);
     }
+
+    [HttpGet("{companyId}/smallpoints")]
+    public async Task<IActionResult> GetSmallPoints(int companyId)
+    {
+        var result = await _productQueryService.GetSmallPointsByCompanyIdAsync(companyId);
+        return Ok(result); 
+    }
+
+
 }
