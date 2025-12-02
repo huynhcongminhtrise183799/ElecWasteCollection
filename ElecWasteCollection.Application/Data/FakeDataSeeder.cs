@@ -192,8 +192,8 @@ namespace ElecWasteCollection.Application.Data
 				UserAddressId = Guid.NewGuid(),
 				UserId = Guid.Parse("7f5c8b33-1b52-4d11-91b0-932c3d243c71"),
 				Address = "Vinhomes Grand Park – Nguyễn Xiển, Phường Long Thạnh Mỹ, TP. Thủ Đức",
-Iat = 10.8405,
-Ing = 106.8283,
+				Iat = 10.8405,
+				Ing = 106.8283,
                 isDefault = true
             },
 			new UserAddress
@@ -2070,6 +2070,32 @@ Ing = 106.8283,
         //        public double Lat { get; set; }
         //        public double Lng { get; set; }
         //    }
+
+        public static List<CollectionTeams> collectionTeams = new()
+{
+    new CollectionTeams
+    {
+        Id = 1,
+        Name = "EcoGreen Collection Co.",
+        Contact_Person = "Nguyễn Văn Minh",
+        Phone = "0901 234 567",
+        City = "Thủ Đức",
+        Status = "active",
+        Created_At = _vnNow.AddDays(-10),
+        Updated_At = _vnNow
+    },
+    new CollectionTeams
+    {
+        Id = 2,
+        Name = "UrbanClean Recycling Corp.",
+        Contact_Person = "Trần Thị Hạnh",
+        Phone = "0987 654 321",
+        City = "Bình Thạnh",
+        Status = "active",
+        Created_At = _vnNow.AddDays(-12),
+        Updated_At = _vnNow
+    }
+};
 
 
         public static readonly List<Guid> FakeProductGuids = new List<Guid>

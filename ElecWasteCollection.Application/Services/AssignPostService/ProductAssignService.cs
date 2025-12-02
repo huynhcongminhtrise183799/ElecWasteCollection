@@ -1,9 +1,7 @@
 ﻿using ElecWasteCollection.Application.Data;
 using ElecWasteCollection.Application.IServices.IAssignPost;
 using ElecWasteCollection.Application.Model.AssignPost;
-using ElecWasteCollection.Application.Helper;
 using ElecWasteCollection.Application.Helpers;
-using System.Linq;
 using System.Text.Json;
 
 namespace ElecWasteCollection.Application.Services.AssignPostService
@@ -17,12 +15,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             _distanceCache = distanceCache;
         }
 
-        // ================================
-        //     ASSIGN PRODUCT TO COMPANY
-        // ================================
-        public async Task<AssignProductResult> AssignProductsAsync(
-            List<Guid> productIds,
-            DateOnly workDate)
+        public async Task<AssignProductResult> AssignProductsAsync( List<Guid> productIds, DateOnly workDate)
         {
             var result = new AssignProductResult();
             var config = FakeDataSeeder.CompanyConfigs;
@@ -38,16 +31,35 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 throw new Exception("Không có product hợp lệ.");
 
             int total = products.Count;
+            int assignedCount = 0;
 
             foreach (var team in config)
-                team.Quota = (int)(total * team.RatioPercent / 100.0);
+            {
+                int baseQuota = (int)(total * team.RatioPercent / 100.0);
+
+                team.Quota = baseQuota;
+                assignedCount += baseQuota;
+            }
+
+            int remainder = total - assignedCount;
+
+            if (remainder > 0)
+            {
+                var sortedTeams = config.OrderByDescending(t => t.RatioPercent).ToList();
+
+                int index = 0;
+                while (remainder > 0)
+                {
+                    sortedTeams[index].Quota++;
+                    remainder--;
+                    index = (index + 1) % sortedTeams.Count;
+                }
+            }
 
             foreach (var product in products)
             {
                 var post = FakeDataSeeder.posts.First(p => p.ProductId == product.Id);
 
-                // GÁN NGÀY WORKDATE CHO POST
-                //post.WorkDate = workDate;
 
                 var userAddress = FakeDataSeeder.userAddress.First(a => a.UserId == post.SenderId);
 
@@ -119,9 +131,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             return result;
         }
 
-        // ================================
-        //     GET PRODUCT BY WORKDATE
-        // ================================
+
         public async Task<List<ProductByDateModel>> GetProductsByWorkDateAsync(DateOnly workDate)
         {
             var result = new List<ProductByDateModel>();
@@ -144,6 +154,8 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 result.Add(new ProductByDateModel
                 {
                     ProductId = product.Id,
+                    PostId = post.Id,                     
+                    ProductName = post.Description?? product.Description,
                     UserName = user.Name,
                     Address = address
                 });
@@ -152,9 +164,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             return await Task.FromResult(result);
         }
 
-        // ================================
-        //   PARSE SCHEDULE JSON FOR DATE
-        // ================================
+
         private bool TryParseScheduleInfo(string raw, out List<DateOnly> dates)
         {
             dates = new List<DateOnly>();
@@ -181,9 +191,6 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             }
         }
 
-        // ================================
-        //          DTOs SUPPORT
-        // ================================
         private class ScheduleDayDto
         {
             public string? PickUpDate { get; set; }
