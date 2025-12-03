@@ -12,5 +12,7 @@ namespace ElecWasteCollection.Application.IServices.IAssignPost
     {
         CompanyConfigResponse UpdateCompanyConfig(CompanyConfigRequest request);
         CompanyConfigResponse GetCompanyConfig();
+
+
     }
 }

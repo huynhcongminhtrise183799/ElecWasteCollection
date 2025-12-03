@@ -85,7 +85,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
         public async Task<GetCompanyProductsResponse> GetCompanyProductsAsync(int companyId, DateOnly workDate)
         {
-            var config = FakeDataSeeder.CompanyConfigs.FirstOrDefault(c => c.TeamId == companyId)
+            var config = FakeDataSeeder.CompanyConfigs.FirstOrDefault(c => c.CompanyId == companyId)
                 ?? throw new Exception("Company not found.");
 
             var posts = FakeDataSeeder.posts
@@ -245,25 +245,59 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
         public async Task<List<CompanyWithPointsResponse>> GetCompaniesWithSmallPointsAsync()
         {
             await Task.Yield();
-            return FakeDataSeeder.CompanyConfigs.Select(company => new CompanyWithPointsResponse
+
+            return FakeDataSeeder.CompanyConfigs.Select(company =>
             {
-                CompanyId = company.TeamId,
-                CompanyName = FakeDataSeeder.collectionTeams.FirstOrDefault(t => t.Id == company.TeamId)?.Name ?? $"Company {company.TeamId}",
-                SmallPoints = FakeDataSeeder.smallCollectionPoints
-                    .Where(p => p.City_Team_Id == company.TeamId)
-                    .Select(p => new SmallPointDto { SmallPointId = p.Id, Name = p.Name, Lat = p.Latitude, Lng = p.Longitude })
-                    .ToList()
+                var realCompany = FakeDataSeeder.collectionTeams.FirstOrDefault(t => t.Id == company.CompanyId);
+                string companyName = realCompany?.Name ?? $"Company {company.CompanyId}";
+
+                var smallPoints = company.SmallPoints.Select(cfgSp =>
+                {
+                    var realSP = FakeDataSeeder.smallCollectionPoints.FirstOrDefault(p => p.Id == cfgSp.SmallPointId);
+
+                    return new SmallPointDto
+                    {
+                        SmallPointId = cfgSp.SmallPointId,
+                        Name = realSP?.Name,
+                        Lat = realSP?.Latitude ?? 0,
+                        Lng = realSP?.Longitude ?? 0,
+                        RadiusKm = cfgSp.RadiusKm,
+                        MaxRoadDistanceKm = cfgSp.MaxRoadDistanceKm,
+                        Active = cfgSp.Active
+                    };
+                }).ToList();
+
+                return new CompanyWithPointsResponse
+                {
+                    CompanyId = company.CompanyId,
+                    CompanyName = companyName,
+                    SmallPoints = smallPoints
+                };
             }).ToList();
         }
 
         public async Task<List<SmallPointDto>> GetSmallPointsByCompanyIdAsync(int companyId)
         {
             await Task.Yield();
-            var company = FakeDataSeeder.CompanyConfigs.FirstOrDefault(c => c.TeamId == companyId) ?? throw new Exception("Company not found.");
-            return FakeDataSeeder.smallCollectionPoints
-                .Where(p => p.City_Team_Id == companyId)
-                .Select(p => new SmallPointDto { SmallPointId = p.Id, Name = p.Name, Lat = p.Latitude, Lng = p.Longitude })
-                .ToList();
+
+            var company = FakeDataSeeder.CompanyConfigs.FirstOrDefault(c => c.CompanyId == companyId)
+                ?? throw new Exception("Company not found.");
+
+            return company.SmallPoints.Select(cfgSp =>
+            {
+                var realSP = FakeDataSeeder.smallCollectionPoints.FirstOrDefault(p => p.Id == cfgSp.SmallPointId);
+
+                return new SmallPointDto
+                {
+                    SmallPointId = cfgSp.SmallPointId,
+                    Name = realSP?.Name,
+                    Lat = realSP?.Latitude ?? 0,
+                    Lng = realSP?.Longitude ?? 0,
+                    RadiusKm = cfgSp.RadiusKm,
+                    MaxRoadDistanceKm = cfgSp.MaxRoadDistanceKm,
+                    Active = cfgSp.Active
+                };
+            }).ToList();
         }
     }
 }

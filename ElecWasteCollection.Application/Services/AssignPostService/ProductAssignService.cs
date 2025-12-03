@@ -89,7 +89,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                         candidates.Add(new ProductAssignCandidate
                         {
                             ProductId = product.Id,
-                            TeamId = team.TeamId,
+                            CompanyId = team.CompanyId,
                             SmallPointId = sp.SmallPointId,
                             RoadKm = roadKm,
                             HaversineKm = hvDistance
@@ -105,11 +105,11 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 }
 
                 var chosen = candidates.OrderBy(c => c.RoadKm).First();
-                var chosenTeam = config.First(t => t.TeamId == chosen.TeamId);
+                var chosenTeam = config.First(t => t.CompanyId == chosen.CompanyId);
 
                 chosenTeam.Quota--;
 
-                post.CollectionCompanyId = chosen.TeamId;
+                post.CollectionCompanyId = chosen.CompanyId;
                 post.AssignedSmallPointId = chosen.SmallPointId;
 
                 string fRoad = $"{Math.Round(chosen.RoadKm, 2):0.00} km";
@@ -120,7 +120,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 result.Details.Add(new
                 {
                     productId = product.Id,
-                    companyId = chosen.TeamId,
+                    companyId = chosen.CompanyId,
                     smallPointId = chosen.SmallPointId,
                     roadKm = fRoad,
                     radiusKm = fRadius,

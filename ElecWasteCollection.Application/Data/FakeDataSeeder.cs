@@ -2356,8 +2356,8 @@ namespace ElecWasteCollection.Application.Data
             // Configs
             CompanyConfigs = new List<CompanyConfigItem>
     {
-        new CompanyConfigItem { TeamId = 1, RatioPercent = 60, SmallPoints = new List<SmallPointConfigItem> { new SmallPointConfigItem { SmallPointId = 1, RadiusKm = 10, MaxRoadDistanceKm = 15, Active = true }, new SmallPointConfigItem { SmallPointId = 2, RadiusKm = 10, MaxRoadDistanceKm = 15, Active = true } } },
-        new CompanyConfigItem { TeamId = 2, RatioPercent = 40, SmallPoints = new List<SmallPointConfigItem> { new SmallPointConfigItem { SmallPointId = 3, RadiusKm = 12, MaxRoadDistanceKm = 20, Active = true } } }
+        new CompanyConfigItem { CompanyId = 1, RatioPercent = 60, SmallPoints = new List<SmallPointConfigItem> { new SmallPointConfigItem { SmallPointId = 1, RadiusKm = 10, MaxRoadDistanceKm = 15, Active = true }, new SmallPointConfigItem { SmallPointId = 2, RadiusKm = 10, MaxRoadDistanceKm = 15, Active = true } } },
+        new CompanyConfigItem { CompanyId = 2, RatioPercent = 40, SmallPoints = new List<SmallPointConfigItem> { new SmallPointConfigItem { SmallPointId = 3, RadiusKm = 12, MaxRoadDistanceKm = 20, Active = true } } }
     };
 
             Console.WriteLine("[FakeData] SUCCESS: Loaded 20 posts (50% Manual Size / 50% Option Size) for 15/12.");
