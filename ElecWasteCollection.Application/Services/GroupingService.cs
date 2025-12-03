@@ -28,12 +28,25 @@ namespace ElecWasteCollection.Application.Services
         private readonly Guid _attDungTich = FakeDataSeeder.ID_DungTich;
         private readonly Guid _attKichThuocManHinh = FakeDataSeeder.ID_KichThuocManHinh;
 
-        private sealed class TimeSlotDetailDto { public string? StartTime { get; set; } public string? EndTime { get; set; } }
-        private sealed class DailyTimeSlotsDto { public string? DayName { get; set; } public string? PickUpDate { get; set; } public TimeSlotDetailDto? Slots { get; set; } }
-        private class PostScheduleInfo { public DateOnly MinDate { get; set; } public DateOnly MaxDate { get; set; } public List<DateOnly> SpecificDates { get; set; } = new(); }
+        private sealed class TimeSlotDetailDto
+        {
+            public string? StartTime { get; set; }
+            public string? EndTime { get; set; }
+        }
+        private sealed class DailyTimeSlotsDto
+        {
+            public string? DayName { get; set; }
+            public string? PickUpDate { get; set; }
+            public TimeSlotDetailDto? Slots { get; set; }
+        }
+        private class PostScheduleInfo
+        {
+            public DateOnly MinDate { get; set; }
+            public DateOnly MaxDate { get; set; }
+            public List<DateOnly> SpecificDates { get; set; } = new();
+        }
 
-        private (double length, double width, double height, double weight, double volume, string dimensionText)
-          GetProductAttributes(Guid productId)
+        private (double length, double width, double height, double weight, double volume, string dimensionText)GetProductAttributes(Guid productId)
         {
             var pValues = FakeDataSeeder.productValues.Where(v => v.ProductId == productId).ToList();
             var allOptions = FakeDataSeeder.attributeOptions;

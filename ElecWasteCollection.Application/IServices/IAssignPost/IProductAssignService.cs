@@ -11,9 +11,5 @@ namespace ElecWasteCollection.Application.IServices.IAssignPost
     {
         Task<AssignProductResult> AssignProductsAsync(List<Guid> productIds,DateOnly workDate); 
         Task<List<ProductByDateModel>> GetProductsByWorkDateAsync(DateOnly workDate);
-
-
-
-
     }
 }
