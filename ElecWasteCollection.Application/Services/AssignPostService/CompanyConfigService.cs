@@ -9,21 +9,55 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
         public CompanyConfigResponse UpdateCompanyConfig(CompanyConfigRequest request)
         {
             if (request == null || request.Companies == null || !request.Companies.Any())
-                throw new Exception("Danh sách company không được rỗng.");
+            {
+                return new CompanyConfigResponse
+                {
+                    Message = "Danh sách company không được rỗng.",
+                    Companies = new List<CompanyConfigDto>()
+                };
+            }
 
             foreach (var company in request.Companies)
             {
                 if (company.SmallPoints == null || !company.SmallPoints.Any())
-                    throw new Exception($"Company {company.CompanyId} không có smallPoints.");
+                {
+                    return new CompanyConfigResponse
+                    {
+                        Message = $"Company {company.CompanyId} không có smallPoints.",
+                        Companies = new List<CompanyConfigDto>()
+                    };
+                }
 
                 foreach (var sp in company.SmallPoints)
                 {
                     if (sp.RadiusKm <= 0)
-                        throw new Exception($"SmallPoint {sp.SmallPointId} radiusKm không hợp lệ.");
+                    {
+                        return new CompanyConfigResponse
+                        {
+                            Message = $"SmallPoint {sp.SmallPointId} radiusKm không hợp lệ.",
+                            Companies = new List<CompanyConfigDto>()
+                        };
+                    }
 
                     if (sp.MaxRoadDistanceKm <= 0)
-                        throw new Exception($"SmallPoint {sp.SmallPointId} maxRoadDistanceKm không hợp lệ.");
+                    {
+                        return new CompanyConfigResponse
+                        {
+                            Message = $"SmallPoint {sp.SmallPointId} maxRoadDistanceKm không hợp lệ.",
+                            Companies = new List<CompanyConfigDto>()
+                        };
+                    }
                 }
+            }
+
+            double totalRatio = request.Companies.Sum(c => c.RatioPercent);
+
+            if (Math.Abs(totalRatio - 100) > 0.0001)
+            {
+                return new CompanyConfigResponse
+                {
+                    Message = $"Tổng RatioPercent phải bằng 100%. Hiện tại = {totalRatio}%."
+                };
             }
 
             FakeDataSeeder.CompanyConfigs = request.Companies;
@@ -32,8 +66,6 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             {
                 var realCompany = FakeDataSeeder.collectionTeams
                     .FirstOrDefault(t => t.Id == company.CompanyId);
-
-                string companyName = realCompany?.Name ?? $"Company {company.CompanyId}";
 
                 var smallPointDtos = company.SmallPoints.Select(cfgSp =>
                 {
@@ -55,7 +87,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 return new CompanyConfigDto
                 {
                     CompanyId = company.CompanyId,
-                    CompanyName = companyName,
+                    CompanyName = realCompany?.Name ?? $"Company {company.CompanyId}",
                     RatioPercent = company.RatioPercent,
                     SmallPoints = smallPointDtos
                 };
@@ -66,7 +98,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 Message = "Company configuration updated successfully.",
                 Companies = companyDtos
             };
-        } 
+        }
 
         public CompanyConfigResponse GetCompanyConfig()
         {
@@ -110,4 +142,5 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             };
         }
     }
+
 }

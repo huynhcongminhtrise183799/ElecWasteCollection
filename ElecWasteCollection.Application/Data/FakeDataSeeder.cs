@@ -120,6 +120,7 @@ namespace ElecWasteCollection.Application.Data
         // =========================================================================
         private static readonly Guid collector_Dung_Id = Guid.Parse("6df4af85-6a59-4a0a-8513-1d7859fbd789");
         private static readonly Guid collector_Tuan_Id = Guid.Parse("c011ec70-b861-468f-b648-812e90f01a7e");
+        private static readonly Guid collector_Truong_Id = Guid.Parse("d290f1ee-6c54-4b01-90e6-d701748f0851");
         public static List<User> users = new()
         {
             new User { UserId = Guid.Parse("7f5c8b33-1b52-4d11-91b0-932c3d243c71"), Name = "Trần Huỳnh Bảo Ngọc", Email = "ngocthbse183850@fpt.edu.vn", Phone = "0901234567", Avatar = "https://picsum.photos/id/1011/200/200",Role = "User",Status = UserStatus.Active.ToString()},
@@ -141,6 +142,18 @@ namespace ElecWasteCollection.Application.Data
 		Role = UserRole.Collector.ToString(),
         Status = UserStatus.Active.ToString()
     },
+            new User
+{
+    UserId = collector_Truong_Id,
+    Name = "Nguyễn Nhật Trường",
+    Email = "nguyen.nhat.truong@ewc.vn",
+    Phone = "0905333444",
+    Avatar = "https://picsum.photos/id/1070/200/200",
+    SmallCollectionPointId = 2, // Thuộc trạm 2 (Quận 9)
+    CollectionCompanyId = 1,    // Thuộc công ty 1
+    Role = UserRole.Collector.ToString(),
+    Status = UserStatus.Active.ToString()
+},
     new User
     {
         UserId = collector_Tuan_Id,
@@ -186,6 +199,7 @@ namespace ElecWasteCollection.Application.Data
         {
             new Account { AccountId = Guid.NewGuid(), UserId = collector_Dung_Id, Username = "collector.dung", PasswordHash = "123456"},
             new Account { AccountId = Guid.NewGuid(), UserId = collector_Tuan_Id, Username = "collector.tuan", PasswordHash = "123456"},
+            new Account { AccountId = Guid.NewGuid(), UserId = collector_Truong_Id, Username = "collector.truong", PasswordHash = "123456"},
             new Account { AccountId = Guid.NewGuid(), UserId = Guid.Parse("c20deff9-163b-49e8-b967-238f22882b65"), Username = "adminwarehouse", PasswordHash = "123456"},
         };
         public static List<UserAddress> userAddress = new()
@@ -548,6 +562,17 @@ namespace ElecWasteCollection.Application.Data
         Status = "active",
         Small_Collection_Point = 1 // Thuộc trạm 1
     },
+    new Vehicles
+{
+    Id = 3, // ID tiếp theo
+    Plate_Number = "51C-99999",
+    Vehicle_Type = "Xe tải nhỏ",
+    Capacity_Kg = 1000,
+    Capacity_M3 = 8,
+    Radius_Km = 10,
+    Status = "active",
+    Small_Collection_Point = 2 // Trạm 2
+},
     new Vehicles
     {
         Id = 2,
@@ -2352,13 +2377,29 @@ namespace ElecWasteCollection.Application.Data
 
             // Shifts
             int nextShiftId = shifts.Any() ? shifts.Max(s => s.Id) + 1 : 1;
+
+            // 1. Ca của Dũng (SmallPoint 1)
             shifts.Add(new Shifts { Id = nextShiftId, CollectorId = collector_Dung_Id, Vehicle_Id = 1, WorkDate = targetDate, Shift_Start_Time = targetDateTime.AddHours(7), Shift_End_Time = targetDateTime.AddHours(15) });
+
+            // 2. Ca của Tuấn (SmallPoint 1)
             shifts.Add(new Shifts { Id = nextShiftId + 1, CollectorId = collector_Tuan_Id, Vehicle_Id = 2, WorkDate = targetDate, Shift_Start_Time = targetDateTime.AddHours(7), Shift_End_Time = targetDateTime.AddHours(15) });
+
+            // 3. Ca của Trường (SmallPoint 2 - Quận 9)
+            // Lưu ý: Đảm bảo bạn đã thêm Vehicle Id = 3 vào list vehicles ở đầu file như hướng dẫn trước
+            shifts.Add(new Shifts { Id = nextShiftId + 2, CollectorId = collector_Truong_Id, Vehicle_Id = 3, WorkDate = targetDate, Shift_Start_Time = targetDateTime.AddHours(8), Shift_End_Time = targetDateTime.AddHours(16) });
+
 
             // Groups
             int nextGroupId = collectionGroups.Any() ? collectionGroups.Max(g => g.Id) + 1 : 1;
+
+            // 1. Group Dũng
             collectionGroups.Add(new CollectionGroups { Id = nextGroupId, Shift_Id = nextShiftId, Group_Code = "1512-S1-DUNG", Name = "Tuyến Dũng 15/12", Created_At = _vnNow });
+
+            // 2. Group Tuấn
             collectionGroups.Add(new CollectionGroups { Id = nextGroupId + 1, Shift_Id = nextShiftId + 1, Group_Code = "1512-S2-TUAN", Name = "Tuyến Tuấn 15/12", Created_At = _vnNow });
+
+            // 3. Group Trường
+            collectionGroups.Add(new CollectionGroups { Id = nextGroupId + 2, Shift_Id = nextShiftId + 2, Group_Code = "1512-S3-TRUONG", Name = "Tuyến Trường 15/12 (Q9)", Created_At = _vnNow });
 
             // Configs
             CompanyConfigs = new List<CompanyConfigItem>
