@@ -14,6 +14,7 @@ namespace ElecWasteCollection.Application.Interfaces
         Task<object> GetRoutesByGroupAsync(int groupId);
         Task<List<Vehicles>> GetVehiclesAsync();
         Task<List<PendingPostModel>> GetPendingPostsAsync();
+        Task<List<Vehicles>> GetVehiclesBySmallPointAsync(int smallPointId);
 
     }
 }
