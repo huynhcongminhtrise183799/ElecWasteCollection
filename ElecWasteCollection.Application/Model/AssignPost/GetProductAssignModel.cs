@@ -49,6 +49,8 @@ namespace ElecWasteCollection.Application.Model.AssignPost
 
         public string RadiusKm { get; set; } = string.Empty;
         public string RoadKm { get; set; } = string.Empty;
+        public string CategoryName { get; set; }
+        public string BrandName { get; set; }
     }
 
 }
