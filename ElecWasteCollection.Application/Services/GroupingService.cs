@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using ElecWasteCollection.Application.Data;
+using ElecWasteCollection.Application.Helpers;
+using System.Text.Json;
 using ElecWasteCollection.Application.Data;
 using ElecWasteCollection.Application.Helpers;
 using ElecWasteCollection.Application.Interfaces;
@@ -52,7 +54,7 @@ namespace ElecWasteCollection.Application.Services
             public List<DateOnly> SpecificDates { get; set; } = new();
         }
 
-        private (double length, double width, double height, double weight, double volume, string dimensionText)GetProductAttributes(Guid productId)
+        private (double length, double width, double height, double weight, double volume, string dimensionText) GetProductAttributes(Guid productId)
         {
             var pValues = FakeDataSeeder.productValues.Where(v => v.ProductId == productId).ToList();
             var allOptions = FakeDataSeeder.attributeOptions;
@@ -77,7 +79,7 @@ namespace ElecWasteCollection.Application.Services
                 }
             }
 
-            if (weight <= 0) weight = 1; 
+            if (weight <= 0) weight = 1;
 
             double length = pValues.FirstOrDefault(v => v.AttributeId == _attChieuDai)?.Value ?? 0;
             double width = pValues.FirstOrDefault(v => v.AttributeId == _attChieuRong)?.Value ?? 0;
@@ -88,7 +90,7 @@ namespace ElecWasteCollection.Application.Services
 
             if (length > 0 && width > 0 && height > 0)
             {
-                volume = length * width * height; 
+                volume = (length * width * height) / 1_000_000.0;
                 dimText = $"{length} x {width} x {height} cm";
             }
             else
@@ -104,7 +106,7 @@ namespace ElecWasteCollection.Application.Services
                         var opt = allOptions.FirstOrDefault(o => o.OptionId == pVal.AttributeOptionId);
                         if (opt != null && opt.EstimateVolume.HasValue && opt.EstimateVolume.Value > 0)
                         {
-                            volume = opt.EstimateVolume.Value * 1_000_000;
+                            volume = opt.EstimateVolume.Value;
                             dimText = $"~ {opt.OptionName}";
                             break;
                         }
@@ -114,7 +116,7 @@ namespace ElecWasteCollection.Application.Services
 
             if (volume <= 0)
             {
-                volume = 1000;
+                volume = 0.001;
                 dimText = "Không xác định";
             }
 
@@ -233,13 +235,13 @@ namespace ElecWasteCollection.Application.Services
                     pool.Add(new
                     {
                         Post = p,
-                        Schedule = sch, 
+                        Schedule = sch,
                         Length = att.length,
                         Width = att.width,
                         Height = att.height,
                         DimensionText = att.dimensionText,
                         Weight = att.weight,
-                        Volume = att.volume / 1_000_000.0, 
+                        Volume = att.volume, 
                         UserName = user.Name,
                         Address = userAddress?.Address ?? "Chưa cập nhật"
                     });
@@ -276,7 +278,7 @@ namespace ElecWasteCollection.Application.Services
 
                 var candidates = pool
                     .Where(x => ((List<DateOnly>)x.Schedule.SpecificDates).Contains(date))
-                    .OrderBy(x => x.Schedule.MaxDate) 
+                    .OrderBy(x => x.Schedule.MaxDate)
                     .ThenBy(x => x.Schedule.MinDate)
                     .ToList();
 
@@ -287,7 +289,7 @@ namespace ElecWasteCollection.Application.Services
                 var activeVehicleIds = shiftsToday.Select(s => s.Vehicle_Id).Distinct().ToList();
                 var availableVehicles = pointVehicles
                     .Where(v => activeVehicleIds.Contains(v.Id))
-                    .OrderBy(v => v.Capacity_Kg) 
+                    .OrderBy(v => v.Capacity_Kg)
                     .ToList();
 
                 double totalWeightNeed = feasibleTimeBound.Sum(x => (double)x.Weight);
@@ -296,7 +298,7 @@ namespace ElecWasteCollection.Application.Services
                 var suggested = availableVehicles.FirstOrDefault(v =>
                     totalWeightNeed <= v.Capacity_Kg * (request.LoadThresholdPercent / 100.0) &&
                     totalVolumeNeedM3 <= v.Capacity_M3 * (request.LoadThresholdPercent / 100.0)
-                ) ?? availableVehicles.Last(); 
+                ) ?? availableVehicles.Last();
 
                 double ratio = request.LoadThresholdPercent / 100.0;
                 double allowedKg = suggested.Capacity_Kg * ratio;
@@ -304,12 +306,12 @@ namespace ElecWasteCollection.Application.Services
 
                 double curKg = 0;
                 double curM3 = 0;
-                var selected = new List<PreAssignPost>();
-                var removeList = new List<dynamic>(); 
+                var selected = new List<PreAssignProduct>();
+                var removeList = new List<dynamic>();
 
                 foreach (var item in feasibleTimeBound)
                 {
-                    double itemM3 = (double)item.Volume;
+                    double itemM3 = (double)item.Volume; 
                     double itemKg = (double)item.Weight;
 
                     if (curKg + itemKg <= allowedKg && curM3 + itemM3 <= allowedM3)
@@ -317,18 +319,15 @@ namespace ElecWasteCollection.Application.Services
                         curKg += itemKg;
                         curM3 += itemM3;
 
-                        selected.Add(new PreAssignPost
+                        selected.Add(new PreAssignProduct
                         {
                             PostId = item.Post.Id,
                             ProductId = item.Post.ProductId,
                             UserName = item.UserName,
                             Address = item.Address,
-                            Length = item.Length,
-                            Width = item.Width,
-                            Height = item.Height,
                             DimensionText = item.DimensionText,
                             Weight = itemKg,
-                            Volume = Math.Round(itemM3, 5) 
+                            Volume = Math.Round(itemM3, 5)
                         });
 
                         removeList.Add(item);
@@ -355,11 +354,11 @@ namespace ElecWasteCollection.Application.Services
                             Capacity_M3 = Math.Round((double)suggested.Capacity_M3, 4),
                             AllowedCapacityM3 = Math.Round(allowedM3, 4)
                         },
-                        Posts = selected
+                        Products = selected
                     });
                 }
 
-                if (!pool.Any()) break; 
+                if (!pool.Any()) break;
             }
 
             return await Task.FromResult(res);
@@ -463,6 +462,9 @@ namespace ElecWasteCollection.Application.Services
                     if (address == null || !TryGetTimeWindowForDate(p.ScheduleJson!, workDate, out var st, out var en))
                         continue;
 
+                    var product = FakeDataSeeder.products.First(pr => pr.Id == p.ProductId);
+                    var cat = FakeDataSeeder.categories.FirstOrDefault(c => c.Id == product.CategoryId);
+                    var brand = FakeDataSeeder.brands.FirstOrDefault(b => b.BrandId == product.BrandId);
                     var att = GetProductAttributes(p.ProductId);
                     locations.Add((address.Iat ?? point.Latitude, address.Ing ?? point.Longitude));
 
@@ -470,7 +472,7 @@ namespace ElecWasteCollection.Application.Services
                     {
                         OriginalIndex = mapData.Count,
                         Weight = att.weight,
-                        Volume = att.volume / 1_000_000.0,
+                        Volume = att.volume, 
                         Start = st,
                         End = en
                     });
@@ -480,13 +482,15 @@ namespace ElecWasteCollection.Application.Services
                         Post = p,
                         User = user,
                         Address = address,
+                        CategoryName = cat?.Name ?? "Unknown",
+                        BrandName = brand?.Name ?? "Unknown",
                         Att = new
                         {
                             Length = att.length,
                             Width = att.width,
                             Height = att.height,
                             Weight = att.weight,
-                            Volume = att.volume,
+                            Volume = att.volume, 
                             DimensionText = att.dimensionText
                         }
                     });
@@ -526,14 +530,14 @@ namespace ElecWasteCollection.Application.Services
                 var saveRoutes = new List<CollectionRoutes>();
 
                 TimeOnly cursorTime = TimeOnly.FromDateTime(mainShift.Shift_Start_Time);
-                int prevLocIdx = 0; 
+                int prevLocIdx = 0;
                 double totalKg = 0;
                 double totalM3 = 0;
 
                 for (int i = 0; i < sortedIndices.Count; i++)
                 {
                     int originalIdx = sortedIndices[i];
-                    int currentLocIdx = originalIdx + 1; 
+                    int currentLocIdx = originalIdx + 1;
 
                     var data = mapData[originalIdx];
                     var node = nodesToOptimize[originalIdx];
@@ -553,12 +557,11 @@ namespace ElecWasteCollection.Application.Services
                         DistanceKm = Math.Round(distMeters / 1000.0, 2),
                         EstimatedArrival = arrival.ToString("HH:mm"),
                         Schedule = JsonSerializer.Deserialize<object>(data.Post.ScheduleJson!),
-                        Length = data.Att.Length,     
-                        Width = data.Att.Width,      
-                        Height = data.Att.Height,   
-                        DimensionText = data.Att.DimensionText, 
-                        WeightKg = data.Att.Weight,  
-                        VolumeM3 = data.Att.Volume / 1_000_000.0 
+                        CategoryName = data.CategoryName,
+                        BrandName = data.BrandName,
+                        DimensionText = data.Att.DimensionText,
+                        WeightKg = data.Att.Weight,
+                        VolumeM3 = data.Att.Volume 
                     });
 
                     saveRoutes.Add(new CollectionRoutes
@@ -644,9 +647,12 @@ namespace ElecWasteCollection.Application.Services
             foreach (var r in routes)
             {
                 var post = FakeDataSeeder.posts.FirstOrDefault(p => p.ProductId == r.ProductId)
-                    ?? throw new Exception("Không tìm thấy Post cho Product"); var user = FakeDataSeeder.users.First(u => u.UserId == post.SenderId);
-
+                    ?? throw new Exception("Không tìm thấy Post cho Product");
+                var user = FakeDataSeeder.users.First(u => u.UserId == post.SenderId);
                 var userAddress = _userAddress.First(a => a.UserId == user.UserId);
+                var product = FakeDataSeeder.products.First(pr => pr.Id == r.ProductId);
+                var category = FakeDataSeeder.categories.FirstOrDefault(c => c.Id == product.CategoryId);
+                var brand = FakeDataSeeder.brands.FirstOrDefault(b => b.BrandId == product.BrandId);
 
                 var att = GetProductAttributes(post.ProductId);
 
@@ -660,12 +666,11 @@ namespace ElecWasteCollection.Application.Services
                     postId = post.Id,
                     userName = user.Name,
                     address = userAddress.Address,
-                    length = att.length,
-                    width = att.width,
-                    height = att.height,
+                    categoryName = category?.Name ?? "Unknown",
+                    brandName = brand?.Name ?? "Unknown",
                     dimensionText = att.dimensionText,
                     weightKg = att.weight,
-                    volumeM3 = att.volume,
+                    volumeM3 = att.volume, 
                     distanceKm = r.DistanceKm,
                     schedule = JsonSerializer.Deserialize<object>(post.ScheduleJson!),
                     estimatedArrival = r.EstimatedTime.ToString("HH:mm")
@@ -761,6 +766,7 @@ namespace ElecWasteCollection.Application.Services
 
             return await Task.FromResult(result);
         }
+
         public async Task<List<Vehicles>> GetVehiclesAsync()
         {
             return await Task.FromResult(
@@ -815,7 +821,7 @@ namespace ElecWasteCollection.Application.Services
                     Height = att.height,
                     DimensionText = att.dimensionText,
                     Weight = att.weight,
-                    Volume = att.volume,
+                    Volume = att.volume, 
                     ScheduleJson = p.ScheduleJson!,
                     Status = product.Status
                 });
@@ -825,4 +831,3 @@ namespace ElecWasteCollection.Application.Services
         }
     }
 }
-
