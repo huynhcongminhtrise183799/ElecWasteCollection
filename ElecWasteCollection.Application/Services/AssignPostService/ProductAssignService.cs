@@ -153,11 +153,15 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 var address = FakeDataSeeder.userAddress
                     .FirstOrDefault(a => a.UserId == user.UserId)?.Address;
 
+                var category = FakeDataSeeder.categories.FirstOrDefault(c => c.Id == product.CategoryId);
+                var brand = FakeDataSeeder.brands.FirstOrDefault(b => b.BrandId == product.BrandId);
+
                 result.Add(new ProductByDateModel
                 {
                     ProductId = product.Id,
-                    PostId = post.Id,                     
-                    ProductName = post.Description?? product.Description,
+                    PostId = post.Id,
+                    CategoryName = category?.Name ?? "Unknown Category", 
+                    BrandName = brand?.Name ?? "Unknown Brand",      
                     UserName = user.Name,
                     Address = address
                 });

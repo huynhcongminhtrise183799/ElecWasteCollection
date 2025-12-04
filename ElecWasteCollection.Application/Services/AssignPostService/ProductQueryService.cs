@@ -130,6 +130,9 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                     var user = FakeDataSeeder.users.First(u => u.UserId == post.SenderId);
                     var address = FakeDataSeeder.userAddress.First(a => a.UserId == user.UserId);
 
+                    var category = FakeDataSeeder.categories.FirstOrDefault(c => c.Id == product.CategoryId);
+                    var brand = FakeDataSeeder.brands.FirstOrDefault(b => b.BrandId == product.BrandId);
+
                     var metrics = GetProductMetrics(product.Id);
 
                     double radiusKm = GeoHelper.DistanceKm(sp.Latitude, sp.Longitude, address.Iat.Value, address.Ing.Value);
@@ -142,8 +145,10 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                         SenderId = user.UserId,
                         UserName = user.Name,
                         Address = address.Address,
+                        CategoryName = category?.Name ?? "Unknown",
+                        BrandName = brand?.Name ?? "Unknown",
                         WeightKg = metrics.weight,
-                        VolumeM3 = Math.Round(metrics.volume, 4), 
+                        VolumeM3 = Math.Round(metrics.volume, 4),
                         RadiusKm = $"{Math.Round(radiusKm, 2):0.00} km",
                         RoadKm = $"{Math.Round(roadKm, 2):0.00} km"
                     });
@@ -198,6 +203,9 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 var user = FakeDataSeeder.users.First(u => u.UserId == post.SenderId);
                 var address = FakeDataSeeder.userAddress.First(a => a.UserId == user.UserId);
 
+                var category = FakeDataSeeder.categories.FirstOrDefault(c => c.Id == product.CategoryId);
+                var brand = FakeDataSeeder.brands.FirstOrDefault(b => b.BrandId == product.BrandId);
+
                 var metrics = GetProductMetrics(product.Id);
 
                 double radiusKm = GeoHelper.DistanceKm(sp.Latitude, sp.Longitude, address.Iat.Value, address.Ing.Value);
@@ -210,6 +218,8 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                     SenderId = post.SenderId,
                     UserName = user.Name,
                     Address = address.Address,
+                    CategoryName = category?.Name ?? "Unknown",
+                    BrandName = brand?.Name ?? "Unknown",
                     WeightKg = metrics.weight,
                     VolumeM3 = Math.Round(metrics.volume, 4),
                     RadiusKm = $"{Math.Round(radiusKm, 2):0.00} km",
