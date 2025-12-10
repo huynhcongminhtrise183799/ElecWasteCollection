@@ -1,8 +1,6 @@
 ﻿using ElecWasteCollection.Application.Data;
 using ElecWasteCollection.Application.Helpers;
 using System.Text.Json;
-using ElecWasteCollection.Application.Data;
-using ElecWasteCollection.Application.Helpers;
 using ElecWasteCollection.Application.Interfaces;
 using ElecWasteCollection.Application.Model;
 using ElecWasteCollection.Application.Model.GroupModel;
@@ -13,10 +11,8 @@ namespace ElecWasteCollection.Application.Services
 {
     public class GroupingService : IGroupingService
     {
-        private const double SERVICE_TIME_MINUTES = 15;
-        private const double AVG_TRAVEL_MINUTES = 15;
-        //private const double SPEED_KM_H_LARGE = 30;
-        //private const double SPEED_KM_H_SMALL = 25;
+        private const double DEFAULT_SERVICE_TIME = 15;
+        private const double DEFAULT_TRAVEL_TIME = 15;
 
         private readonly List<UserAddress> _userAddress = FakeDataSeeder.userAddress;
 
@@ -191,6 +187,11 @@ namespace ElecWasteCollection.Application.Services
 
         public async Task<PreAssignResponse> PreAssignAsync(PreAssignRequest request)
         {
+            var currentSetting = FakeDataSeeder.pointSettings
+                .FirstOrDefault(s => s.PointId == request.CollectionPointId);
+            double serviceTime = currentSetting?.ServiceTimeMinutes ?? DEFAULT_SERVICE_TIME;
+            double avgTravelTime = currentSetting?.AvgTravelTimeMinutes ?? DEFAULT_TRAVEL_TIME;
+
             var point = FakeDataSeeder.smallCollectionPoints
                 .FirstOrDefault(p => p.SmallCollectionPointsId == request.CollectionPointId)
                 ?? throw new Exception("Không tìm thấy trạm thu gom.");
@@ -271,9 +272,7 @@ namespace ElecWasteCollection.Application.Services
                 if (!shiftsToday.Any()) continue;
 
                 double totalWorkMinutes = shiftsToday.Sum(s => (s.Shift_End_Time - s.Shift_Start_Time).TotalMinutes);
-
-                double estimatedMinutesPerPost = SERVICE_TIME_MINUTES + AVG_TRAVEL_MINUTES;
-
+                double estimatedMinutesPerPost = serviceTime + avgTravelTime;
                 int maxPostsByTime = (int)(totalWorkMinutes / estimatedMinutesPerPost);
 
                 var candidates = pool
@@ -412,6 +411,9 @@ namespace ElecWasteCollection.Application.Services
                 .Where(s => s.PointId == request.CollectionPointId)
                 .OrderBy(s => s.Date)
                 .ToList();
+
+            var currentSetting = FakeDataSeeder.pointSettings.FirstOrDefault(s => s.PointId == request.CollectionPointId);
+            double serviceTime = currentSetting?.ServiceTimeMinutes ?? 15;
 
             if (!staging.Any())
                 throw new Exception("Chưa có dữ liệu Assign. Hãy chạy AssignDay trước.");
@@ -576,8 +578,8 @@ namespace ElecWasteCollection.Application.Services
                         Status = "Chưa bắt đầu"
                     });
 
-                    cursorTime = arrival.AddMinutes(15);
-                    prevLocIdx = currentLocIdx;
+                    cursorTime = arrival.AddMinutes(serviceTime);
+                    prevLocIdx = currentLocIdx; 
                     totalKg += node.Weight;
                     totalM3 += node.Volume;
                 }
@@ -902,6 +904,100 @@ namespace ElecWasteCollection.Application.Services
                 GroupId = group.CollectionGroupId,
                 CollectorName = newCollector.Name
             };
+        }
+        public async Task<bool> UpdatePointSettingAsync(UpdatePointSettingRequest request)
+        {
+            if (!FakeDataSeeder.smallCollectionPoints.Any(p => p.SmallCollectionPointsId == request.PointId))
+                throw new Exception("Trạm thu gom không tồn tại.");
+
+            var setting = FakeDataSeeder.pointSettings.FirstOrDefault(s => s.PointId == request.PointId);
+
+            if (setting == null)
+            {
+                setting = new CollectionPointSetting
+                {
+                    PointId = request.PointId,
+                    ServiceTimeMinutes = request.ServiceTimeMinutes ?? DEFAULT_SERVICE_TIME,
+                    AvgTravelTimeMinutes = request.AvgTravelTimeMinutes ?? DEFAULT_TRAVEL_TIME
+                };
+                FakeDataSeeder.pointSettings.Add(setting);
+            }
+            else
+            {
+                if (request.ServiceTimeMinutes.HasValue)
+                    setting.ServiceTimeMinutes = request.ServiceTimeMinutes.Value;
+
+                if (request.AvgTravelTimeMinutes.HasValue)
+                    setting.AvgTravelTimeMinutes = request.AvgTravelTimeMinutes.Value;
+            }
+
+            return await Task.FromResult(true);
+        }
+        public async Task<CompanySettingsResponse> GetCompanySettingsAsync(string companyId)
+        {
+            var company = FakeDataSeeder.collectionTeams
+                .FirstOrDefault(c => c.CollectionCompanyId == companyId);
+
+            if (company == null)
+            {
+                throw new Exception($"Không tìm thấy công ty với ID: {companyId}");
+            }
+
+            var points = FakeDataSeeder.smallCollectionPoints
+                .Where(p => p.CompanyId == companyId)
+                .ToList();
+
+            var response = new CompanySettingsResponse
+            {
+                CompanyId = company.CollectionCompanyId,
+                CompanyName = company.Name, 
+                Points = new List<PointSettingDetailDto>()
+            };
+
+            foreach (var p in points)
+            {
+                var setting = FakeDataSeeder.pointSettings.FirstOrDefault(s => s.PointId == p.SmallCollectionPointsId);
+
+                response.Points.Add(new PointSettingDetailDto
+                {
+                    SmallPointId = p.SmallCollectionPointsId,
+                    SmallPointName = p.Name,
+                    ServiceTimeMinutes = setting?.ServiceTimeMinutes ?? DEFAULT_SERVICE_TIME,
+                    AvgTravelTimeMinutes = setting?.AvgTravelTimeMinutes ?? DEFAULT_TRAVEL_TIME,
+                    IsDefault = setting == null
+                });
+            }
+
+            return await Task.FromResult(response);
+        }
+
+        public async Task<SinglePointSettingResponse> GetPointSettingAsync(string pointId)
+        {
+            var point = FakeDataSeeder.smallCollectionPoints
+                .FirstOrDefault(p => p.SmallCollectionPointsId == pointId);
+
+            if (point == null)
+                throw new Exception("Trạm thu gom không tồn tại.");
+
+            var company = FakeDataSeeder.collectionTeams
+                .FirstOrDefault(c => c.CollectionCompanyId == point.CompanyId);
+
+            var setting = FakeDataSeeder.pointSettings.FirstOrDefault(s => s.PointId == pointId);
+
+            var result = new SinglePointSettingResponse
+            {
+                CompanyId = company?.CollectionCompanyId ?? "Unknown",
+                CompanyName = company?.Name ?? "Unknown Company",
+
+                SmallPointId = point.SmallCollectionPointsId,
+                SmallPointName = point.Name,
+
+                ServiceTimeMinutes = setting?.ServiceTimeMinutes ?? DEFAULT_SERVICE_TIME,
+                AvgTravelTimeMinutes = setting?.AvgTravelTimeMinutes ?? DEFAULT_TRAVEL_TIME,
+                IsDefault = setting == null
+            };
+
+            return await Task.FromResult(result);
         }
     }
 }
