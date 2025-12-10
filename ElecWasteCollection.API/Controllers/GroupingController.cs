@@ -99,6 +99,45 @@ namespace ElecWasteCollection.API.Controllers
             }
         }
 
+        [HttpPost("settings")]
+        public async Task<IActionResult> UpdateSettings([FromBody] UpdatePointSettingRequest request)
+        {
+            try
+            {
+                var result = await _groupingService.UpdatePointSettingAsync(request);
+                return Ok(new { message = "Cập nhật thành công", success = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpGet("company/settings/{companyId}")]
+        public async Task<IActionResult> GetCompanySettings(string companyId)
+        {
+            try
+            {
+                var result = await _groupingService.GetCompanySettingsAsync(companyId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
+        [HttpGet("settings/{pointId}")]
+        public async Task<IActionResult> GetSettings(string pointId)
+        {
+            try
+            {
+                var result = await _groupingService.GetPointSettingAsync(pointId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

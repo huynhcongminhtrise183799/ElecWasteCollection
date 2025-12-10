@@ -1,6 +1,7 @@
 using DocumentFormat.OpenXml.Spreadsheet;
 using ElecWasteCollection.Application.Model;
 using ElecWasteCollection.Application.Model.AssignPost;
+using ElecWasteCollection.Application.Model.GroupModel;
 using ElecWasteCollection.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -2752,6 +2753,8 @@ namespace ElecWasteCollection.Application.Data
 
             Console.WriteLine("[FakeData] SUCCESS: Loaded 20 posts (50% Manual Size / 50% Option Size) for 07/12.");
         }
+
+        public static List<CollectionPointSetting> pointSettings = new List<CollectionPointSetting>();
 
 
     }
