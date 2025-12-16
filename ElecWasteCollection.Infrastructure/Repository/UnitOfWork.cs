@@ -24,10 +24,29 @@ namespace ElecWasteCollection.Infrastructure.Repository
         public IGenericRepository<ProductValues> ProductValues { get; }
         public IGenericRepository<AttributeOptions> AttributeOptions { get; }
         public IGenericRepository<Attributes> Attributes { get; }
+		public IGenericRepository<Account> Accounts { get; }
 
+		public IGenericRepository<CategoryAttributes> CategoryAttributes { get; }
 
+		public IGenericRepository<CollectionRoutes> CollecctionRoutes { get; }
 
-        public UnitOfWork(ElecWasteCollectionDbContext context)
+		public IGenericRepository<Packages> Packages { get; }
+
+		public IGenericRepository<PointTransactions> PointTransactions { get; }
+
+		public IGenericRepository<ProductImages> ProductImages { get; }
+
+		public IGenericRepository<ProductStatusHistory> ProductStatusHistory { get; }
+
+		public IGenericRepository<Shifts> Shifts { get; }
+
+		public IGenericRepository<SmallCollectionPoints> SmallCollectionPoints { get; }
+
+		public IGenericRepository<UserPoints> UserPoints { get; }
+
+		public IGenericRepository<Vehicles> Vehicles { get; }
+
+		public UnitOfWork(ElecWasteCollectionDbContext context)
         {
             _context = context;
 
@@ -41,7 +60,19 @@ namespace ElecWasteCollection.Infrastructure.Repository
             ProductValues = new GenericRepository<ProductValues>(_context);
             AttributeOptions = new GenericRepository<AttributeOptions>(_context);
             Attributes = new GenericRepository<Attributes>(_context);
-        }
+			Accounts = new GenericRepository<Account>(_context);
+			CategoryAttributes = new GenericRepository<CategoryAttributes>(_context);
+			CollecctionRoutes = new GenericRepository<CollectionRoutes>(_context);
+			Packages = new GenericRepository<Packages>(_context);
+			PointTransactions = new GenericRepository<PointTransactions>(_context);
+			ProductImages = new GenericRepository<ProductImages>(_context);
+			ProductStatusHistory = new GenericRepository<ProductStatusHistory>(_context);
+			Shifts = new GenericRepository<Shifts>(_context);
+			SmallCollectionPoints = new GenericRepository<SmallCollectionPoints>(_context);
+			UserPoints = new GenericRepository<UserPoints>(_context);
+			Vehicles = new GenericRepository<Vehicles>(_context);
+
+		}
 
         public async Task<int> SaveAsync()
         {

@@ -9,6 +9,10 @@ namespace ElecWasteCollection.Application.IServices
 {
 	public interface IAccountService
 	{
-		bool AddNewAccount(Account account);
+		Task<bool> AddNewAccount(Account account);
+
+		Task<string> LoginWithGoogleAsync(string token);
+
+		Task<string> Login(string userName, string password);
 	}
 }

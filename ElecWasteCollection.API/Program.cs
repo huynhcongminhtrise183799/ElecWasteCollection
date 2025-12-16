@@ -111,8 +111,30 @@ namespace ElecWasteCollection.API
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
-            builder.Services.AddCors(options =>
+			builder.Services.AddScoped<IAccountRepsitory, AccountRepsitory>();
+			builder.Services.AddScoped<IAttributeOptionRepository, AttributeOptionRepository>();
+			builder.Services.AddScoped<IAttributeRepository, AttributeRepository>();
+			builder.Services.AddScoped<IBrandRepository, BrandRepository>();
+			builder.Services.AddScoped<ICategoryAttributeRepsitory, CategoryAttributeRepsitory>();
+			builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+			builder.Services.AddScoped<ICollectionCompanyRepository, CollectionCompanyRepository>();
+			builder.Services.AddScoped<ICollectionRouteRepository, CollectionRouteRepository>();
+			builder.Services.AddScoped<ICollectorRepository, CollectorRepository>();
+			builder.Services.AddScoped<IPackageRepository, PackageRepository>();
+			builder.Services.AddScoped<IPointTransactionRepository, PointTransactionRepository>();
+			builder.Services.AddScoped<IPostRepository, PostRepository>();
+			builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
+			builder.Services.AddScoped<IProductRepository, ProductRepository>();
+			builder.Services.AddScoped<IProductStatusHistoryRepository, ProductStatusHistoryRepository>();
+			builder.Services.AddScoped<IProductValuesRepository, ProductValuesRepository>();
+			builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
+			builder.Services.AddScoped<ISmallCollectionRepository, SmallCollectionRepository>();
+			builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
+			builder.Services.AddScoped<IUserPointRepository, UserPointRepository>();
+			builder.Services.AddScoped<IUserRepository, UserRepository>();
+			builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+			builder.Services.AddScoped<DbContext, ElecWasteCollectionDbContext>();
+			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
 				{
