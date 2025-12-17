@@ -65,6 +65,7 @@ namespace ElecWasteCollection.Application.Services
 			if (checkExist != null)
 			{
 				checkExist.OTP = otp;
+				checkExist.ExpireAt = DateTime.UtcNow.AddMinutes(15);
 				_unitOfWork.ForgotPasswords.Update(checkExist);
 			}
 			else
