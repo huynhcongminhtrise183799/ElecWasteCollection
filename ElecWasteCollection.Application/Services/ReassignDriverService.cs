@@ -54,7 +54,7 @@ namespace ElecWasteCollection.Application.Services
                         UserId = user.UserId,
                         Name = user.Name,
                         IsAvailable = true,
-                        StatusText = $"Sẵn sàng (Ca chờ: {timeSlots})"
+                        StatusText = $"Sẵn sàng"
                     });
                 }
             }
@@ -95,7 +95,7 @@ namespace ElecWasteCollection.Application.Services
                 var busyShift = conflictShifts.First();
                 var busyVehicle = await _unitOfWork.Vehicles.GetByIdAsync(busyShift.Vehicle_Id);
 
-                throw new Exception($"Nhân viên {newCollector.Name} đang bận chạy xe {busyVehicle?.Plate_Number ?? "khác"} trong khung giờ {busyShift.Shift_Start_Time:HH:mm}-{busyShift.Shift_End_Time:HH:mm}.");
+                throw new Exception($"Nhân viên {newCollector.Name} đang bận chạy xe {busyVehicle?.Plate_Number ?? "khác"} ");
             }
 
             oldShift.Status = "Cancelled";
