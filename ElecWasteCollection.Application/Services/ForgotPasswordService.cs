@@ -55,12 +55,12 @@ namespace ElecWasteCollection.Application.Services
 
 		public async Task<bool> SaveOTP(CreateForgotPasswordModel forgotPassword)
 		{
+			var user = await _userRepository.GetAsync(u => u.Email == forgotPassword.Email);
+			if (user == null) throw new AppException("Không tìm thấy tài khoản với email này", 404);
 			var otp = new Random().Next(100000, 999999).ToString();
 			string subject = "Your OTP Code";
 			string body = $"Mã OTP của bạn là: {otp}";
 			await _emailService.SendEmailAsync(forgotPassword.Email, subject, body);
-			var user = await _userRepository.GetAsync(u => u.Email == forgotPassword.Email);
-			if (user == null) throw new AppException("Không tìm thấy tài khoản với email này", 404);
 			var checkExist = await _forgotPasswordRepository.GetAsync(fp => fp.UserId == user.UserId);
 			if (checkExist != null)
 			{
