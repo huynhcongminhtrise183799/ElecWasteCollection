@@ -25,6 +25,7 @@ namespace ElecWasteCollection.Infrastructure.Repository
         public IGenericRepository<AttributeOptions> AttributeOptions { get; }
         public IGenericRepository<Attributes> Attributes { get; }
 		public IGenericRepository<Account> Accounts { get; }
+		public IGenericRepository<CollectionGroups> CollectionGroups { get; }
 
 		public IGenericRepository<CategoryAttributes> CategoryAttributes { get; }
 
@@ -77,10 +78,12 @@ namespace ElecWasteCollection.Infrastructure.Repository
 			Vehicles = new GenericRepository<Vehicles>(_context);
 			ForgotPasswords = new GenericRepository<ForgotPassword>(_context);
 			SystemConfig = new GenericRepository<SystemConfig>(_context);
+			CollectionGroups = new GenericRepository<CollectionGroups>(_context);
+
 
 		}
 
-        public async Task<int> SaveAsync()
+		public async Task<int> SaveAsync()
         {
             return await _context.SaveChangesAsync();
         }

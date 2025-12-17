@@ -30,8 +30,9 @@ namespace ElecWasteCollection.Domain.IRepository
         IGenericRepository<SmallCollectionPoints> SmallCollectionPoints { get; }
         IGenericRepository<UserPoints> UserPoints { get; }
         IGenericRepository<Vehicles> Vehicles { get; }
+		IGenericRepository<CollectionGroups> CollectionGroups { get; }
 
-        IGenericRepository<ForgotPassword> ForgotPasswords { get; }
+		IGenericRepository<ForgotPassword> ForgotPasswords { get; }
 
         IGenericRepository<SystemConfig> SystemConfig { get; }
 		Task<int> SaveAsync();
