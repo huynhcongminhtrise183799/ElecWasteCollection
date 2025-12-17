@@ -53,6 +53,7 @@ namespace ElecWasteCollection.Application.Services
 					Name = name,
 					Avatar = picture,
 					Role = UserRole.User.ToString(),
+					Status = UserStatus.Active.ToString()
 				};
 				var point = new UserPoints
 				{
