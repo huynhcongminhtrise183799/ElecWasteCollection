@@ -137,7 +137,7 @@ namespace ElecWasteCollection.Application.Services
 				{
 					ProductId = newProductId,
 					ChangedAt = DateTime.UtcNow,
-					Status = newProduct.Status, 
+					Status = currentStatus, 
 					StatusDescription = statusDescription
 				};
 
