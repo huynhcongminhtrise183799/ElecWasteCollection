@@ -132,5 +132,17 @@ namespace ElecWasteCollection.Application.Services
 			};
 			return userResponse;
 		}
+
+		public async Task<bool> UpdateProfile(UserProfileUpdateModel model)
+		{
+			var user = await _userRepository.GetAsync(u => u.UserId == model.UserId);
+			if (user == null) throw new AppException("User không tồn tại", 404);
+			user.Email = model.Email ?? user.Email;
+			user.Avatar = model.AvatarUrl ?? user.Avatar;
+			user.Phone = model.phoneNumber ?? user.Phone;
+			_unitOfWork.Users.Update(user);
+			await _unitOfWork.SaveAsync();
+			return true;
+		}
 	}
 }
