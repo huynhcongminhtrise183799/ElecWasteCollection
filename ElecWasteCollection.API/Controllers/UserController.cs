@@ -1,5 +1,6 @@
 ﻿using ElecWasteCollection.API.DTOs.Request;
 using ElecWasteCollection.Application.IServices;
+using ElecWasteCollection.Application.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -22,13 +23,19 @@ namespace ElecWasteCollection.API.Controllers
 			var users = await _userService.GetAll();
 			return Ok(users);
 		}
-		//[HttpPut("{id}")]
-		//public IActionResult UpdateUser([FromBody] UpdateUserRequest updateUserRequest, [FromRoute] Guid id)
-		//{
-
-		//	_userService.UpdateUser(updateUserRequest.Iat, updateUserRequest.Ing, id);
-		//	return Ok(new { message = $"User {id} updated successfully." });
-		//}
+		[HttpPut("{id}")]
+		public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequest updateUserRequest, [FromRoute] Guid id)
+		{
+			var model = new UserProfileUpdateModel
+			{
+				UserId = id,
+				Email = updateUserRequest.Email,
+				AvatarUrl = updateUserRequest.AvatarUrl,
+				phoneNumber = updateUserRequest.PhoneNumber
+			};
+			var result = await	 _userService.UpdateProfile(model);
+			return Ok(new { message = $"User {id} updated successfully." });
+		}
 		[HttpGet("profile")]
 		public async Task<IActionResult> GetProfile()
 		{

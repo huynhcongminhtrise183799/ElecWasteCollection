@@ -76,7 +76,11 @@ namespace ElecWasteCollection.Application.Services
 			{
 				route.Product.QRCode = QRCode;
 				route.Product.Status = "Đã thu gom";
-
+				var checkExistQrCode = await _unitOfWork.Products.GetAsync(p => p.QRCode == QRCode && p.ProductId != route.Product.ProductId);
+				if (checkExistQrCode != null)
+				{
+					throw new AppException("Mã QR đã tồn tại trên hệ thống. Vui lòng kiểm tra lại.", 400);
+				}
 				var history = new ProductStatusHistory
 				{
 					ProductStatusHistoryId = Guid.NewGuid(), 

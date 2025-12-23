@@ -187,6 +187,7 @@ namespace ElecWasteCollection.Infrastructure.Context
 				entity.HasKey(e => e.ProductId);
 				entity.Property(e => e.ProductId).ValueGeneratedOnAdd();
 				entity.Property(e => e.UserId).IsRequired();
+				entity.HasIndex(e => e.QRCode).IsUnique();
 				entity.Property(e => e.SmallCollectionPointId).IsRequired(false);
 				entity.Property(e => e.PackageId).IsRequired(false);
 
