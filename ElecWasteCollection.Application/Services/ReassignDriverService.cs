@@ -53,6 +53,7 @@ namespace ElecWasteCollection.Application.Services
                     {
                         UserId = user.UserId,
                         Name = user.Name,
+                        Phone = user.Phone,
                         IsAvailable = true,
                         StatusText = $"Sẵn sàng"
                     });

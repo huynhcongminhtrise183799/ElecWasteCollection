@@ -26,6 +26,7 @@ namespace ElecWasteCollection.Application.Model
     {
         public Guid UserId { get; set; }
         public string Name { get; set; }
+        public string Phone { get; set; }
         public bool IsAvailable { get; set; }     
         public string StatusText { get; set; }
     }
