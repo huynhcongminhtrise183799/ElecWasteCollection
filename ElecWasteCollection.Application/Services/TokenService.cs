@@ -30,20 +30,30 @@ namespace ElecWasteCollection.Application.Services
 			var audience = jwtSettings["Audience"];
 			var keyBytes = Encoding.UTF8.GetBytes(secretKey);
 
+			var claims = new List<Claim>
+	{
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString())
+	};
+
+			if (!string.IsNullOrEmpty(user.Email))
+			{
+				claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
+			}
+			else if (!string.IsNullOrEmpty(user.AppleId))
+			{
+				claims.Add(new Claim("apple_id", user.AppleId));
+			}
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
-				Subject = new ClaimsIdentity(new[]
-				{
-				new Claim(JwtRegisteredClaimNames.Email, user.Email),
-				//new Claim(ClaimTypes.Role, account.Role!.Value.ToString()),
-				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-			}),
+				// Truyền cái List claims vừa tạo vào đây
+				Subject = new ClaimsIdentity(claims),
+
 				Expires = DateTime.UtcNow.AddMonths(10),
 				SigningCredentials = new SigningCredentials(
 					new SymmetricSecurityKey(keyBytes),
 					SecurityAlgorithms.HmacSha256Signature
 				),
-
 				Issuer = issuer,
 				Audience = audience
 			};

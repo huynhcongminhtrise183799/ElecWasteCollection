@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ElecWasteCollection.Application.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace ElecWasteCollection.Application.IServices
 {
 	public interface IAppleAuthService
 	{
-		Task<string?> ValidateTokenAndGetAppleUserIdAsync(string identityToken);
+		Task<AppleAuthInfo?> ValidateTokenAndGetAppleInfoAsync(string identityToken);
 	}
 }

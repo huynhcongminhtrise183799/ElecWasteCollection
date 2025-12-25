@@ -122,19 +122,19 @@ namespace ElecWasteCollection.Application.Services
 
 		public async Task<LoginResponseModel> LoginWithAppleAsync(string identityToken, string? firstName, string? lastName)
 		{
-			var appleUserId = await _appleAuthService.ValidateTokenAndGetAppleUserIdAsync(identityToken);
-			if (appleUserId == null)
+			var appleUser = await _appleAuthService.ValidateTokenAndGetAppleInfoAsync(identityToken);
+			if (appleUser == null)
 			{
 				throw new AppException("Apple Token không hợp lệ!", 400);
 			}
-			var user = await _userRepository.GetAsync(u => u.AppleId == appleUserId && u.Status == UserStatus.Active.ToString());
+			var user = await _userRepository.GetAsync(u => u.AppleId == appleUser.AppleId && u.Status == UserStatus.Active.ToString());
 			if (user == null)
 			{
 				user = new User
 				{
 					UserId = Guid.NewGuid(),
-					AppleId = appleUserId,
-					Email = null,
+					AppleId = appleUser.AppleId,
+					Email = appleUser.Email,
 					Phone = null,
 					Name = (firstName ?? "AppleUser") + " " + (lastName ?? ""),
 					Avatar = null,

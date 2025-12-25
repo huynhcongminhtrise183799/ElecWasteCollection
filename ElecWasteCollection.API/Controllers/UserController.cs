@@ -1,6 +1,7 @@
 ﻿using ElecWasteCollection.API.DTOs.Request;
 using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.Model;
+using ElecWasteCollection.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -39,19 +40,21 @@ namespace ElecWasteCollection.API.Controllers
 		[HttpGet("profile")]
 		public async Task<IActionResult> GetProfile()
 		{
-			var accountEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-			if (accountEmail == null)
+			var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+			if (string.IsNullOrEmpty(userIdStr))
 			{
-				return Unauthorized(new
-				{
-					message = "Chưa login"
-				});
+				return Unauthorized(new { message = "Token không hợp lệ (Thiếu ID)." });
 			}
-			var user = await _userService.Profile(accountEmail);
+
+
+			var user = await _userService.GetById(Guid.Parse(userIdStr));
+
 			if (user == null)
 			{
 				return NotFound(new { message = "User not found." });
 			}
+
 			return Ok(user);
 		}
 		[HttpGet("{id}")]
