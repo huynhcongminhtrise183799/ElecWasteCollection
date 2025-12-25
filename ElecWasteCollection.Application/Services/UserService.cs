@@ -78,7 +78,8 @@ namespace ElecWasteCollection.Application.Services
 				Phone = user.Phone,
 				Avatar = user.Avatar,
 				Role = user.Role,
-				SmallCollectionPointId = user.SmallCollectionPointId
+				SmallCollectionPointId = user.SmallCollectionPointId,
+				CollectionCompanyId = user.CollectionCompanyId
 			};
 			return userResponse;
 		}
