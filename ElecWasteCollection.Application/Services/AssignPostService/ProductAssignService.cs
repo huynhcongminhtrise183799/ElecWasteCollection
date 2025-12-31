@@ -30,7 +30,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             if (!companies.Any())
                 throw new Exception("Lỗi cấu hình: Chưa có đơn vị thu gom nào trong hệ thống.");
 
-            var sortedConfig = companies.OrderBy(c => c.CollectionCompanyId).ToList();
+            var sortedConfig = companies.OrderBy(c => c.CompanyId).ToList();
 
             // Validate tổng tỉ lệ phải là 100%
             double totalPercent = sortedConfig.Sum(c => c.AssignRatio);
@@ -140,7 +140,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                         if (targetConfig == null) targetConfig = rangeConfigs.Last();
 
                         // Kiểm tra: Target Company có nằm trong danh sách phục vụ được không?
-                        var targetCandidate = validCandidates.FirstOrDefault(c => c.CompanyId == targetConfig.CompanyEntity.CollectionCompanyId);
+                        var targetCandidate = validCandidates.FirstOrDefault(c => c.CompanyId == targetConfig.CompanyEntity.CompanyId);
 
                         if (targetCandidate != null)
                         {
@@ -202,7 +202,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
         // --- CÁC HÀM HELPER ---
 
-        private async Task<ProductAssignCandidate?> FindBestSmallPointForCompanyAsync(CollectionCompany company, UserAddress address)
+        private async Task<ProductAssignCandidate?> FindBestSmallPointForCompanyAsync(Company company, UserAddress address)
         {
             ProductAssignCandidate? best = null;
             double minRoadKm = double.MaxValue;
@@ -226,7 +226,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                     best = new ProductAssignCandidate
                     {
                         ProductId = Guid.Empty, // Sẽ gán ID sau
-                        CompanyId = company.CollectionCompanyId,
+                        CompanyId = company.CompanyId,
                         SmallPointId = sp.SmallCollectionPointsId,
                         RoadKm = roadKm,
                         HaversineKm = hvDistance
@@ -297,7 +297,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
         private class CompanyRangeConfig
         {
-            public CollectionCompany CompanyEntity { get; set; } = null!;
+            public Company CompanyEntity { get; set; } = null!;
             public double MinRange { get; set; }
             public double MaxRange { get; set; }
         }
