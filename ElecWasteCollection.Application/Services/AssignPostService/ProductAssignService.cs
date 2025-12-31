@@ -21,7 +21,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
         public async Task<AssignProductResult> AssignProductsAsync(List<Guid> productIds, DateOnly workDate)
         {
             var result = new AssignProductResult();
-            var companies = await _unitOfWork.CollectionCompanies.GetAllAsync(includeProperties: "SmallCollectionPoints");
+            var companies = await _unitOfWork.Companies.GetAllAsync(includeProperties: "SmallCollectionPoints");
 
             if (!companies.Any())
                 throw new Exception("Lỗi cấu hình: Chưa có đơn vị thu gom nào trong hệ thống.");

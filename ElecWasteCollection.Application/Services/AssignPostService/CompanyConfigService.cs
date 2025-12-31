@@ -42,7 +42,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
             try
             {
-                var companyRepo = _unitOfWork.CollectionCompanies;
+                var companyRepo = _unitOfWork.Companies;
                 var configRepo = _unitOfWork.SystemConfig;
 
                 var allCompanies = await companyRepo.GetAllAsync(includeProperties: "SmallCollectionPoints");
@@ -130,11 +130,15 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
         {
             try
             {
-                var companyRepo = _unitOfWork.CollectionCompanies;
+                var companyRepo = _unitOfWork.Companies;
                 var configRepo = _unitOfWork.SystemConfig;
 
-                var companies = await companyRepo.GetAllAsync(includeProperties: "SmallCollectionPoints");
-                var allConfigs = await configRepo.GetAllAsync(); 
+                var companies = await companyRepo.GetAllAsync(
+                    filter: c => c.CompanyType == "CollectionCompany",
+                    includeProperties: "SmallCollectionPoints"
+                );
+
+                var allConfigs = await configRepo.GetAllAsync();
 
                 var companyDtos = companies.Select(c => new CompanyConfigDto
                 {

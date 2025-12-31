@@ -29,7 +29,7 @@ namespace ElecWasteCollection.Application.Services
 
 		public async Task<bool> AddNewCompany(Company collectionTeams)
 		{
-			await _unitOfWork.CollectionCompanies.AddAsync(collectionTeams);
+			await _unitOfWork.Companies.AddAsync(collectionTeams);
 			await _unitOfWork.SaveAsync();
 			return true;
 
@@ -57,14 +57,14 @@ namespace ElecWasteCollection.Application.Services
 					existingCompany.Status = importData.Status;
 					existingCompany.CompanyEmail = importData.CompanyEmail;
 					existingCompany.Updated_At = DateTime.UtcNow;
-					_unitOfWork.CollectionCompanies.Update(existingCompany);
+					_unitOfWork.Companies.Update(existingCompany);
 					result.Messages.Add($"Đã cập nhật thông tin công ty '{importData.Name}'.");
 				}
 				else
 				{
 					importData.Created_At = DateTime.UtcNow;
 					importData.Updated_At = DateTime.UtcNow;
-					await _unitOfWork.CollectionCompanies.AddAsync(importData);
+					await _unitOfWork.Companies.AddAsync(importData);
 					var newAdminId = Guid.NewGuid();
 					var newAdminUser = new User
 					{
@@ -114,7 +114,7 @@ namespace ElecWasteCollection.Application.Services
 			var company = await _collectionCompanyRepository.GetAsync(t => t.CompanyId == collectionCompanyId);
 			if (company == null) throw new AppException("Không tìm thấy công ty", 404);
 			company.Status = CompanyStatus.Inactive.ToString();
-			_unitOfWork.CollectionCompanies.Update(company);
+			_unitOfWork.Companies.Update(company);
 			await _unitOfWork.SaveAsync();
 			return true;
 		}
@@ -204,7 +204,7 @@ namespace ElecWasteCollection.Application.Services
 			team.Name = collectionTeams.Name;
 			team.Phone = collectionTeams.Phone;
 			team.Status = collectionTeams.Status;
-			_unitOfWork.CollectionCompanies.Update(team);
+			_unitOfWork.Companies.Update(team);
 			await _unitOfWork.SaveAsync();
 			return true;
 

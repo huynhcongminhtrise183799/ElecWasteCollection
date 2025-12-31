@@ -26,7 +26,8 @@ namespace ElecWasteCollection.Domain.Entities
         RADIUS_KM,                
         MAX_ROAD_DISTANCE_KM,     
         SERVICE_TIME_MINUTES,     
-        AVG_TRAVEL_TIME_MINUTES   
+        AVG_TRAVEL_TIME_MINUTES,
+        RECYCLING_ASSIGN_RATIO
     }
 	public class SystemConfig
     {
