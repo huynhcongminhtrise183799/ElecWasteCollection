@@ -18,13 +18,28 @@ namespace ElecWasteCollection.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<ReassignCandidateDto>> GetReassignCandidatesAsync(string companyId, DateTime workDateInput)
+        public async Task<List<ReassignCandidateDto>> GetReassignCandidatesAsync(string smallCollectionPointId, DateTime workDateInput)
         {
+            // 1. Cấu hình múi giờ Việt Nam
+            TimeZoneInfo vnTimeZone;
+            try
+            {
+                vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            }
+            catch
+            {
+                vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+            }
+
+            var nowUtc = DateTime.UtcNow;
+            var nowVn = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, vnTimeZone);
+
             var targetDate = DateOnly.FromDateTime(workDateInput);
+            var isToday = targetDate == DateOnly.FromDateTime(nowVn);
 
             var allCollectors = await _unitOfWork.Users.GetAllAsync(
                 u => u.Role == "Collector" &&
-                     u.CollectionCompanyId == companyId &&
+                     u.SmallCollectionPointId == smallCollectionPointId &&
                      u.Status == "Active"
             );
 
@@ -47,21 +62,65 @@ namespace ElecWasteCollection.Application.Services
 
                 if (availableShifts.Any())
                 {
-                    var timeSlots = string.Join(", ", availableShifts.Select(s => $"{s.Shift_Start_Time:HH:mm}-{s.Shift_End_Time:HH:mm}"));
+                    double totalRemainingMinutes = 0;
+                    var displayTimeSlots = new List<string>();
 
-                    result.Add(new ReassignCandidateDto
+                    foreach (var shift in availableShifts)
                     {
-                        UserId = user.UserId,
-                        Name = user.Name,
-                        Phone = user.Phone,
-                        IsAvailable = true,
-                        StatusText = $"Sẵn sàng"
-                    });
+                        var startUtc = DateTime.SpecifyKind(shift.Shift_Start_Time, DateTimeKind.Utc);
+                        var endUtc = DateTime.SpecifyKind(shift.Shift_End_Time, DateTimeKind.Utc);
+
+                        var startVn = TimeZoneInfo.ConvertTimeFromUtc(startUtc, vnTimeZone);
+                        var endVn = TimeZoneInfo.ConvertTimeFromUtc(endUtc, vnTimeZone);
+
+                        if (isToday)
+                        {
+                            if (endVn > nowVn)
+                            {
+                                displayTimeSlots.Add($"{startVn:HH:mm}-{endVn:HH:mm}");
+                                var startTimeToCalc = startVn > nowVn ? startVn : nowVn;
+                                totalRemainingMinutes += (endVn - startTimeToCalc).TotalMinutes;
+                            }
+                        }
+                        else
+                        {
+                            displayTimeSlots.Add($"{startVn:HH:mm}-{endVn:HH:mm}");
+                            totalRemainingMinutes += (endVn - startVn).TotalMinutes;
+                        }
+                    }
+                    if (totalRemainingMinutes > 0)
+                    {
+                        var timeSlotsStr = string.Join(", ", displayTimeSlots.OrderBy(x => x));
+                        var roundedMinutes = Math.Round(totalRemainingMinutes, 2);
+
+                        result.Add(new ReassignCandidateDto
+                        {
+                            UserId = user.UserId,
+                            Name = user.Name,
+                            Phone = user.Phone,
+                            IsAvailable = true,
+                            ShiftTime = timeSlotsStr,
+                            StatusText = $"Sẵn sàng",
+                            RemainingMinutes = $"{roundedMinutes} phút",
+                            SortableMinutes = roundedMinutes
+                        });
+                    }
                 }
             }
 
-            return result.OrderBy(x => x.Name).ToList();
+            return result
+                .OrderByDescending(x => x.SortableMinutes)
+                .ThenBy(x => GetFirstName(x.Name))
+                .ToList();
         }
+
+        private string GetFirstName(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return string.Empty;
+            var parts = fullName.Trim().Split(' ');
+            return parts.LastOrDefault() ?? fullName;
+        }
+
 
         public async Task<ReassignDriverResponse> ReassignDriverAsync(ReassignDriverRequest request)
         {
