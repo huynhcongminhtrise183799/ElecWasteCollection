@@ -8,6 +8,7 @@ using ElecWasteCollection.Application.Interfaces;
 using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.IServices.IAssignPost;
 using ElecWasteCollection.Application.Services;
+using ElecWasteCollection.Application.Services.AssignPackageService;
 using ElecWasteCollection.Application.Services.AssignPostService;
 using ElecWasteCollection.Domain.IRepository;
 using ElecWasteCollection.Infrastructure.Configuration;
@@ -117,8 +118,9 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<IShiftService, ShiftService>();
 			builder.Services.AddScoped<IVehicleService, VehicleService>();
 			builder.Services.AddScoped<IReassignDriverService, ReassignDriverService>();
+			builder.Services.AddScoped<IPackageAssignService, PackageAssignService>();
 
-			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 			builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 			builder.Services.AddScoped<IAccountRepsitory, AccountRepsitory>();
 			builder.Services.AddScoped<IAttributeOptionRepository, AttributeOptionRepository>();

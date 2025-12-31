@@ -875,7 +875,7 @@ namespace ElecWasteCollection.Application.Services
 
         public async Task<CompanySettingsResponse> GetCompanySettingsAsync(string companyId)
         {
-            var company = await _unitOfWork.CollectionCompanies.GetByIdAsync(companyId);
+            var company = await _unitOfWork.Companies.GetByIdAsync(companyId);
             if (company == null) throw new Exception($"Không tìm thấy công ty với ID: {companyId}");
             var points = await _unitOfWork.SmallCollectionPoints.GetAllAsync(p => p.CompanyId == companyId);
 
@@ -905,7 +905,7 @@ namespace ElecWasteCollection.Application.Services
         {
             var point = await _unitOfWork.SmallCollectionPoints.GetByIdAsync(pointId);
             if (point == null) throw new Exception("Trạm thu gom không tồn tại.");
-            var company = await _unitOfWork.CollectionCompanies.GetByIdAsync(point.CompanyId);
+            var company = await _unitOfWork.Companies.GetByIdAsync(point.CompanyId);
 
             var allConfigs = await _unitOfWork.SystemConfig.GetAllAsync();
 

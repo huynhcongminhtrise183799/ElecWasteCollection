@@ -121,7 +121,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
             var allConfigs = await _unitOfWork.SystemConfig.GetAllAsync();
 
-            var companyEntity = await _unitOfWork.CollectionCompanies.GetAsync(
+            var companyEntity = await _unitOfWork.Companies.GetAsync(
                 filter: c => c.CompanyId == companyId,
                 includeProperties: "SmallCollectionPoints");
 
@@ -236,7 +236,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
             var attMap = await GetAttributeIdMapAsync();
             var allConfigs = await _unitOfWork.SystemConfig.GetAllAsync();
 
-            var company = (await _unitOfWork.CollectionCompanies.GetAllAsync(includeProperties: "SmallCollectionPoints"))
+            var company = (await _unitOfWork.Companies.GetAllAsync(includeProperties: "SmallCollectionPoints"))
                 .FirstOrDefault(c => c.SmallCollectionPoints.Any(sp => sp.SmallCollectionPointsId == smallPointId));
 
             if (company == null) throw new Exception("Small Point not found.");
@@ -323,7 +323,10 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
         public async Task<List<CompanyWithPointsResponse>> GetCompaniesWithSmallPointsAsync()
         {
-            var companies = await _unitOfWork.CollectionCompanies.GetAllAsync(includeProperties: "SmallCollectionPoints");
+            var companies = await _unitOfWork.Companies.GetAllAsync(
+                filter: c => c.CompanyType == "CollectionCompany",
+                includeProperties: "SmallCollectionPoints");
+
             var allConfigs = await _unitOfWork.SystemConfig.GetAllAsync();
 
             return companies.Select(company => new CompanyWithPointsResponse
@@ -345,7 +348,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
         public async Task<List<SmallPointDto>> GetSmallPointsByCompanyIdAsync(string companyId)
         {
-            var company = await _unitOfWork.CollectionCompanies.GetAsync(
+            var company = await _unitOfWork.Companies.GetAsync(
                 filter: c => c.CompanyId == companyId,
                 includeProperties: "SmallCollectionPoints");
 
@@ -367,7 +370,7 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
         public async Task<CompanyConfigDto> GetCompanyConfigByCompanyIdAsync(string companyId)
         {
-            var company = await _unitOfWork.CollectionCompanies.GetAsync(
+            var company = await _unitOfWork.Companies.GetAsync(
                 filter: c => c.CompanyId == companyId,
                 includeProperties: "SmallCollectionPoints");
 

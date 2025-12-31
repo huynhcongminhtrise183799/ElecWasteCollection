@@ -26,7 +26,7 @@ namespace ElecWasteCollection.Application.Services
 
 			var totalUsers = await _unitOfWork.Users.CountAsync(u => u.CreateAt >= fromDate && u.CreateAt <= toDate);
 
-			var totalCompanies = await _unitOfWork.CollectionCompanies.CountAsync(c => c.Created_At >= fromDate && c.Created_At <= toDate);
+			var totalCompanies = await _unitOfWork.Companies.CountAsync(c => c.Created_At >= fromDate && c.Created_At <= toDate);
 
 			var totalProducts = await _unitOfWork.Products.CountAsync(p => p.CreateAt >= from && p.CreateAt <= to);
 
