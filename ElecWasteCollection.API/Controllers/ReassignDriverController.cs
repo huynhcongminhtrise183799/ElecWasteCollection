@@ -15,15 +15,15 @@ namespace ElecWasteCollection.API.Controllers
             _service = service;
         }
         [HttpGet("candidates")]
-        public async Task<IActionResult> GetCandidates([FromQuery] string companyId, [FromQuery] DateTime date)
+        public async Task<IActionResult> GetCandidates([FromQuery] string smallCollectionId, [FromQuery] DateTime date)
         {
             try
             {
-                if (string.IsNullOrEmpty(companyId))
+                if (string.IsNullOrEmpty(smallCollectionId))
                 {
                     return BadRequest(new { Success = false, Message = "CompanyId is required." });
                 }
-                var result = await _service.GetReassignCandidatesAsync(companyId, date);
+                var result = await _service.GetReassignCandidatesAsync(smallCollectionId, date);
                 return Ok(result);
             }
             catch (Exception ex)

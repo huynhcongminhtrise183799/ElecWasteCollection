@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ElecWasteCollection.Application.Model
@@ -29,5 +30,9 @@ namespace ElecWasteCollection.Application.Model
         public string Phone { get; set; }
         public bool IsAvailable { get; set; }     
         public string StatusText { get; set; }
+        public string ShiftTime { get; set; }
+        public string RemainingMinutes { get; set; }
+        [JsonIgnore]
+        public double SortableMinutes { get; set; }
     }
 }
