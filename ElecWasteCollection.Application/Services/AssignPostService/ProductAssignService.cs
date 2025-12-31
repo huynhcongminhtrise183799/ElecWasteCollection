@@ -21,17 +21,23 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
         public async Task<AssignProductResult> AssignProductsAsync(List<Guid> productIds, DateOnly workDate)
         {
             var result = new AssignProductResult();
+
+            // =================================================================================
+            // 1. LẤY CẤU HÌNH VÀ VALIDATE
+            // =================================================================================
             var companies = await _unitOfWork.CollectionCompanies.GetAllAsync(includeProperties: "SmallCollectionPoints");
 
             if (!companies.Any())
-                throw new Exception("Chưa có cấu hình company.");
+                throw new Exception("Lỗi cấu hình: Chưa có đơn vị thu gom nào trong hệ thống.");
 
             var sortedConfig = companies.OrderBy(c => c.CollectionCompanyId).ToList();
+
+            // Validate tổng tỉ lệ phải là 100%
             double totalPercent = sortedConfig.Sum(c => c.AssignRatio);
-
             if (Math.Abs(totalPercent - 100) > 0.1)
-                throw new Exception($"Tổng tỉ lệ phần trăm hiện tại là {totalPercent}%, cần phải là 100%");
+                throw new Exception($"Lỗi cấu hình: Tổng tỉ lệ phân bổ hiện tại là {totalPercent}%, yêu cầu bắt buộc là 100%.");
 
+            // 2. Xây dựng dải phân phối (Range Config) cho việc random
             var rangeConfigs = new List<CompanyRangeConfig>();
             double currentPivot = 0.0;
 
@@ -46,75 +52,131 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 cfg.MaxRange = currentPivot;
                 rangeConfigs.Add(cfg);
             }
-            var products = await _unitOfWork.Products.GetAllAsync(filter: p => productIds.Contains(p.ProductId));
-            if (!products.Any()) throw new Exception("Không có product hợp lệ.");
 
+            // 3. Lấy danh sách Product cần xử lý
+            var products = await _unitOfWork.Products.GetAllAsync(filter: p => productIds.Contains(p.ProductId));
+            if (!products.Any()) throw new Exception("Không tìm thấy sản phẩm nào hợp lệ.");
+
+            // =================================================================================
+            // 4. XỬ LÝ TỪNG SẢN PHẨM
+            // =================================================================================
             foreach (var product in products)
             {
                 try
                 {
+                    // --- Validate Post và Address ---
                     var post = await _unitOfWork.Posts.GetAsync(p => p.ProductId == product.ProductId);
-                    if (post == null) continue;
+                    if (post == null)
+                    {
+                        result.Details.Add(new { productId = product.ProductId, status = "failed", reason = "Không tìm thấy bài đăng (Post)" });
+                        continue;
+                    }
 
                     if (string.IsNullOrEmpty(post.Address))
                     {
-                        result.Details.Add(new { productId = product.ProductId, status = "failed", reason = "Post address is empty" });
+                        result.Details.Add(new { productId = product.ProductId, status = "failed", reason = "Địa chỉ bài đăng bị trống" });
                         continue;
                     }
+
                     var matchedAddress = await _unitOfWork.UserAddresses.GetAsync(a => a.UserId == post.SenderId && a.Address == post.Address);
 
                     if (matchedAddress == null || matchedAddress.Iat == null || matchedAddress.Ing == null)
                     {
-                        result.Details.Add(new { productId = product.ProductId, status = "failed", reason = "Coordinates not found for this address" });
+                        result.Details.Add(new { productId = product.ProductId, status = "failed", reason = "Không lấy được tọa độ (Lat/Lng) từ địa chỉ này" });
                         continue;
                     }
-            
-                    double magicNumber = GetStableHashRatio(product.ProductId);
 
-                    var targetConfig = rangeConfigs.FirstOrDefault(t => magicNumber >= t.MinRange && magicNumber < t.MaxRange);
-                    if (targetConfig == null) targetConfig = rangeConfigs.Last();
+                    // =================================================================================
+                    // LOGIC MỚI: QUÉT VỊ TRÍ TRƯỚC (GEO FIRST) -> CHIA TỶ LỆ SAU (RATIO SECOND)
+                    // =================================================================================
 
-                    ProductAssignCandidate? chosenCandidate = null;
+                    // BƯỚC A: Tìm tất cả ứng viên hợp lệ từ TẤT CẢ các công ty
+                    // (Ứng viên hợp lệ là SmallPoint nằm trong bán kính phục vụ của khách hàng)
+                    var validCandidates = new List<ProductAssignCandidate>();
 
-                    var targetCandidate = await FindBestSmallPointForCompanyAsync(targetConfig.CompanyEntity, matchedAddress);
-
-                    if (targetCandidate != null)
+                    foreach (var company in sortedConfig)
                     {
-                        chosenCandidate = targetCandidate;
-                    }
-                    else
-                    {
-                        double bestDistance = double.MaxValue;
-                        foreach (var otherConfig in rangeConfigs.Where(c => c.CompanyEntity.CollectionCompanyId != targetConfig.CompanyEntity.CollectionCompanyId))
+                        var candidate = await FindBestSmallPointForCompanyAsync(company, matchedAddress);
+                        if (candidate != null)
                         {
-                            var candidate = await FindBestSmallPointForCompanyAsync(otherConfig.CompanyEntity, matchedAddress);
-                            if (candidate != null && candidate.RoadKm < bestDistance)
-                            {
-                                bestDistance = candidate.RoadKm;
-                                chosenCandidate = candidate;
-                            }
+                            validCandidates.Add(candidate);
                         }
                     }
 
-                    if (chosenCandidate == null)
+                    ProductAssignCandidate? chosenCandidate = null;
+                    string assignNote = "";
+
+                    // --- TRƯỜNG HỢP KHÔNG CÓ KHO NÀO PHỤC VỤ ĐƯỢC ---
+                    if (!validCandidates.Any())
                     {
                         result.TotalUnassigned++;
-                        result.Details.Add(new { productId = product.ProductId, status = "no_candidate_available" });
+
+                        // 1. Thêm message thông báo lỗi
+                        result.Details.Add(new
+                        {
+                            productId = product.ProductId,
+                            status = "failed",
+                            reason = "Không có đơn vị thu gom gần đây"
+                        });
+
+                        // 2. Cập nhật Status Product trong DB
+                        product.Status = "Không tìm thấy điểm thu gom";
+                        _unitOfWork.Products.Update(product);
+
+                        // Bỏ qua, sang sản phẩm tiếp theo
+                        continue;
                     }
+
+                    // --- TRƯỜNG HỢP CÓ ÍT NHẤT 1 KHO PHỤC VỤ ĐƯỢC ---
                     else
                     {
+                        // BƯỚC B: Áp dụng logic chia tỷ lệ (Ratio) trên danh sách đã lọc
+
+                        // Tính "số định mệnh" dựa trên ProductId để đảm bảo tính ngẫu nhiên ổn định
+                        double magicNumber = GetStableHashRatio(product.ProductId);
+
+                        // Tìm Company mục tiêu (Target) dựa trên cấu hình %
+                        var targetConfig = rangeConfigs.FirstOrDefault(t => magicNumber >= t.MinRange && magicNumber < t.MaxRange);
+                        if (targetConfig == null) targetConfig = rangeConfigs.Last();
+
+                        // Kiểm tra: Target Company có nằm trong danh sách phục vụ được không?
+                        var targetCandidate = validCandidates.FirstOrDefault(c => c.CompanyId == targetConfig.CompanyEntity.CollectionCompanyId);
+
+                        if (targetCandidate != null)
+                        {
+                            // CASE 1: Target Match (Tuyệt vời)
+                            // Công ty được chỉ định theo % CÓ THỂ phục vụ -> Chọn luôn
+                            chosenCandidate = targetCandidate;
+                            assignNote = $"Đúng tuyến (Target Match) - Tỉ lệ {targetConfig.CompanyEntity.AssignRatio}%";
+                        }
+                        else
+                        {
+                            // CASE 2: Fallback Geo (Cứu cánh)
+                            // Công ty được chỉ định KHÔNG phục vụ được (do quá xa) -> Chọn thằng gần nhất trong các thằng còn lại
+                            chosenCandidate = validCandidates.OrderBy(c => c.RoadKm).First();
+                            assignNote = "Trái tuyến (Fallback Geo) - Chọn kho gần nhất do Target quá xa";
+                        }
+                    }
+
+                    // =================================================================================
+                    // CẬP NHẬT DATABASE KHI THÀNH CÔNG
+                    // =================================================================================
+                    if (chosenCandidate != null)
+                    {
+                        // Cập nhật Post
                         post.CollectionCompanyId = chosenCandidate.CompanyId;
                         post.AssignedSmallPointId = chosenCandidate.SmallPointId;
                         post.DistanceToPointKm = chosenCandidate.RoadKm;
-
                         _unitOfWork.Posts.Update(post);
 
+                        // Cập nhật Product
                         product.SmallCollectionPointId = chosenCandidate.SmallPointId;
+                        // product.Status = "Chờ thu gom"; // Có thể uncomment nếu muốn cập nhật status thành công
                         _unitOfWork.Products.Update(product);
 
                         result.TotalAssigned++;
-                        string note = (chosenCandidate.CompanyId == targetConfig.CompanyEntity.CollectionCompanyId) ? "Target Match" : "Fallback Geo";
 
+                        // Output kết quả chi tiết
                         result.Details.Add(new
                         {
                             productId = product.ProductId,
@@ -122,20 +184,23 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                             smallPointId = chosenCandidate.SmallPointId,
                             roadKm = $"{Math.Round(chosenCandidate.RoadKm, 2):0.00} km",
                             status = "assigned",
-                            note = note
+                            note = assignNote
                         });
                     }
                 }
                 catch (Exception ex)
                 {
-                    result.Details.Add(new { productId = product.ProductId, status = "error", message = ex.Message });
+                    result.Details.Add(new { productId = product.ProductId, status = "error", message = $"Lỗi hệ thống: {ex.Message}" });
                 }
             }
 
+            // Lưu tất cả thay đổi (bao gồm cả update status "failed")
             await _unitOfWork.SaveAsync();
 
             return result;
         }
+
+        // --- CÁC HÀM HELPER ---
 
         private async Task<ProductAssignCandidate?> FindBestSmallPointForCompanyAsync(CollectionCompany company, UserAddress address)
         {
@@ -146,20 +211,21 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 
             foreach (var sp in company.SmallCollectionPoints)
             {
-                // Tinh toán khoảng cách Haversine trước
+                // 1. Check khoảng cách đường chim bay (Haversine)
                 double hvDistance = GeoHelper.DistanceKm(sp.Latitude, sp.Longitude, address.Iat ?? 0, address.Ing ?? 0);
                 if (hvDistance > sp.RadiusKm) continue;
 
-                // Tính toán khoảng cách đường bộ (road distance) sử dụng Mapbox API với caching
+                // 2. Check khoảng cách đường bộ thực tế (Mapbox)
                 double roadKm = await _distanceCache.GetRoadDistanceKm(sp.Latitude, sp.Longitude, address.Iat ?? 0, address.Ing ?? 0);
                 if (roadKm > sp.MaxRoadDistanceKm) continue;
 
+                // 3. Tìm điểm gần nhất trong nội bộ công ty
                 if (roadKm < minRoadKm)
                 {
                     minRoadKm = roadKm;
                     best = new ProductAssignCandidate
                     {
-                        ProductId = Guid.Empty,
+                        ProductId = Guid.Empty, // Sẽ gán ID sau
                         CompanyId = company.CollectionCompanyId,
                         SmallPointId = sp.SmallCollectionPointsId,
                         RoadKm = roadKm,
@@ -200,16 +266,15 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
                 {
                     ProductId = post.Product!.ProductId,
                     PostId = post.PostId,
-                    CategoryName = post.Product.Category?.Name ?? "Unknown Category",
-                    BrandName = post.Product.Brand?.Name ?? "Unknown Brand",
-                    UserName = post.Sender?.Name ?? "Unknown User",
-                    Address = displayAddr 
+                    CategoryName = post.Product.Category?.Name ?? "Không xác định",
+                    BrandName = post.Product.Brand?.Name ?? "Không xác định",
+                    UserName = post.Sender?.Name ?? "Không xác định",
+                    Address = displayAddr
                 });
             }
 
             return result;
         }
-
 
         private bool TryParseScheduleInfo(string raw, out List<DateOnly> dates)
         {
