@@ -120,5 +120,5 @@ namespace ElecWasteCollection.API.Controllers
 			}
 			return Ok(new { message = "Package status updated successfully." });
 		}
-	}
+    }
 }

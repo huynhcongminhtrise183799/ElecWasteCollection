@@ -42,4 +42,25 @@ namespace ElecWasteCollection.Application.Model
         public string CompanyId { get; set; }
         public string Name { get; set; }
     }
+
+    public class ScpAssignmentDetailDto
+    {
+        public string CompanyId { get; set; }
+        public string CompanyName { get; set; }
+        public List<SmallPointDetailDto> SmallPoints { get; set; } = new List<SmallPointDetailDto>();
+    }
+
+    public class SmallPointDetailDto
+    {
+        public string SmallPointId { get; set; }
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public RecyclerSimpleInfoDto? RecyclingCompany { get; set; }
+    }
+
+    public class RecyclerSimpleInfoDto
+    {
+        public string CompanyId { get; set; }
+        public string Name { get; set; }
+    }
 }

@@ -81,5 +81,22 @@ namespace ElecWasteCollection.API.Controllers
             }
         }
 
+        [HttpGet("scp-assignment-detail/{id}")]
+        public async Task<IActionResult> GetScpAssignmentDetail(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return BadRequest(new { message = "Vui lòng truyền ID điểm thu gom." });
+
+            try
+            {
+                var result = await _service.GetScpAssignmentDetailAsync(id);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

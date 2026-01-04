@@ -228,5 +228,5 @@ namespace ElecWasteCollection.Application.Services
 			await _unitOfWork.SaveAsync();
 			return true;
 		}
-	}
+    }
 }
