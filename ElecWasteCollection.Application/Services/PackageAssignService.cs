@@ -120,6 +120,41 @@ namespace ElecWasteCollection.Application.Services.AssignPackageService
 
             return result;
         }
+        public async Task<ScpAssignmentDetailDto> GetScpAssignmentDetailAsync(string smallCollectionPointId)
+        {
+            var scp = await _unitOfWork.SmallCollectionPoints.GetAsync(
+                filter: s => s.SmallCollectionPointsId == smallCollectionPointId,
+                includeProperties: "CollectionCompany,RecyclingCompany"
+            );
+
+            if (scp == null)
+            {
+                throw new Exception($"Không tìm thấy điểm thu gom với ID: {smallCollectionPointId}");
+            }
+
+            var result = new ScpAssignmentDetailDto
+            {
+                CompanyId = scp.CollectionCompany?.CompanyId ?? "Unknown",
+                CompanyName = scp.CollectionCompany?.Name ?? "Không xác định",
+                SmallPoints = new List<SmallPointDetailDto>
+        {
+            new SmallPointDetailDto
+            {
+                SmallPointId = scp.SmallCollectionPointsId,
+                Name = scp.Name,
+                Address = scp.Address,
+
+                RecyclingCompany = scp.RecyclingCompany == null ? null : new RecyclerSimpleInfoDto
+                {
+                    CompanyId = scp.RecyclingCompany.CompanyId,
+                    Name = scp.RecyclingCompany.Name
+                }
+            }
+        }
+            };
+
+            return result;
+        }
 
 
     }
