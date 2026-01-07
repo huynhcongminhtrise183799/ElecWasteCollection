@@ -53,6 +53,8 @@ namespace ElecWasteCollection.Infrastructure.Repository
 
 		public IGenericRepository<UserDeviceToken> UserDeviceTokens { get; }
 
+		public IGenericRepository<Notifications> Notifications { get; }
+
 		public UnitOfWork(ElecWasteCollectionDbContext context)
         {
             _context = context;
@@ -82,6 +84,7 @@ namespace ElecWasteCollection.Infrastructure.Repository
 			SystemConfig = new GenericRepository<SystemConfig>(_context);
 			CollectionGroups = new GenericRepository<CollectionGroups>(_context);
 			UserDeviceTokens = new GenericRepository<UserDeviceToken>(_context);
+			Notifications = new GenericRepository<Notifications>(_context);
 
 
 		}

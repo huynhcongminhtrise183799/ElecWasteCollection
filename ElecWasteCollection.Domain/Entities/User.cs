@@ -69,5 +69,7 @@ namespace ElecWasteCollection.Domain.Entities
 
 		public virtual ICollection<UserDeviceToken> UserDeviceTokens { get; set; } = new List<UserDeviceToken>();
 
+		public virtual ICollection<Notifications> Notifications { get; set; } = new List<Notifications>();
+
 	}
 }

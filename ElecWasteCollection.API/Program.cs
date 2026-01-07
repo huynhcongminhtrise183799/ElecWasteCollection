@@ -160,6 +160,8 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 			builder.Services.AddScoped<IUserDeviceTokenService, UserDeviceTokenService>();
 			builder.Services.AddScoped<IUserDeviceTokenRepository, UserDeviceTokenRepository>();
+			builder.Services.AddScoped<INotificationService, NotificationService>();
+			builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>

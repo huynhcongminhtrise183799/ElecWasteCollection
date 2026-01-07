@@ -42,6 +42,8 @@ namespace ElecWasteCollection.Infrastructure.Context
 
 		public DbSet<UserDeviceToken> UserDeviceTokens { get; set; }
 
+		public DbSet<Notifications> Notifications { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<Company>(entity =>
@@ -442,6 +444,19 @@ namespace ElecWasteCollection.Infrastructure.Context
 					  .WithMany(u => u.UserDeviceTokens)
 					  .HasForeignKey(e => e.UserId)
 					  .HasConstraintName("FK_UserDeviceToken_User");
+
+			});
+
+			modelBuilder.Entity<Notifications>(entity =>
+			{
+				entity.ToTable("Notification");
+				entity.HasKey(e => e.NotificationId);
+				entity.Property(e => e.NotificationId).ValueGeneratedOnAdd();
+				entity.Property(e => e.UserId).IsRequired();
+				entity.HasOne(e => e.User)
+					  .WithMany(u => u.Notifications)
+					  .HasForeignKey(e => e.UserId)
+					  .HasConstraintName("FK_Notification_User");
 
 			});
 		}

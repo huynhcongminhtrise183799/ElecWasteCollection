@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using ElecWasteCollection.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ElecWasteCollection.Infrastructure.Migrations
 {
     [DbContext(typeof(ElecWasteCollectionDbContext))]
-    partial class ElecWasteCollectionDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260107155208_AddNewTableDeviceToken")]
+    partial class AddNewTableDeviceToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -311,36 +314,6 @@ namespace ElecWasteCollection.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ForgotPassword", (string)null);
-                });
-
-            modelBuilder.Entity("ElecWasteCollection.Domain.Entities.Notifications", b =>
-                {
-                    b.Property<Guid>("NotificationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Body")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("NotificationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notification", (string)null);
                 });
 
             modelBuilder.Entity("ElecWasteCollection.Domain.Entities.Packages", b =>
@@ -996,18 +969,6 @@ namespace ElecWasteCollection.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ElecWasteCollection.Domain.Entities.Notifications", b =>
-                {
-                    b.HasOne("ElecWasteCollection.Domain.Entities.User", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Notification_User");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ElecWasteCollection.Domain.Entities.Packages", b =>
                 {
                     b.HasOne("ElecWasteCollection.Domain.Entities.SmallCollectionPoints", "SmallCollectionPoints")
@@ -1372,8 +1333,6 @@ namespace ElecWasteCollection.Infrastructure.Migrations
                     b.Navigation("Accounts");
 
                     b.Navigation("ForgotPasswords");
-
-                    b.Navigation("Notifications");
 
                     b.Navigation("PointTransactions");
 
