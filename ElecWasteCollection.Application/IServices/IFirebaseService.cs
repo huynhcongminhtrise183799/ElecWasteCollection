@@ -10,5 +10,8 @@ namespace ElecWasteCollection.Application.IServices
     public interface IFirebaseService
     {
 		Task<FirebaseToken> VerifyIdTokenAsync(string idToken);
+		Task SendNotificationToDeviceAsync(string token, string title, string body, Dictionary<string, string>? data = null);
+
+		Task SendMulticastAsync(List<string> tokens, string title, string body, Dictionary<string, string>? data = null);
 	}
 }
