@@ -10,10 +10,9 @@ namespace ElecWasteCollection.Application.IServices
     public interface IDashboardService
     {
         Task<DashboardSummaryModel> GetDashboardSummary(DateOnly from, DateOnly to);
+        Task<DashboardSummaryModel> GetDashboardSummaryByDay(DateOnly date);
         Task<PackageDashboardResponse> GetPackageDashboardStats(string smallCollectionPointId, DateOnly from, DateOnly to);
-        Task<ProductCollectDashboardResponse> GetCollectedProductStatsAsync(
-                    string smallCollectionPointId,
-                    DateOnly from,
-                    DateOnly to);
+        Task<SCPDashboardSummaryModel> GetSCPDashboardSummary(string smallCollectionPointId, DateOnly from, DateOnly to);
+        Task<SCPDashboardSummaryModel> GetSCPDashboardSummaryByDay(string smallCollectionPointId, DateOnly date);
     }
 }
