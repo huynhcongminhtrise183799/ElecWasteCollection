@@ -1,97 +1,142 @@
 ﻿using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.Model;
 using ElecWasteCollection.Domain.IRepository;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ElecWasteCollection.Application.Services
 {
-	public class DashboardService : IDashboardService
-	{
-		private readonly IUnitOfWork _unitOfWork;
-		private readonly IProductRepository _productRepository;
-		public DashboardService(IUnitOfWork unitOfWork, IProductRepository productRepository)
-		{
-			_unitOfWork = unitOfWork;
-			_productRepository = productRepository;
-		}
-		public async Task<DashboardSummaryModel> GetDashboardSummary(DateOnly from, DateOnly to)
-		{
-			DateTime fromDate = DateTime.SpecifyKind(from.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+    public class DashboardService : IDashboardService
+    {
+        private readonly IDashboardRepository _dashboardRepository;
+        private readonly IProductRepository _productRepository;
 
-			DateTime toDate = DateTime.SpecifyKind(to.ToDateTime(new TimeOnly(23, 59, 59)), DateTimeKind.Utc);
+        public DashboardService(IDashboardRepository dashboardRepository, IProductRepository productRepository)
+        {
+            _dashboardRepository = dashboardRepository;
+            _productRepository = productRepository;
+        }
 
-			var totalUsers = await _unitOfWork.Users.CountAsync(u => u.CreateAt >= fromDate && u.CreateAt <= toDate);
+        public async Task<DashboardSummaryModel> GetDashboardSummary(DateOnly from, DateOnly to)
+        {
+            DateTime currentFromDate = DateTime.SpecifyKind(from.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            DateTime currentToDate = DateTime.SpecifyKind(to.ToDateTime(new TimeOnly(23, 59, 59)), DateTimeKind.Utc);
+            DateTime prevFromDate = currentFromDate.AddMonths(-1);
+            DateTime prevToDate = currentToDate.AddMonths(-1);
+            DateOnly prevFromDateOnly = DateOnly.FromDateTime(prevFromDate);
+            DateOnly prevToDateOnly = DateOnly.FromDateTime(prevToDate);
 
-			var totalCompanies = await _unitOfWork.Companies.CountAsync(c => c.Created_At >= fromDate && c.Created_At <= toDate);
+            var currUsers = await _dashboardRepository.CountUsersAsync(currentFromDate, currentToDate);
+            var prevUsers = await _dashboardRepository.CountUsersAsync(prevFromDate, prevToDate);
+            var currComp = await _dashboardRepository.CountCompaniesAsync(currentFromDate, currentToDate);
+            var prevComp = await _dashboardRepository.CountCompaniesAsync(prevFromDate, prevToDate);
+            var currProd = await _dashboardRepository.CountProductsAsync(from, to);
+            var prevProd = await _dashboardRepository.CountProductsAsync(prevFromDateOnly, prevToDateOnly);
+            var currCatDict = await _productRepository.GetProductCountsByCategoryAsync(currentFromDate, currentToDate);
+            var prevCatDict = await _productRepository.GetProductCountsByCategoryAsync(prevFromDate, prevToDate);
 
-			var totalProducts = await _unitOfWork.Products.CountAsync(p => p.CreateAt >= from && p.CreateAt <= to);
+            var categoryStats = ProcessCategoryStats(currCatDict, prevCatDict);
 
-			var statsDict = await _productRepository.GetProductCountsByCategoryAsync(fromDate, toDate);
+            return new DashboardSummaryModel
+            {
+                FromDate = from,
+                ToDate = to,
+                TotalUsers = CalculateMetric(currUsers, prevUsers),
+                TotalCompanies = CalculateMetric(currComp, prevComp),
+                TotalProducts = CalculateMetric(currProd, prevProd),
+                ProductCategories = categoryStats
+            };
+        }
 
-			var productByCategory = statsDict.Select(kvp => new CategoryStatisticModel
-			{
-				CategoryName = kvp.Key,
-				Count = kvp.Value
-			}).ToList();
+        public async Task<DashboardSummaryModel> GetDashboardSummaryByDay(DateOnly date)
+        {
+            DateTime currentFromDate = DateTime.SpecifyKind(date.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            DateTime currentToDate = DateTime.SpecifyKind(date.ToDateTime(new TimeOnly(23, 59, 59)), DateTimeKind.Utc);
 
-			return new DashboardSummaryModel
-			{
-				FromDate = from, 
-				ToDate = to,
-				TotalUsers = totalUsers,
-				TotalCompanies = totalCompanies,
-				TotalProducts = totalProducts,
-				ProductCategories = productByCategory
-			};
-		}
+            DateTime prevFromDate = currentFromDate.AddDays(-1);
+            DateTime prevToDate = currentToDate.AddDays(-1);
+            DateOnly prevDateOnly = date.AddDays(-1);
+
+            var currUsers = await _dashboardRepository.CountUsersAsync(currentFromDate, currentToDate);
+            var prevUsers = await _dashboardRepository.CountUsersAsync(prevFromDate, prevToDate);
+
+            var currComp = await _dashboardRepository.CountCompaniesAsync(currentFromDate, currentToDate);
+            var prevComp = await _dashboardRepository.CountCompaniesAsync(prevFromDate, prevToDate);
+
+            var currProd = await _dashboardRepository.CountProductsAsync(date, date);
+            var prevProd = await _dashboardRepository.CountProductsAsync(prevDateOnly, prevDateOnly);
+
+            var currCatDict = await _productRepository.GetProductCountsByCategoryAsync(currentFromDate, currentToDate);
+            var prevCatDict = await _productRepository.GetProductCountsByCategoryAsync(prevFromDate, prevToDate);
+
+            var categoryStats = ProcessCategoryStats(currCatDict, prevCatDict);
+
+            return new DashboardSummaryModel
+            {
+                FromDate = date,
+                ToDate = date,
+                TotalUsers = CalculateMetric(currUsers, prevUsers),
+                TotalCompanies = CalculateMetric(currComp, prevComp),
+                TotalProducts = CalculateMetric(currProd, prevProd),
+                ProductCategories = categoryStats
+            };
+        }
+
 
         public async Task<PackageDashboardResponse> GetPackageDashboardStats(string smallCollectionPointId, DateOnly from, DateOnly to)
         {
-            int timezoneOffset = 7; 
+            int timezoneOffset = 7;
+            var cleanId = smallCollectionPointId.Trim();
 
-            DateTime fromDateVN = from.ToDateTime(TimeOnly.MinValue); 
-            DateTime toDateVN = to.ToDateTime(new TimeOnly(23, 59, 59)); 
-            DateTime fromDateUtc = DateTime.SpecifyKind(fromDateVN.AddHours(-timezoneOffset), DateTimeKind.Utc);
-            DateTime toDateUtc = DateTime.SpecifyKind(toDateVN.AddHours(-timezoneOffset), DateTimeKind.Utc);
+            DateTime fromDateVN = from.ToDateTime(TimeOnly.MinValue);
+            DateTime toDateVN = to.ToDateTime(new TimeOnly(23, 59, 59));
 
-            var query = _unitOfWork.Packages.GetQueryable()
-                .Where(p => p.SmallCollectionPointsId.Trim() == smallCollectionPointId.Trim()
-                            && p.CreateAt >= fromDateUtc
-                            && p.CreateAt <= toDateUtc); 
+            DateTime currentFromUtc = DateTime.SpecifyKind(fromDateVN.AddHours(-timezoneOffset), DateTimeKind.Utc);
+            DateTime currentToUtc = DateTime.SpecifyKind(toDateVN.AddHours(-timezoneOffset), DateTimeKind.Utc);
 
-            var data = await query.Select(p => p.CreateAt).ToListAsync();
+            DateTime prevMonthFromUtc = currentFromUtc.AddMonths(-1);
+            DateTime prevMonthToUtc = currentToUtc.AddMonths(-1);
 
-            var totalPackages = data.Count;
+            var totalCurrent = await _dashboardRepository.CountPackagesByScpIdAsync(cleanId, currentFromUtc, currentToUtc);
+            var totalPrevious = await _dashboardRepository.CountPackagesByScpIdAsync(cleanId, prevMonthFromUtc, prevMonthToUtc);
 
-            var dailyStats = data
-                .Select(d => d.AddHours(timezoneOffset)) 
+            var rawData = await _dashboardRepository.GetPackageCreationDatesByScpIdAsync(cleanId, currentFromUtc, currentToUtc);
+
+            var groupedData = rawData
+                .Select(d => d.AddHours(timezoneOffset))
                 .GroupBy(d => DateOnly.FromDateTime(d))
                 .Select(g => new PackageDailyStat
                 {
                     Date = g.Key,
                     Count = g.Count()
                 })
-                .OrderBy(x => x.Date)
                 .ToList();
+
+            var dailyStats = FillMissingDates(from, to, groupedData);
 
             for (int i = 0; i < dailyStats.Count; i++)
             {
                 if (i == 0)
                 {
                     dailyStats[i].PercentChange = null;
+                    dailyStats[i].AbsoluteChange = null;
                     continue;
                 }
 
-                var previousCount = dailyStats[i - 1].Count;
-                var currentCount = dailyStats[i].Count;
+                var prevDayCount = dailyStats[i - 1].Count;
+                var currDayCount = dailyStats[i].Count;
 
-                if (previousCount == 0)
+                dailyStats[i].AbsoluteChange = currDayCount - prevDayCount;
+
+                if (prevDayCount == 0)
                 {
-                    dailyStats[i].PercentChange = null;
+                    dailyStats[i].PercentChange = currDayCount > 0 ? 100 : 0;
                 }
                 else
                 {
-                    var percent = ((double)(currentCount - previousCount) / previousCount) * 100;
+                    var percent = ((double)(currDayCount - prevDayCount) / prevDayCount) * 100;
                     dailyStats[i].PercentChange = Math.Round(percent, 1);
                 }
             }
@@ -101,162 +146,214 @@ namespace ElecWasteCollection.Application.Services
                 SmallCollectionPointId = smallCollectionPointId,
                 FromDate = from,
                 ToDate = to,
-                TotalPackages = totalPackages,
+                TotalPackages = CalculateMetric(totalCurrent, totalPrevious),
                 DailyStats = dailyStats
             };
         }
 
-        public async Task<ProductCollectDashboardResponse> GetCollectedProductStatsAsync( string smallCollectionPointId, DateOnly from, DateOnly to)
+        public async Task<SCPDashboardSummaryModel> GetSCPDashboardSummary(string smallCollectionPointId, DateOnly from, DateOnly to)
         {
-            var fromUtc = DateTime.SpecifyKind( from.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            var cleanId = smallCollectionPointId.Trim();
 
-            var toUtc = DateTime.SpecifyKind( to.ToDateTime(TimeOnly.MaxValue), DateTimeKind.Utc);
+            DateOnly prevFromDate = from.AddMonths(-1);
+            DateOnly prevToDate = to.AddMonths(-1);
 
-            var collectedProducts = await (
-                from h in _unitOfWork.ProductStatusHistory.GetQueryable().AsNoTracking()
-                join p in _unitOfWork.Products.GetQueryable().AsNoTracking()
-                    on h.ProductId equals p.ProductId
-                where h.Status == "Đã thu gom"
-                      && h.ChangedAt >= fromUtc
-                      && h.ChangedAt <= toUtc
-                      && p.SmallCollectionPointId == smallCollectionPointId
-                select new
-                {
-                    p.ProductId,
-                    Date = DateOnly.FromDateTime(h.ChangedAt)
-                }
-            )
-            .Distinct()
-            .ToListAsync();
+            var currProd = await _dashboardRepository.CountProductsByScpIdAsync(cleanId, from, to);
+            var prevProd = await _dashboardRepository.CountProductsByScpIdAsync(cleanId, prevFromDate, prevToDate);
 
-            if (!collectedProducts.Any())
+            var currCatDict = await _dashboardRepository.GetProductCountsByCategoryByScpIdAsync(cleanId, from, to);
+            var prevCatDict = await _dashboardRepository.GetProductCountsByCategoryByScpIdAsync(cleanId, prevFromDate, prevToDate);
+
+            var categoryStats = ProcessCategoryStats(currCatDict, prevCatDict);
+
+            return new SCPDashboardSummaryModel
             {
-                return EmptyResult(smallCollectionPointId, from, to);
-            }
-
-            var productStats = new List<(DateOnly date, double weight, double volume)>();
-
-            foreach (var item in collectedProducts)
-            {
-                var att = await GetProductAttributesAsync(item.ProductId);
-                productStats.Add((item.Date, att.weight, att.volume));
-            }
-
-            var dailyStats = productStats
-                .GroupBy(x => x.date)
-                .Select(g => new ProductCollectDailyStat
-                {
-                    Date = g.Key,
-                    TotalWeightKg = Math.Round(g.Sum(x => x.weight), 2),
-                    TotalVolumeM3 = Math.Round(g.Sum(x => x.volume), 4)
-                })
-                .OrderBy(x => x.Date)
-                .ToList();
-
-            for (int i = 1; i < dailyStats.Count; i++)
-            {
-                var prev = dailyStats[i - 1];
-                var cur = dailyStats[i];
-
-                cur.WeightPercentChange = prev.TotalWeightKg > 0
-                    ? Math.Round(((cur.TotalWeightKg - prev.TotalWeightKg) / prev.TotalWeightKg) * 100, 1)
-                    : (cur.TotalWeightKg > 0 ? 100 : 0);
-
-                cur.VolumePercentChange = prev.TotalVolumeM3 > 0
-                    ? Math.Round(((cur.TotalVolumeM3 - prev.TotalVolumeM3) / prev.TotalVolumeM3) * 100, 1)
-                    : (cur.TotalVolumeM3 > 0 ? 100 : 0);
-            }
-
-            return new ProductCollectDashboardResponse
-            {
-                SmallCollectionPointId = smallCollectionPointId,
+                SmallCollectionPointId = cleanId,
                 FromDate = from,
                 ToDate = to,
-                TotalWeightKg = Math.Round(productStats.Sum(x => x.weight), 2),
-                TotalVolumeM3 = Math.Round(productStats.Sum(x => x.volume), 4),
-                DailyStats = dailyStats
+                TotalProducts = CalculateMetric(currProd, prevProd),
+                ProductCategories = categoryStats
             };
         }
 
-        private ProductCollectDashboardResponse EmptyResult(
-            string scpId, DateOnly from, DateOnly to)
+        public async Task<SCPDashboardSummaryModel> GetSCPDashboardSummaryByDay(string smallCollectionPointId, DateOnly date)
         {
-            return new ProductCollectDashboardResponse
+            var cleanId = smallCollectionPointId.Trim();
+            DateOnly prevDate = date.AddDays(-1);
+
+            var currProd = await _dashboardRepository.CountProductsByScpIdAsync(cleanId, date, date);
+            var prevProd = await _dashboardRepository.CountProductsByScpIdAsync(cleanId, prevDate, prevDate);
+
+            var currCatDict = await _dashboardRepository.GetProductCountsByCategoryByScpIdAsync(cleanId, date, date);
+            var prevCatDict = await _dashboardRepository.GetProductCountsByCategoryByScpIdAsync(cleanId, prevDate, prevDate);
+
+            var categoryStats = ProcessCategoryStats(currCatDict, prevCatDict);
+
+            return new SCPDashboardSummaryModel
             {
-                SmallCollectionPointId = scpId,
-                FromDate = from,
-                ToDate = to,
-                TotalWeightKg = 0,
-                TotalVolumeM3 = 0,
-                DailyStats = new List<ProductCollectDailyStat>()
+                SmallCollectionPointId = cleanId,
+                FromDate = date,
+                ToDate = date,
+                TotalProducts = CalculateMetric(currProd, prevProd),
+                ProductCategories = categoryStats
             };
         }
 
-        private async Task<(double length, double width, double height, double weight, double volume, string dimensionText)> GetProductAttributesAsync(Guid productId)
+        private List<CategoryStatisticExtendedModel> ProcessCategoryStats(Dictionary<string, int> currDict, Dictionary<string, int> prevDict)
         {
-            var pValues = await _unitOfWork.ProductValues.GetAllAsync(v => v.ProductId == productId);
-            var pValuesList = pValues.ToList();
+            var allCategories = currDict.Keys.Union(prevDict.Keys).Distinct();
+            var categoryStats = new List<CategoryStatisticExtendedModel>();
 
-            double weight = 0;
-            double volume = 0;
-            double length = 0;
-            double width = 0;
-            double height = 0;
-            string dimText = "";
-
-            foreach (var val in pValuesList)
+            foreach (var catName in allCategories)
             {
-                if (val.AttributeOptionId.HasValue)
+                int currVal = currDict.GetValueOrDefault(catName, 0);
+                int prevVal = prevDict.GetValueOrDefault(catName, 0);
+                var stat = CalculateMetric(currVal, prevVal);
+
+                categoryStats.Add(new CategoryStatisticExtendedModel
                 {
-                    var option = await _unitOfWork.AttributeOptions.GetByIdAsync(val.AttributeOptionId.Value);
-                    if (option != null)
-                    {
-                        if (option.EstimateWeight.HasValue && option.EstimateWeight.Value > 0)
-                        {
-                            weight = option.EstimateWeight.Value;
-                            if (string.IsNullOrEmpty(dimText)) dimText = option.OptionName;
-                        }
-
-                        if (option.EstimateVolume.HasValue && option.EstimateVolume.Value > 0)
-                        {
-                            volume = option.EstimateVolume.Value;
-                            dimText = option.OptionName; 
-                        }
-                    }
-                }
-                else if (val.Value.HasValue && val.Value.Value > 0)
-                {
-                    var attribute = await _unitOfWork.Attributes.GetByIdAsync(val.AttributeId);
-                    if (attribute != null)
-                    {
-                        string nameLower = attribute.Name.ToLower();
-                        if (nameLower.Contains("dài") || nameLower.Contains("length")) length = val.Value.Value;
-                        else if (nameLower.Contains("rộng") || nameLower.Contains("width")) width = val.Value.Value;
-                        else if (nameLower.Contains("cao") || nameLower.Contains("height")) height = val.Value.Value;
-                    }
-                }
+                    CategoryName = catName,
+                    CurrentValue = stat.CurrentValue,
+                    PreviousValue = stat.PreviousValue,
+                    AbsoluteChange = stat.AbsoluteChange,
+                    PercentChange = stat.PercentChange,
+                    Trend = stat.Trend
+                });
             }
-
-            if (volume <= 0 && length > 0 && width > 0 && height > 0)
-            {
-                volume = (length * width * height) / 1_000_000.0; 
-                dimText = $"{length} x {width} x {height} cm";
-            }
-
-            if (weight <= 0) weight = 1;
-            if (volume <= 0)
-            {
-                volume = 0.001;
-                if (string.IsNullOrEmpty(dimText)) dimText = "Không xác định";
-            }
-            else if (string.IsNullOrEmpty(dimText))
-            {
-                dimText = $"~ {Math.Round(volume, 3)} m3";
-            }
-
-            return (length, width, height, weight, volume, dimText);
+            return categoryStats;
         }
 
+        private MetricStats CalculateMetric(int current, int previous)
+        {
+            int diff = current - previous;
+            double percent = 0;
 
+            if (previous == 0)
+            {
+                percent = current > 0 ? 100 : 0;
+            }
+            else
+            {
+                percent = Math.Round(((double)diff / previous) * 100, 2);
+            }
+
+            return new MetricStats
+            {
+                CurrentValue = current,
+                PreviousValue = previous,
+                AbsoluteChange = diff,
+                PercentChange = percent,
+                Trend = diff > 0 ? "Increase" : (diff < 0 ? "Decrease" : "Stable")
+            };
+        }
+
+        private List<PackageDailyStat> FillMissingDates(DateOnly from, DateOnly to, List<PackageDailyStat> data)
+        {
+            var result = new List<PackageDailyStat>();
+            for (var date = from; date <= to; date = date.AddDays(1))
+            {
+                var existing = data.FirstOrDefault(x => x.Date == date);
+                result.Add(new PackageDailyStat
+                {
+                    Date = date,
+                    Count = existing != null ? existing.Count : 0,
+                    PercentChange = null,
+                    AbsoluteChange = null
+                });
+            }
+            return result;
+        }
     }
+
+    //public async Task<DashboardSummaryModel> GetDashboardSummary(DateOnly from, DateOnly to)
+    //{
+    //	DateTime fromDate = DateTime.SpecifyKind(from.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+
+    //	DateTime toDate = DateTime.SpecifyKind(to.ToDateTime(new TimeOnly(23, 59, 59)), DateTimeKind.Utc);
+
+    //	var totalUsers = await _unitOfWork.Users.CountAsync(u => u.CreateAt >= fromDate && u.CreateAt <= toDate);
+
+    //	var totalCompanies = await _unitOfWork.Companies.CountAsync(c => c.Created_At >= fromDate && c.Created_At <= toDate);
+
+    //	var totalProducts = await _unitOfWork.Products.CountAsync(p => p.CreateAt >= from && p.CreateAt <= to);
+
+    //	var statsDict = await _productRepository.GetProductCountsByCategoryAsync(fromDate, toDate);
+
+    //	var productByCategory = statsDict.Select(kvp => new CategoryStatisticModel
+    //	{
+    //		CategoryName = kvp.Key,
+    //		Count = kvp.Value
+    //	}).ToList();
+
+    //	return new DashboardSummaryModel
+    //	{
+    //		FromDate = from, 
+    //		ToDate = to,
+    //		TotalUsers = totalUsers,
+    //		TotalCompanies = totalCompanies,
+    //		TotalProducts = totalProducts,
+    //		ProductCategories = productByCategory
+    //	};
+    //}
+
+    //public async Task<PackageDashboardResponse> GetPackageDashboardStats(string smallCollectionPointId, DateOnly from, DateOnly to)
+    //{
+    //    int timezoneOffset = 7; 
+
+    //    DateTime fromDateVN = from.ToDateTime(TimeOnly.MinValue); 
+    //    DateTime toDateVN = to.ToDateTime(new TimeOnly(23, 59, 59)); 
+    //    DateTime fromDateUtc = DateTime.SpecifyKind(fromDateVN.AddHours(-timezoneOffset), DateTimeKind.Utc);
+    //    DateTime toDateUtc = DateTime.SpecifyKind(toDateVN.AddHours(-timezoneOffset), DateTimeKind.Utc);
+
+    //    var query = _unitOfWork.Packages.GetQueryable()
+    //        .Where(p => p.SmallCollectionPointsId.Trim() == smallCollectionPointId.Trim()
+    //                    && p.CreateAt >= fromDateUtc
+    //                    && p.CreateAt <= toDateUtc); 
+
+    //    var data = await query.Select(p => p.CreateAt).ToListAsync();
+
+    //    var totalPackages = data.Count;
+
+    //    var dailyStats = data
+    //        .Select(d => d.AddHours(timezoneOffset)) 
+    //        .GroupBy(d => DateOnly.FromDateTime(d))
+    //        .Select(g => new PackageDailyStat
+    //        {
+    //            Date = g.Key,
+    //            Count = g.Count()
+    //        })
+    //        .OrderBy(x => x.Date)
+    //        .ToList();
+
+    //    for (int i = 0; i < dailyStats.Count; i++)
+    //    {
+    //        if (i == 0)
+    //        {
+    //            dailyStats[i].PercentChange = null;
+    //            continue;
+    //        }
+
+    //        var previousCount = dailyStats[i - 1].Count;
+    //        var currentCount = dailyStats[i].Count;
+
+    //        if (previousCount == 0)
+    //        {
+    //            dailyStats[i].PercentChange = null;
+    //        }
+    //        else
+    //        {
+    //            var percent = ((double)(currentCount - previousCount) / previousCount) * 100;
+    //            dailyStats[i].PercentChange = Math.Round(percent, 1);
+    //        }
+    //    }
+
+    //    return new PackageDashboardResponse
+    //    {
+    //        SmallCollectionPointId = smallCollectionPointId,
+    //        FromDate = from,
+    //        ToDate = to,
+    //        TotalPackages = totalPackages,
+    //        DailyStats = dailyStats
+    //    };
+    //}
 }

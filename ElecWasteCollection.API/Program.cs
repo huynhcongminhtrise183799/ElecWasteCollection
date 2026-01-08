@@ -162,6 +162,7 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<IUserDeviceTokenRepository, UserDeviceTokenRepository>();
 			builder.Services.AddScoped<INotificationService, NotificationService>();
 			builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+			builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
