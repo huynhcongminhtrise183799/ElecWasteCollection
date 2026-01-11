@@ -143,7 +143,7 @@ namespace ElecWasteCollection.API.Controllers
 		[HttpPut("cancel/{productId}")]
 		public async Task<IActionResult> CancelProduct([FromRoute] Guid productId,[FromBody] CancelProductRequest request)
 		{
-			var result = await _productService.RejectProduct(productId, request.Reason);
+			var result = await _productService.CancelProduct(productId, request.Reason);
 			if (!result)
 			{
 				return BadRequest("Failed to cancel product.");
