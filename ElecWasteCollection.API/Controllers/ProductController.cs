@@ -1,5 +1,4 @@
-﻿using ElecWasteCollection.API.DTOs;
-using ElecWasteCollection.API.DTOs.Request;
+﻿using ElecWasteCollection.API.DTOs.Request;
 using ElecWasteCollection.Application.IServices;
 using ElecWasteCollection.Application.Model;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ElecWasteCollection.API.Controllers
 {
-	[Route("api/products/")]
+    [Route("api/products/")]
 	[ApiController]
 	public class ProductController : ControllerBase
 	{
