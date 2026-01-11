@@ -59,9 +59,13 @@ namespace ElecWasteCollection.Application.Services
 			return (fileBytes, fileName);
 		}
 
-		public async Task<List<SystemConfigModel>> GetAllSystemConfigActive()
+		public async Task<List<SystemConfigModel>> GetAllSystemConfigActive(string? GroupName)
 		{
 			var activeConfigs = await _systemConfigRepository.GetsAsync(config => config.Status == SystemConfigStatus.DANG_HOAT_DONG.ToString());
+			if (!string.IsNullOrEmpty(GroupName))
+			{
+				activeConfigs = activeConfigs.Where(c => c.GroupName == GroupName).ToList();
+			}
 			if (activeConfigs == null || !activeConfigs.Any())
 			{
 				return new List<SystemConfigModel>();

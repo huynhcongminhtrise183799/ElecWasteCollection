@@ -16,9 +16,9 @@ namespace ElecWasteCollection.API.Controllers
 			_systemConfigService = systemConfigService;
 		}
 		[HttpGet("active")]
-		public async Task<IActionResult> GetAllActiveSystemConfigs()
+		public async Task<IActionResult> GetAllActiveSystemConfigs([FromQuery] SystemConfigFilterRequest request)
 		{
-			var configs = await _systemConfigService.GetAllSystemConfigActive();
+			var configs = await _systemConfigService.GetAllSystemConfigActive(request.GroupName);
 			return Ok(configs);
 		}
 		[HttpGet("{key}")]
