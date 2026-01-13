@@ -164,6 +164,7 @@ namespace ElecWasteCollection.API
 			builder.Services.AddScoped<INotificationService, NotificationService>();
 			builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 			builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+			builder.Services.AddScoped<IWebNotificationService, WebNotification>();
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
@@ -199,6 +200,21 @@ namespace ElecWasteCollection.API
 					ValidAudience = jwtSettings["Audience"],
 					IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
 				};
+				options.Events = new JwtBearerEvents
+				{
+					OnMessageReceived = context =>
+					{
+						var accessToken = context.Request.Query["access_token"];
+
+						var path = context.HttpContext.Request.Path;
+						if (!string.IsNullOrEmpty(accessToken) &&
+							path.StartsWithSegments("/notificationHub") )
+						{
+							context.Token = accessToken;
+						}
+						return Task.CompletedTask;
+					}
+				};
 			});
             builder.Services.AddRequestTimeouts();
             var app = builder.Build();
@@ -221,6 +237,7 @@ namespace ElecWasteCollection.API
 			app.UseAuthorization();
 
 			app.MapHub<ShippingHub>("/shippingHub");
+			app.MapHub<WebNotificationHub>("/notificationHub");
 			app.MapControllers();
 
 			app.Run();
