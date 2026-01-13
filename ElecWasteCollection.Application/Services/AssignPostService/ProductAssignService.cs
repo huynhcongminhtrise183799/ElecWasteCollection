@@ -54,6 +54,17 @@ namespace ElecWasteCollection.Application.Services.AssignPostService
 							Failed = result.Details.Count(x => (string)x.GetType().GetProperty("status")?.GetValue(x, null)! == "failed"),
 							Unassigned = result.TotalUnassigned
 						};
+						var notification = new Notifications
+						{
+							NotificationId = Guid.NewGuid(),
+							Body = $"Đã xử lý xong {productIds.Count} sản phẩm. Thành công: {result.TotalAssigned}.",
+							Title = "Phân bổ hoàn tất",
+							CreatedAt = DateTime.UtcNow,
+							IsRead = false,
+							UserId = Guid.Parse(userId),
+						};
+						await unitOfWork.Notifications.AddAsync(notification);
+						await unitOfWork.SaveAsync();
 						await notifService.SendNotificationAsync(
 						userId: userId,
 						title: "Phân bổ hoàn tất",
