@@ -50,7 +50,7 @@ namespace ElecWasteCollection.Application.Services
 		{
 
 			if (createPostRequest.Product == null) throw new AppException("Product đang trống", 400);
-			if (createPostRequest.Product.Attributes == null || !createPostRequest.Product.Attributes.Any()) throw new AppException("Thuộc tính sản phẩm đang trống", 400);
+			//if (createPostRequest.Product.Attributes == null || !createPostRequest.Product.Attributes.Any()) throw new AppException("Thuộc tính sản phẩm đang trống", 400);
 			DateTime transactionTimeUtc = DateTime.UtcNow;
 			try
 			{
