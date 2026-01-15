@@ -136,7 +136,7 @@ namespace ElecWasteCollection.Application.Services
 					{
 						currentStatus = PostStatus.DA_DUYET.ToString();
 						newProduct.Status = ProductStatus.CHO_PHAN_KHO.ToString();
-						statusDescription = "Yêu cầu được duyệt tự động";
+						statusDescription = "Yêu cầu được duyệt tự động, chờ phân về kho tương ứng";
 					}
 				}
 
